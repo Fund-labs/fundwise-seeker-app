@@ -6,6 +6,13 @@ Date: 2026-05-17
 
 Status: scaffold ready, local typecheck passing, Android device run blocked by missing local Android toolchain.
 
+Update:
+
+- Corrected invite lookup against the real FundWise API response shape. `GET /api/groups?code=...` returns a Group row or `null`, not `{ group }`.
+- Added a FundWise link parser for Group links, invite links, Settlement request links, and Settlement receipt links.
+- Persisted the latest incoming app link with AsyncStorage so device testers can recover the last FundWise handoff after restart.
+- The Seeker home screen now previews the latest link, pre-fills invite codes from links, and provides Open / Clear actions.
+
 ## Product Decision
 
 `FundWiseSeeker` is a sibling app under `fundlabs`, not a folder inside `FundWise`.
@@ -105,6 +112,8 @@ Implemented:
 - app background/return tracking for wallet handoff
 - FundWise `/api/health` check
 - public invite-code lookup through `GET /api/groups?code=...`
+- latest incoming FundWise link persistence and parsing
+- FundWise link previews for Groups, invite links, Settlement requests, and Settlement receipts
 - Android app link intent filter for `https://fundwise.fun/groups`
 - open FundWise Groups in browser/web app
 - open incoming FundWise link

@@ -16,6 +16,7 @@ import { FUNDWISE_WEB_URL, SOLANA_CHAIN } from "../config";
 import { useIncomingFundWiseLink } from "../hooks/useIncomingFundWiseLink";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { getHealth, lookupInvite, type InviteLookup } from "../lib/fundwise-api";
+import { getFundWiseLinkLabel, parseFundWiseLink } from "../lib/fundwise-link";
 import { shortAddress } from "../lib/short-address";
 import { colors } from "../theme/colors";
 
@@ -43,7 +44,7 @@ function extractInviteCode(value: string) {
 export function SeekerHomeScreen() {
   const { account, connect, disconnect } = useMobileWallet();
   const isOnline = useNetworkStatus();
-  const incomingUrl = useIncomingFundWiseLink();
+  const incomingLink = useIncomingFundWiseLink();
   const [health, setHealth] = useState<HealthState>("checking");
   const [inviteCode, setInviteCode] = useState("");
   const [inviteResult, setInviteResult] = useState<InviteLookup | null>(null);
@@ -52,6 +53,12 @@ export function SeekerHomeScreen() {
 
   const walletAddress = account?.address.toBase58() ?? null;
   const normalizedInviteCode = useMemo(() => extractInviteCode(inviteCode), [inviteCode]);
+  const latestLinkIntent = useMemo(
+    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL) : null),
+    [incomingLink.url],
+  );
+
+  const latestLinkLabel = latestLinkIntent ? getFundWiseLinkLabel(latestLinkIntent) : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -85,6 +92,14 @@ export function SeekerHomeScreen() {
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    if (!latestLinkIntent?.inviteCode) {
+      return;
+    }
+
+    setInviteCode((currentInviteCode) => currentInviteCode || latestLinkIntent.inviteCode || "");
+  }, [latestLinkIntent?.inviteCode]);
+
   async function handleLookupInvite() {
     if (!normalizedInviteCode) {
       return;
@@ -100,9 +115,9 @@ export function SeekerHomeScreen() {
     void Linking.openURL(buildWebUrl("/groups"));
   }
 
-  function openIncomingLink() {
-    if (incomingUrl) {
-      void Linking.openURL(incomingUrl);
+  function openLatestLink() {
+    if (latestLinkIntent?.url || incomingLink.url) {
+      void Linking.openURL(latestLinkIntent?.url || incomingLink.url || "");
     }
   }
 
@@ -139,13 +154,18 @@ export function SeekerHomeScreen() {
           </Text>
         ) : null}
         <View style={styles.buttonGrid}>
-          <ActionButton onPress={() => void connect()} disabled={!isOnline || Boolean(walletAddress)}>
+          <ActionButton
+            onPress={() => void connect()}
+            disabled={!isOnline || Boolean(walletAddress)}
+            style={styles.buttonGridButton}
+          >
             Connect
           </ActionButton>
           <ActionButton
             onPress={() => void disconnect()}
             disabled={!walletAddress}
             variant="secondary"
+            style={styles.buttonGridButton}
           >
             Disconnect
           </ActionButton>
@@ -154,15 +174,45 @@ export function SeekerHomeScreen() {
 
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>FundWise</Text>
-        <View style={styles.buttonStack}>
-          <ActionButton onPress={openGroups}>Open Groups</ActionButton>
-          {incomingUrl ? (
-            <ActionButton onPress={openIncomingLink} variant="secondary">
-              Open Latest Link
-            </ActionButton>
-          ) : null}
-        </View>
-        {incomingUrl ? <Text style={styles.linkText} numberOfLines={2}>{incomingUrl}</Text> : null}
+        <ActionButton onPress={openGroups}>Open Groups</ActionButton>
+        {incomingLink.loading ? (
+          <Text style={styles.metaText}>Checking latest app link</Text>
+        ) : latestLinkIntent ? (
+          <View style={styles.linkSummary}>
+            <Text style={styles.intentText}>{latestLinkLabel}</Text>
+            {latestLinkIntent.groupId ? (
+              <Text style={styles.metaText}>Group: {shortAddress(latestLinkIntent.groupId, 7)}</Text>
+            ) : null}
+            {latestLinkIntent.settleFrom && latestLinkIntent.settleTo ? (
+              <Text style={styles.metaText}>
+                Settlement: {shortAddress(latestLinkIntent.settleFrom, 4)} to{" "}
+                {shortAddress(latestLinkIntent.settleTo, 4)}
+              </Text>
+            ) : null}
+            {incomingLink.source ? (
+              <Text style={styles.metaText}>
+                Source: {incomingLink.source === "storage" ? "saved link" : "app link"}
+              </Text>
+            ) : null}
+            <Text style={styles.linkText} numberOfLines={2}>
+              {latestLinkIntent.url}
+            </Text>
+            <View style={styles.buttonGrid}>
+              <ActionButton onPress={openLatestLink} style={styles.buttonGridButton}>
+                Open Link
+              </ActionButton>
+              <ActionButton
+                onPress={() => void incomingLink.clear()}
+                variant="secondary"
+                style={styles.buttonGridButton}
+              >
+                Clear
+              </ActionButton>
+            </View>
+          </View>
+        ) : (
+          <Text style={styles.metaText}>No recent FundWise link</Text>
+        )}
       </View>
 
       <View style={styles.panel}>
@@ -177,16 +227,30 @@ export function SeekerHomeScreen() {
           value={inviteCode}
         />
         <View style={styles.buttonGrid}>
-          <ActionButton onPress={handleLookupInvite} disabled={!normalizedInviteCode || inviteLoading}>
+          <ActionButton
+            onPress={handleLookupInvite}
+            disabled={!normalizedInviteCode || inviteLoading}
+            style={styles.buttonGridButton}
+          >
             {inviteLoading ? "Checking" : "Check"}
           </ActionButton>
-          <ActionButton onPress={openInvite} disabled={!normalizedInviteCode} variant="secondary">
+          <ActionButton
+            onPress={openInvite}
+            disabled={!normalizedInviteCode}
+            variant="secondary"
+            style={styles.buttonGridButton}
+          >
             Open
           </ActionButton>
         </View>
         {inviteLoading ? <ActivityIndicator color={colors.accent} /> : null}
         {inviteResult?.group ? (
-          <Text style={styles.resultText}>{inviteResult.group.name}</Text>
+          <View style={styles.resultBlock}>
+            <Text style={styles.resultText}>{inviteResult.group.name}</Text>
+            <Text style={styles.metaText}>
+              {inviteResult.group.mode === "fund" ? "Fund Mode" : "Split Mode"} Group
+            </Text>
+          </View>
         ) : null}
         {inviteResult?.error ? <Text style={styles.errorText}>{inviteResult.error}</Text> : null}
       </View>
@@ -251,8 +315,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
   },
-  buttonStack: {
-    gap: 10,
+  buttonGridButton: {
+    flex: 1,
   },
   input: {
     minHeight: 50,
@@ -268,6 +332,17 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 12,
     lineHeight: 17,
+  },
+  linkSummary: {
+    gap: 8,
+  },
+  intentText: {
+    color: colors.accent,
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  resultBlock: {
+    gap: 4,
   },
   resultText: {
     color: colors.accent,

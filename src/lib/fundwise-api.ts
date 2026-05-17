@@ -9,13 +9,18 @@ export type FundWiseHealth = {
   status?: string;
 };
 
+export type FundWiseGroupPreview = {
+  id: string;
+  name: string;
+  mode?: "split" | "fund";
+  code?: string | null;
+  invite_code?: string | null;
+  member_count?: number | null;
+  stablecoin_mint?: string | null;
+};
+
 export type InviteLookup = {
-  group?: {
-    id: string;
-    name: string;
-    mode?: "split" | "fund";
-    invite_code?: string;
-  };
+  group?: FundWiseGroupPreview;
   error?: string;
 };
 
@@ -53,6 +58,27 @@ export function getHealth() {
   return readJson<FundWiseHealth>("/api/health");
 }
 
-export function lookupInvite(code: string) {
-  return readJson<InviteLookup>(`/api/groups?code=${encodeURIComponent(code.trim())}`);
+export async function lookupInvite(code: string): Promise<ApiResult<InviteLookup>> {
+  const result = await readJson<FundWiseGroupPreview | null>(
+    `/api/groups?code=${encodeURIComponent(code.trim())}`,
+  );
+
+  if (!result.ok) {
+    return result;
+  }
+
+  if (!result.data) {
+    return {
+      ok: false,
+      status: 404,
+      error: "Invite code not found.",
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      group: result.data,
+    },
+  };
 }
