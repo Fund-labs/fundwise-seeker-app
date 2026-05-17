@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "FundWise Seeker",
+    "slug": "fundwise-seeker",
+    "scheme": "fundwiseseeker",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "fun.fundwise.seeker",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "fundwise.fun",
+              "pathPrefix": "/groups"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "fundwiseUrl": "https://fundwise.fun"
+    }
+  }
+}
