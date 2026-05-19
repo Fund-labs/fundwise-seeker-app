@@ -2,12 +2,21 @@
 
 ## Snapshot
 
-Date: 2026-05-17
+Date: 2026-05-19
 
-Status: scaffold ready, local typecheck passing, Android device run blocked by missing local Android toolchain.
+Status: Android Studio project generated, local typecheck passing, device/emulator run blocked by missing local Android toolchain.
 
 Update:
 
+- Generated the native Expo Android project in `android/` for Android Studio inspection.
+- Reworked the UI against the FundWise mobile prototypes from `FundWise/design/app/mobile.jsx`: Strata-style mark, light FundWise green surfaces, compact link cards, hero handoff panel, and bottom navigation.
+- Reworked first-run onboarding to match the approved Seeker Android HTML review direction: link recovery inbox, MWA wallet trust boundary, and phone-to-PC continuation.
+- Kept reduced-motion support, AsyncStorage completion persistence, and the Replay Intro action.
+- Added branded launcher icon config through `assets/icon.png` and `android.adaptiveIcon`.
+- Reworked the home screen into an Android-first Seeker flow: connect wallet, recover Group state, continue on web/PC.
+- Added explicit system copy that protected reads, money movement, and receipt verification remain owned by the FundWise web app.
+- Added API status retry and accessibility labels/hints for the main mobile actions.
+- Added the phone-to-web handoff panel. The app now exposes the current FundWise link, opens it in the web app, and shares the same URL through the native Android share sheet so a user can start on phone and continue on desktop or PC.
 - Corrected invite lookup against the real FundWise API response shape. `GET /api/groups?code=...` returns a Group row or `null`, not `{ group }`.
 - Added a FundWise link parser for Group links, invite links, Settlement request links, and Settlement receipt links.
 - Persisted the latest incoming app link with AsyncStorage so device testers can recover the last FundWise handoff after restart.
@@ -76,6 +85,7 @@ Source:
 - `src/config.ts`
 - `src/theme/colors.ts`
 - `src/screens/SeekerHomeScreen.tsx`
+- `src/screens/SeekerOnboardingScreen.tsx`
 - `src/components/ActionButton.tsx`
 - `src/components/StatusPill.tsx`
 - `src/hooks/useIncomingFundWiseLink.ts`
@@ -106,8 +116,14 @@ Implemented:
 - MWA provider in `App.tsx`
 - Solana chain/RPC config via Expo public env vars
 - FundWise API base URL config
+- first-run animated onboarding
+- onboarding screens for link recovery, MWA handoff, and continuation URL handoff
+- reduced-motion handling via Android accessibility state
+- onboarding completion persistence through AsyncStorage
+- onboarding replay action from the Wallet Boundary panel
 - wallet connect/disconnect UI
 - wallet address display
+- Android-first launch steps for wallet connect -> Group recovery -> web/PC continuation
 - network online/offline state
 - app background/return tracking for wallet handoff
 - FundWise `/api/health` check
@@ -117,7 +133,10 @@ Implemented:
 - Android app link intent filter for `https://fundwise.fun/groups`
 - open FundWise Groups in browser/web app
 - open incoming FundWise link
-- Seeker AMOLED palette
+- open or share the current FundWise continuation link for phone -> web / desktop handoff
+- retry FundWise API health checks from the app
+- FundWise mobile prototype palette and Strata-style mark
+- generated Android Studio project in `android/`
 - 56 px primary tap targets
 - tap haptics
 
@@ -150,7 +169,7 @@ Applied:
 
 - `polyfill.js` imports `react-native-get-random-values` first through `index.js`.
 - `app.json` uses `expo-build-properties` with `android.minSdkVersion = 26`.
-- `src/theme/colors.ts` defines Seeker AMOLED palette.
+- `src/theme/colors.ts` defines the FundWise mobile prototype palette.
 - `ActionButton` uses 56 px height and tap haptics.
 - `README.md` documents APK / dApp Store constraints.
 
@@ -165,6 +184,23 @@ npm run typecheck
 npm exec expo -- install --check
 npm exec expo -- config --type public
 ```
+
+Latest validation:
+
+```bash
+cd /Users/sarthiborkar/Build/fundlabs/FundWiseSeeker
+npm run typecheck
+npm exec expo -- install --check
+npx expo prebuild --platform android --no-install
+./android/gradlew tasks
+```
+
+Result:
+
+- `npm run typecheck`: pass.
+- `npm exec expo -- install --check`: pass using local Expo dependency map because command context is offline.
+- `npx expo prebuild --platform android --no-install`: pass, `android/` generated.
+- `./android/gradlew tasks`: blocked locally because Java runtime is missing.
 
 Notes:
 
