@@ -8,6 +8,8 @@ type ActionButtonProps = PropsWithChildren<{
   variant?: "primary" | "secondary";
   disabled?: boolean;
   style?: ViewStyle;
+  accessibilityHint?: string;
+  accessibilityLabel?: string;
 }>;
 
 export function ActionButton({
@@ -16,6 +18,8 @@ export function ActionButton({
   variant = "primary",
   disabled = false,
   style,
+  accessibilityHint,
+  accessibilityLabel,
 }: ActionButtonProps) {
   function handlePress() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -24,6 +28,9 @@ export function ActionButton({
 
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
       disabled={disabled}
       onPress={handlePress}
       style={({ pressed }) => [
@@ -46,11 +53,11 @@ const styles = StyleSheet.create({
     minHeight: 56,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 18,
   },
   primary: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primaryMid,
   },
   secondary: {
     borderWidth: 1,
@@ -64,11 +71,11 @@ const styles = StyleSheet.create({
     opacity: 0.48,
   },
   label: {
-    color: colors.text,
+    color: colors.white,
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: "800",
   },
   secondaryLabel: {
-    color: colors.accent,
+    color: colors.primaryMid,
   },
 });
