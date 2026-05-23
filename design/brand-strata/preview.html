@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FundWise — Strata Brand Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f7faf8;color:#0d1f14;font-family:'Plus Jakarta Sans',sans-serif;padding:60px 40px 100px;}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a9151;text-align:center;margin-bottom:10px;}
+h1{font-family:'DM Serif Display',serif;font-size:48px;text-align:center;letter-spacing:-1px;margin-bottom:8px}
+.sub{text-align:center;color:#4a6b55;margin-bottom:60px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;max-width:1100px;margin:0 auto 32px;}
+.card{background:#fff;border:1px solid #dde9e0;border-radius:22px;padding:40px 24px;display:flex;flex-direction:column;align-items:center;gap:18px;}
+.card.dark{background:#0a1a10;border-color:#143020;color:#e8f5ec}
+.card.grad{background:linear-gradient(135deg,#0a4d2c,#1a9151,#4ec98a);border-color:transparent;color:#fff}
+.label{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8dab97;font-family:'JetBrains Mono',monospace}
+.dark .label,.grad .label{color:rgba(255,255,255,0.65)}
+.name{font-family:'DM Serif Display',serif;font-size:20px;letter-spacing:-0.3px}
+.section-h{font-family:'DM Serif Display',serif;font-size:26px;text-align:center;margin:48px 0 20px;letter-spacing:-0.4px}
+.swatch-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:900px;margin:0 auto 40px;}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;}
+.swatch-box{width:80px;height:80px;border-radius:14px;border:1px solid rgba(0,0,0,0.06)}
+.swatch-hex{font-family:'JetBrains Mono',monospace;font-size:11px;color:#4a6b55}
+.swatch-name{font-size:11px;color:#8dab97;font-weight:600}
+.size-row{display:flex;gap:24px;justify-content:center;align-items:flex-end;flex-wrap:wrap;background:#fff;border:1px solid #dde9e0;border-radius:22px;padding:32px;max-width:1100px;margin:0 auto 32px;}
+.sz{display:flex;flex-direction:column;align-items:center;gap:8px}
+.sz-label{font-size:10px;color:#8dab97;font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="eyebrow">FundWise · Brand Sheet</div>
+<h1>Strata</h1>
+<div class="sub">Layers of liquidity — locked in.</div>
+
+<div class="section-h">The mark</div>
+<div class="grid">
+  <div class="card">
+    <img src="svg/mark-gradient.svg" width="120" height="120" alt="">
+    <div><div class="name" style="text-align:center">Gradient</div><div class="label" style="text-align:center;margin-top:4px">PRIMARY</div></div>
+  </div>
+  <div class="card dark">
+    <img src="svg/mark-gradient.svg" width="120" height="120" alt="">
+    <div><div class="name" style="text-align:center">On dark</div><div class="label" style="text-align:center;margin-top:4px">DARK MODE</div></div>
+  </div>
+  <div class="card grad">
+    <img src="svg/mark-white.svg" width="120" height="120" alt="">
+    <div><div class="name" style="text-align:center">On gradient</div><div class="label" style="text-align:center;margin-top:4px">WHITE KNOCKOUT</div></div>
+  </div>
+  <div class="card">
+    <img src="svg/mark-mono-dark.svg" width="120" height="120" alt="">
+    <div><div class="name" style="text-align:center">Monochrome</div><div class="label" style="text-align:center;margin-top:4px">PRINT, EMBOSSING</div></div>
+  </div>
+</div>
+
+<div class="section-h">Wordmark lockups</div>
+<div class="grid" style="grid-template-columns:1fr 1fr">
+  <div class="card">
+    <img src="svg/wordmark-horizontal.svg" width="320" alt="">
+    <div class="label">HORIZONTAL</div>
+  </div>
+  <div class="card">
+    <img src="svg/wordmark-stacked.svg" width="200" alt="">
+    <div class="label">STACKED</div>
+  </div>
+</div>
+
+<div class="section-h">App icon</div>
+<div class="grid" style="grid-template-columns:1fr">
+  <div class="card">
+    <img src="svg/app-icon-1024.svg" width="220" height="220" alt="" style="border-radius:48px">
+    <div><div class="name" style="text-align:center">App icon · 1024×1024</div><div class="label" style="text-align:center;margin-top:4px">iOS / ANDROID HOME SCREEN</div></div>
+  </div>
+</div>
+
+<div class="section-h">Color palette</div>
+<div class="swatch-row">
+  <div class="swatch"><div class="swatch-box" style="background:#0A4D2C"></div><div class="swatch-name">Deep</div><div class="swatch-hex">#0A4D2C</div></div>
+  <div class="swatch"><div class="swatch-box" style="background:#0D6B3A"></div><div class="swatch-name">Forest</div><div class="swatch-hex">#0D6B3A</div></div>
+  <div class="swatch"><div class="swatch-box" style="background:#1A9151"></div><div class="swatch-name">Emerald</div><div class="swatch-hex">#1A9151</div></div>
+  <div class="swatch"><div class="swatch-box" style="background:#2DB870"></div><div class="swatch-name">Jade</div><div class="swatch-hex">#2DB870</div></div>
+  <div class="swatch"><div class="swatch-box" style="background:#4EC98A"></div><div class="swatch-name">Mint</div><div class="swatch-hex">#4EC98A</div></div>
+  <div class="swatch"><div class="swatch-box" style="background:#0D1F14"></div><div class="swatch-name">Ink</div><div class="swatch-hex">#0D1F14</div></div>
+</div>
+
+<div class="section-h">Sizes</div>
+<div class="size-row">
+  <div class="sz"><img src="svg/mark-gradient.svg" width="128" height="128" alt=""><div class="sz-label">128px</div></div>
+  <div class="sz"><img src="svg/mark-gradient.svg" width="64" height="64" alt=""><div class="sz-label">64px</div></div>
+  <div class="sz"><img src="svg/mark-gradient.svg" width="32" height="32" alt=""><div class="sz-label">32px</div></div>
+  <div class="sz"><img src="svg/favicon.svg" width="32" height="32" alt=""><div class="sz-label">32px favicon</div></div>
+  <div class="sz"><img src="svg/favicon.svg" width="16" height="16" alt=""><div class="sz-label">16px favicon</div></div>
+</div>
+
+</body>
+</html>

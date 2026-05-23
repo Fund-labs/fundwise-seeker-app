@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Onboarding (Seeker / Android)</title>
+<link rel="icon" type="image/svg+xml" href="brand-strata/svg/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --fw-deep:#0A4D2C; --fw-forest:#0D6B3A; --fw-emerald:#1A9151;
+    --fw-jade:#2DB870; --fw-mint:#4EC98A; --fw-ink:#0D1F14;
+    --fw-ink-2:#5A6B60; --fw-ink-3:#8A998F;
+    --fw-bg:#F4F1EA; --fw-surface:#FFFFFF; --fw-border:rgba(13,31,20,0.08);
+    --fw-grad: linear-gradient(135deg,#0A4D2C 0%,#1A9151 55%,#4EC98A 100%);
+    --serif: 'DM Serif Display', Georgia, serif;
+    --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  html,body{height:100%;background:#1a1e1c;font-family:var(--sans);-webkit-font-smoothing:antialiased;color:#fff;overflow:hidden;}
+  body{
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(ellipse 70% 60% at 30% 20%, rgba(78,201,138,0.10), transparent 60%),
+      radial-gradient(ellipse 70% 60% at 80% 90%, rgba(10,77,44,0.20), transparent 60%),
+      #0e1311;
+  }
+  #root{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:24px;}
+
+  /* ── caption (outside the phone) ── */
+  .stage{display:flex;align-items:center;gap:48px;}
+  .caption{max-width:280px;}
+  .caption .eyebrow{
+    font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:#7a8c80;margin-bottom:14px;
+  }
+  .caption h1{font-family:var(--serif);font-size:38px;line-height:1.04;letter-spacing:-1.2px;color:#f0efe6;margin-bottom:14px;}
+  .caption h1 em{font-style:italic;color:var(--fw-mint);}
+  .caption p{font-size:13px;line-height:1.6;color:#9ba8a0;margin-bottom:22px;}
+  .step-list{display:flex;flex-direction:column;gap:10px;}
+  .step-list .step{
+    display:flex;align-items:center;gap:12px;font-size:12px;color:#7a8c80;
+    cursor:pointer;padding:8px 10px;border-radius:8px;transition:all .2s;
+    border:1px solid transparent;
+  }
+  .step-list .step:hover{background:rgba(255,255,255,0.03);color:#c9d3cc;}
+  .step-list .step.active{
+    background:rgba(78,201,138,0.08);color:#dcf0e4;
+    border-color:rgba(78,201,138,0.2);
+  }
+  .step-list .step .n{
+    width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:10px;flex-shrink:0;
+    background:rgba(255,255,255,0.04);color:#7a8c80;border:1px solid rgba(255,255,255,0.06);
+  }
+  .step-list .step.active .n{background:var(--fw-mint);color:#0d1f14;border-color:transparent;font-weight:700;}
+  .step-list .step.done .n{background:rgba(78,201,138,0.2);color:var(--fw-mint);border-color:transparent;}
+
+  /* ── DEVICE FRAME (custom Android, side fingerprint right) ── */
+  .device{
+    --w:380px; --h:790px;
+    position:relative;width:var(--w);height:var(--h);
+    filter: drop-shadow(0 40px 60px rgba(0,0,0,0.5)) drop-shadow(0 0 0 1px rgba(255,255,255,0.04));
+  }
+  .device-shell{
+    position:absolute;inset:0;border-radius:46px;
+    background: linear-gradient(155deg, #2c3330 0%, #1a1f1d 50%, #0e1311 100%);
+    padding:8px;
+  }
+  .device-bezel{
+    position:absolute;inset:8px;border-radius:38px;
+    background:#000;overflow:hidden;
+    box-shadow: inset 0 0 0 2px #0a0c0b;
+  }
+  .device-screen{
+    position:absolute;inset:5px;border-radius:34px;overflow:hidden;
+    background:var(--fw-bg);color:var(--fw-ink);
+    display:flex;flex-direction:column;
+  }
+  /* Punch-hole front camera */
+  .device-camera{
+    position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    width:11px;height:11px;border-radius:50%;
+    background:#0a0c0b;z-index:60;
+    box-shadow:
+      inset 0 0 0 1px #1a1f1d,
+      inset 0 0 3px rgba(78,201,138,0.4);
+  }
+  /* Side buttons */
+  .btn-volume-up, .btn-volume-down, .btn-power-fp{
+    position:absolute;background:linear-gradient(90deg,#1a1f1d,#0e1311);
+    border-radius:2px 0 0 2px;
+  }
+  /* Left side: volume rocker */
+  .btn-volume-up{   left:-3px; top:160px; width:5px; height:54px; border-radius:0 2px 2px 0; background:linear-gradient(270deg,#1a1f1d,#0e1311);}
+  .btn-volume-down{ left:-3px; top:222px; width:5px; height:54px; border-radius:0 2px 2px 0; background:linear-gradient(270deg,#1a1f1d,#0e1311);}
+  /* Right side: power + fingerprint */
+  .btn-power-fp{
+    position:absolute;right:-4px;top:200px;width:6px;height:78px;
+    border-radius:2px 0 0 2px;
+    background:linear-gradient(90deg,#0e1311 0%,#1a1f1d 40%, #1a1f1d 60%, #0e1311 100%);
+    cursor:pointer;z-index:70;
+    transition: box-shadow .25s, background .25s, transform .15s;
+  }
+  /* Outer glow halo around the fingerprint reader */
+  .fp-halo{
+    position:absolute;right:-26px;top:188px;width:50px;height:102px;
+    border-radius:25px;pointer-events:none;z-index:65;
+    background:radial-gradient(ellipse 80% 60% at left center, rgba(78,201,138,0.65), transparent 70%);
+    opacity:0;transition:opacity .35s;
+  }
+  .device[data-prompt-fp="1"] .fp-halo{ animation: fpPulse 1.6s ease-in-out infinite; }
+  .device[data-prompt-fp="1"] .btn-power-fp{
+    background:linear-gradient(90deg,#0e1311 0%,#1a1f1d 30%, #2d6b48 50%, #1a1f1d 70%, #0e1311 100%);
+  }
+  .device[data-scanning="1"] .btn-power-fp{
+    background:linear-gradient(90deg,#0e1311 0%,#1A9151 40%, #4EC98A 50%, #1A9151 60%, #0e1311 100%);
+    box-shadow: 0 0 18px rgba(78,201,138,0.7);
+  }
+  @keyframes fpPulse{
+    0%,100%{opacity:.4;transform:scale(0.92);}
+    50%{opacity:.9;transform:scale(1.05);}
+  }
+  /* Arrow hint pointing to fingerprint */
+  .fp-arrow{
+    position:absolute;right:-110px;top:210px;width:90px;
+    display:flex;align-items:center;gap:6px;pointer-events:none;
+    opacity:0;transition:opacity .3s;z-index:75;
+  }
+  .device[data-prompt-fp="1"] .fp-arrow{opacity:1;animation: arrowNudge 1.4s ease-in-out infinite;}
+  @keyframes arrowNudge{ 0%,100%{transform:translateX(0);} 50%{transform:translateX(-8px);} }
+  .fp-arrow .lbl{
+    font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--fw-mint);white-space:nowrap;
+  }
+
+  /* Android gesture pill */
+  .gesture-pill{
+    position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+    width:128px;height:4px;border-radius:2px;
+    background:rgba(13,31,20,0.35);z-index:55;
+  }
+  .device-screen[data-dark="1"] .gesture-pill{background:rgba(255,255,255,0.45);}
+
+  /* Status bar (Android: time left, icons right) */
+  .status-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px 6px 22px;flex-shrink:0;
+    font-family:var(--sans);font-weight:600;font-size:13px;
+    color:var(--fw-ink);
+  }
+  .status-bar[data-dark="1"]{color:#f0efe6;}
+  .status-bar .right{display:flex;align-items:center;gap:5px;}
+  .status-bar svg{display:block;}
+
+  /* ── SCREENS ── */
+  .scr{
+    position:absolute;inset:5px;border-radius:34px;overflow:hidden;
+    display:flex;flex-direction:column;
+    transition: opacity .4s ease, transform .5s cubic-bezier(.4,0,.2,1);
+  }
+  .scr.in-right{transform:translateX(100%);opacity:0;pointer-events:none;}
+  .scr.in-left{transform:translateX(-12%);opacity:0;pointer-events:none;}
+  .scr.in-fade-out{transform:scale(0.96);opacity:0;pointer-events:none;}
+  .scr.active{transform:none;opacity:1;}
+
+  .scr-pad{flex:1;display:flex;flex-direction:column;padding:24px;overflow:hidden;position:relative;}
+
+  /* ── SPLASH ── */
+  .splash{
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 30%, rgba(78,201,138,0.18), transparent 70%),
+      linear-gradient(180deg, #0a1410 0%, #050a07 100%);
+    color:#fff;
+    align-items:center;justify-content:center;
+  }
+  .splash .stack-zone{
+    position:relative;width:240px;height:240px;
+    display:flex;align-items:center;justify-content:center;margin-bottom:32px;
+  }
+  .splash .slab{
+    position:absolute;border-radius:14px;
+    opacity:0;transform:translateY(-40px) scale(0.7) rotate(0deg);
+    will-change:transform,opacity;
+  }
+  .splash.go .slab{ animation: slabIn 0.7s cubic-bezier(.2,.8,.25,1) forwards; }
+  .splash.go .slab-1{ animation-delay: 0.15s; }
+  .splash.go .slab-2{ animation-delay: 0.40s; }
+  .splash.go .slab-3{ animation-delay: 0.65s; }
+  @keyframes slabIn{
+    0%   { opacity:0; transform: translateY(-60px) scale(0.7) rotate(0deg); }
+    60%  { opacity:1; transform: translateY(6px)   scale(1.03);}
+    100% { opacity:1; transform: var(--rest-tf); }
+  }
+  /* slab sizes mirror the strata logo proportions */
+  .slab-1{width:170px;height:36px;background:linear-gradient(135deg,#0A4D2C,#0D6B3A);
+    top:60px;left:35px; --rest-tf: translateY(0) scale(1) rotate(-2deg);}
+  .slab-2{width:184px;height:36px;background:linear-gradient(135deg,#0D6B3A,#1A9151);
+    top:108px;left:28px; --rest-tf: translateY(0) scale(1) rotate(0deg);}
+  .slab-3{width:158px;height:36px;background:linear-gradient(135deg,#1A9151,#4EC98A);
+    top:156px;left:41px; --rest-tf: translateY(0) scale(1) rotate(2deg);}
+
+  .splash .wm{
+    font-family:var(--serif);font-size:42px;letter-spacing:-1px;
+    color:#fff;opacity:0;transform:translateY(8px);
+  }
+  .splash .wm em{font-style:italic;color:var(--fw-mint);}
+  .splash.go .wm{ animation: wmIn 0.55s 1.15s ease-out forwards; }
+  @keyframes wmIn{ to { opacity:1; transform:none; } }
+
+  .splash .tag{
+    margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;
+    text-transform:uppercase;color:#7a8c80;opacity:0;
+  }
+  .splash.go .tag{ animation: wmIn 0.5s 1.45s ease-out forwards; }
+
+  .splash .loadbar{
+    position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+    width:120px;height:2px;background:rgba(255,255,255,0.08);border-radius:1px;overflow:hidden;
+    opacity:0;
+  }
+  .splash.go .loadbar{ animation: wmIn 0.4s 1.6s ease-out forwards; }
+  .splash .loadbar::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,var(--fw-mint),transparent);
+    transform:translateX(-100%);
+    animation: loadSweep 1.2s 1.7s cubic-bezier(.4,0,.2,1) infinite;
+  }
+  @keyframes loadSweep{ to { transform:translateX(100%); } }
+
+  /* ── WELCOME ── */
+  .scr-welcome{
+    background: linear-gradient(180deg, #f7f4ee 0%, #efe9dc 100%);
+    color:var(--fw-ink);
+  }
+  .welcome-hero{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:0 8px;
+  }
+  .welcome-hero .strata-mini{
+    width:80px;height:80px;margin-bottom:24px;
+  }
+  .welcome-hero h2{font-family:var(--serif);font-size:36px;letter-spacing:-1px;line-height:1.05;margin-bottom:12px;}
+  .welcome-hero h2 em{font-style:italic;color:var(--fw-emerald);}
+  .welcome-hero p{font-size:14px;line-height:1.55;color:var(--fw-ink-2);max-width:280px;margin-bottom:8px;}
+  .welcome-feats{
+    display:flex;justify-content:space-around;width:100%;
+    margin:30px 0 8px;padding:0 12px;
+  }
+  .welcome-feats .feat{
+    display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;
+  }
+  .welcome-feats .ico{
+    width:40px;height:40px;border-radius:12px;
+    background:rgba(13,107,58,0.08);display:flex;align-items:center;justify-content:center;
+    color:var(--fw-emerald);
+  }
+  .welcome-feats .ftxt{font-size:11px;color:var(--fw-ink-2);font-weight:500;letter-spacing:-0.1px;}
+
+  /* ── SEED VAULT INTRO ── */
+  .scr-seedvault{ background:#0c1612; color:#f0efe6; }
+  .vault-illus{
+    flex:0 0 280px;position:relative;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 50%, rgba(78,201,138,0.18), transparent 70%);
+  }
+  .vault-ring{
+    position:absolute;border-radius:50%;border:1px solid rgba(78,201,138,0.18);
+  }
+  .vault-ring.r1{ width:220px;height:220px;animation: spinSlow 18s linear infinite; }
+  .vault-ring.r2{ width:160px;height:160px;border-color:rgba(78,201,138,0.28);animation: spinSlow 12s linear infinite reverse; }
+  .vault-ring.r3{ width:100px;height:100px;border-color:rgba(78,201,138,0.4);}
+  @keyframes spinSlow{ to{ transform:rotate(360deg);} }
+  .vault-ring.r1::before, .vault-ring.r2::before{
+    content:'';position:absolute;top:-3px;left:50%;width:6px;height:6px;border-radius:50%;
+    background:var(--fw-mint);box-shadow:0 0 8px var(--fw-mint);
+  }
+  .vault-chip{
+    position:relative;width:64px;height:64px;border-radius:14px;
+    background:linear-gradient(135deg,#1A9151,#0A4D2C);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow: 0 8px 30px rgba(10,77,44,0.6), inset 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .vault-chip::after{
+    content:'';position:absolute;inset:8px;border-radius:8px;
+    background:
+      linear-gradient(0deg,transparent 48%,rgba(255,255,255,0.05) 48%,rgba(255,255,255,0.05) 52%,transparent 52%),
+      linear-gradient(90deg,transparent 48%,rgba(255,255,255,0.05) 48%,rgba(255,255,255,0.05) 52%,transparent 52%);
+  }
+  .vault-body{padding:24px 26px 24px;display:flex;flex-direction:column;flex:1;}
+  .vault-body h3{font-family:var(--serif);font-size:26px;letter-spacing:-0.5px;line-height:1.1;margin-bottom:10px;}
+  .vault-body h3 em{font-style:italic;color:var(--fw-mint);}
+  .vault-body p{font-size:13px;line-height:1.55;color:#9ba8a0;margin-bottom:20px;}
+  .vault-bullets{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+  .vault-bullets .b{display:flex;align-items:flex-start;gap:10px;}
+  .vault-bullets .check{
+    flex-shrink:0;width:18px;height:18px;border-radius:50%;
+    background:rgba(78,201,138,0.15);color:var(--fw-mint);
+    display:flex;align-items:center;justify-content:center;margin-top:1px;
+  }
+  .vault-bullets .btxt{font-size:12px;line-height:1.5;color:#c9d3cc;}
+  .vault-bullets .btxt b{color:#f0efe6;font-weight:600;}
+
+  /* ── CONNECT (fingerprint prompt) ── */
+  .scr-connect{ background: linear-gradient(180deg,#f7f4ee 0%,#e9e2d2 100%); color:var(--fw-ink); }
+  .connect-body{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:8px;}
+  .connect-body h3{font-family:var(--serif);font-size:30px;letter-spacing:-0.6px;line-height:1.05;margin-bottom:8px;}
+  .connect-body p{font-size:13px;line-height:1.55;color:var(--fw-ink-2);max-width:280px;margin-bottom:20px;}
+
+  /* the on-screen visual that mirrors the side button */
+  .fp-visual{
+    position:relative;width:170px;height:170px;margin:6px auto 16px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .fp-rings{position:absolute;inset:0;}
+  .fp-rings span{
+    position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(13,107,58,0.18);
+  }
+  .fp-rings span:nth-child(1){ animation: ringPulse 2.4s 0s ease-out infinite; }
+  .fp-rings span:nth-child(2){ animation: ringPulse 2.4s 0.8s ease-out infinite; }
+  .fp-rings span:nth-child(3){ animation: ringPulse 2.4s 1.6s ease-out infinite; }
+  @keyframes ringPulse{
+    0%  { transform:scale(0.5); opacity:0; }
+    20% { opacity:0.7; }
+    100%{ transform:scale(1.4); opacity:0; }
+  }
+  .fp-icon{
+    position:relative;width:88px;height:88px;border-radius:50%;
+    background: linear-gradient(135deg,#0A4D2C,#1A9151);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow: 0 12px 28px rgba(10,77,44,0.35);
+  }
+  .fp-icon svg{width:46px;height:46px;}
+  .fp-scan-line{
+    position:absolute;left:8%;right:8%;height:2px;
+    background:linear-gradient(90deg,transparent,#4EC98A,transparent);
+    box-shadow:0 0 10px var(--fw-mint);
+    top:50%;opacity:0;border-radius:1px;
+  }
+  .scanning .fp-scan-line{
+    opacity:1;animation: scanSweep 1.2s ease-in-out infinite;
+  }
+  @keyframes scanSweep{
+    0%,100% { top:18%; }
+    50%     { top:82%; }
+  }
+  .scanning .fp-rings span{animation-duration:1s !important;border-color:rgba(78,201,138,0.45) !important;}
+
+  .fp-progress{
+    width:200px;height:4px;border-radius:2px;background:rgba(13,31,20,0.08);
+    overflow:hidden;margin:8px auto 22px;position:relative;
+  }
+  .fp-progress::after{
+    content:'';position:absolute;inset:0;width:0%;
+    background:linear-gradient(90deg,var(--fw-emerald),var(--fw-mint));
+    transition:width .35s linear;
+  }
+  .fp-progress[data-pct="0"]::after{width:0%;}
+  .fp-progress[data-pct="25"]::after{width:25%;}
+  .fp-progress[data-pct="50"]::after{width:50%;}
+  .fp-progress[data-pct="75"]::after{width:75%;}
+  .fp-progress[data-pct="100"]::after{width:100%;}
+
+  .fp-cta{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--fw-emerald);
+  }
+  .fp-cta .pulse-dot{
+    width:7px;height:7px;border-radius:50%;background:var(--fw-mint);
+    box-shadow:0 0 0 0 rgba(78,201,138,0.7);animation: dotPulse 1.4s ease-out infinite;
+  }
+  @keyframes dotPulse{
+    0%  { box-shadow:0 0 0 0 rgba(78,201,138,0.7); }
+    100%{ box-shadow:0 0 0 10px rgba(78,201,138,0); }
+  }
+
+  /* ── SUCCESS ── */
+  .scr-success{
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 35%, rgba(78,201,138,0.22), transparent 70%),
+      #0c1612;
+    color:#f0efe6;
+    align-items:center;justify-content:center;
+  }
+  .success-mark{
+    width:120px;height:120px;border-radius:50%;
+    background: linear-gradient(135deg,#0D6B3A,#1A9151);
+    display:flex;align-items:center;justify-content:center;margin-bottom:24px;
+    position:relative;
+    box-shadow: 0 0 0 12px rgba(78,201,138,0.08), 0 0 0 28px rgba(78,201,138,0.04);
+    animation: successPop 0.55s cubic-bezier(.3,1.6,.4,1) backwards;
+  }
+  @keyframes successPop{
+    0%{transform:scale(0.4);opacity:0;}
+    100%{transform:scale(1);opacity:1;}
+  }
+  .success-mark svg{width:54px;height:54px;}
+  .success-mark .check-path{stroke-dasharray:60;stroke-dashoffset:60;animation: checkDraw .5s 0.35s ease-out forwards;}
+  @keyframes checkDraw{ to{ stroke-dashoffset:0; } }
+  .success-body{text-align:center;padding:0 24px;}
+  .success-body h3{font-family:var(--serif);font-size:30px;letter-spacing:-0.6px;margin-bottom:8px;}
+  .success-body p{font-size:13px;color:#9ba8a0;line-height:1.5;margin-bottom:20px;}
+  .pubkey-pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:100px;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
+    font-family:var(--mono);font-size:11px;color:#c9d3cc;
+  }
+  .pubkey-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--fw-mint);}
+
+  /* ── INSTRUCTIONS CAROUSEL ── */
+  .scr-instr{ background: var(--fw-bg); color:var(--fw-ink); }
+  .instr-pad{padding:24px 24px 16px;flex:1;display:flex;flex-direction:column;}
+  .instr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .step-dots{display:flex;gap:5px;}
+  .step-dots .dot{width:6px;height:6px;border-radius:50%;background:rgba(13,31,20,0.12);transition:all .25s;}
+  .step-dots .dot.on{width:20px;border-radius:3px;background:var(--fw-emerald);}
+  .skip-btn{
+    background:none;border:none;font-family:var(--sans);font-size:13px;color:var(--fw-ink-2);
+    font-weight:500;cursor:pointer;padding:6px 4px;
+  }
+  .skip-btn:hover{color:var(--fw-ink);}
+  .instr-card{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:left;}
+  .instr-icon-wrap{
+    height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+    position:relative;
+  }
+  .instr-card h3{font-family:var(--serif);font-size:30px;letter-spacing:-0.6px;line-height:1.05;margin-bottom:10px;}
+  .instr-card h3 em{font-style:italic;color:var(--fw-emerald);}
+  .instr-card p{font-size:14px;line-height:1.6;color:var(--fw-ink-2);margin-bottom:8px;}
+  .instr-foot{padding:16px 24px 28px;display:flex;gap:10px;}
+
+  /* card 1 illustration — split */
+  .illus-split{position:relative;width:240px;height:200px;}
+  .illus-split .receipt{
+    position:absolute;width:140px;background:#fff;border-radius:10px;padding:14px;
+    box-shadow:0 14px 28px rgba(13,31,20,0.12);
+    border:1px solid var(--fw-border);
+  }
+  .illus-split .receipt .r-amt{font-family:var(--serif);font-size:22px;letter-spacing:-0.5px;margin-bottom:6px;}
+  .illus-split .receipt .r-line{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--fw-ink-2);margin-bottom:3px;}
+  .illus-split .receipt .r-tag{font-family:var(--mono);font-size:8px;color:var(--fw-emerald);background:rgba(78,201,138,0.1);padding:2px 6px;border-radius:4px;letter-spacing:.1em;text-transform:uppercase;}
+  .illus-split .receipt-1{top:6px;left:0;transform:rotate(-6deg);animation:floatA 5s ease-in-out infinite;}
+  .illus-split .receipt-2{top:30px;left:80px;transform:rotate(4deg);animation:floatB 5s ease-in-out infinite;}
+  @keyframes floatA{0%,100%{transform:rotate(-6deg) translateY(0);}50%{transform:rotate(-6deg) translateY(-6px);}}
+  @keyframes floatB{0%,100%{transform:rotate(4deg) translateY(0);}50%{transform:rotate(4deg) translateY(6px);}}
+  .illus-split .arrows{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-around;}
+  .illus-split .ava{
+    width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:13px;border:2px solid var(--fw-bg);
+  }
+
+  /* card 2 illustration — pool */
+  .illus-pool{position:relative;width:240px;height:200px;display:flex;align-items:flex-end;justify-content:center;}
+  .illus-pool .jar{
+    width:140px;height:170px;
+    border:2px solid var(--fw-ink);border-top:none;
+    border-radius:0 0 22px 22px;position:relative;overflow:hidden;
+    background:rgba(255,255,255,0.4);
+  }
+  .illus-pool .jar::before{
+    content:'';position:absolute;top:-8px;left:-2px;right:-2px;height:8px;
+    background:var(--fw-ink);border-radius:4px 4px 0 0;
+  }
+  .illus-pool .fill{
+    position:absolute;bottom:0;left:0;right:0;height:70%;
+    background: linear-gradient(180deg,#4EC98A 0%,#1A9151 100%);
+    animation: fillRise 2s ease-out;
+  }
+  @keyframes fillRise{0%{height:0;}100%{height:70%;}}
+  .illus-pool .fill::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:6px;
+    background:rgba(255,255,255,0.4);border-radius:50%;
+    animation: waveBob 2.5s ease-in-out infinite;
+  }
+  @keyframes waveBob{0%,100%{transform:translateY(0) scaleX(1);}50%{transform:translateY(-2px) scaleX(0.97);}}
+  .illus-pool .coin{
+    position:absolute;width:24px;height:24px;border-radius:50%;
+    background:linear-gradient(135deg,#4EC98A,#1A9151);
+    border:2px solid #fff;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:9px;font-weight:700;color:#fff;
+    box-shadow:0 4px 10px rgba(10,77,44,0.3);
+  }
+  .illus-pool .coin-1{top:-6px;left:40px;animation:coinDrop 2.4s ease-in-out infinite;}
+  .illus-pool .coin-2{top:-12px;right:30px;animation:coinDrop 2.4s 0.8s ease-in-out infinite;}
+  .illus-pool .coin-3{top:-20px;left:80px;animation:coinDrop 2.4s 1.4s ease-in-out infinite;}
+  @keyframes coinDrop{
+    0%{transform:translateY(0) rotate(0);opacity:0;}
+    20%{opacity:1;}
+    100%{transform:translateY(140px) rotate(180deg);opacity:0;}
+  }
+
+  /* card 3 illustration — chain */
+  .illus-chain{position:relative;width:240px;height:200px;}
+  .illus-chain .block{
+    position:absolute;width:64px;height:64px;border-radius:14px;
+    background:#fff;border:1px solid var(--fw-border);
+    box-shadow: 0 10px 20px rgba(13,31,20,0.06);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:9px;color:var(--fw-ink-2);
+  }
+  .illus-chain .block .h{font-family:var(--mono);font-size:8px;color:var(--fw-ink-3);}
+  .illus-chain .block .v{font-family:var(--serif);font-size:14px;color:var(--fw-ink);letter-spacing:-0.3px;}
+  .illus-chain .b1{ top:12px; left:14px; }
+  .illus-chain .b2{ top:68px; left:88px; background:linear-gradient(135deg,#0D6B3A,#1A9151);color:#fff;border-color:transparent;}
+  .illus-chain .b2 .h, .illus-chain .b2 .v{color:#fff;}
+  .illus-chain .b3{ top:124px; left:162px; }
+  .illus-chain .line{position:absolute;height:1px;background:repeating-linear-gradient(90deg,var(--fw-ink-3) 0 4px,transparent 4px 8px);}
+  .illus-chain .ln-1{top:64px;left:60px;width:88px;transform:rotate(35deg);transform-origin:left;}
+  .illus-chain .ln-2{top:120px;left:134px;width:88px;transform:rotate(35deg);transform-origin:left;}
+  .illus-chain .tx-ping{
+    position:absolute;width:8px;height:8px;border-radius:50%;background:var(--fw-mint);
+    box-shadow:0 0 12px var(--fw-mint);
+    animation:txPing 3s linear infinite;
+  }
+  @keyframes txPing{
+    0%{top:46px;left:78px;opacity:0;}
+    15%{opacity:1;}
+    50%{top:102px;left:152px;}
+    85%{opacity:1;}
+    100%{top:158px;left:226px;opacity:0;}
+  }
+
+  /* ── DASHBOARD (final landing) ── */
+  .scr-dash{background:var(--fw-bg);color:var(--fw-ink);overflow:hidden;}
+  .dash-top{padding:14px 22px 8px;display:flex;align-items:center;justify-content:space-between;}
+  .dash-top .greet{font-size:12px;color:var(--fw-ink-2);}
+  .dash-top .name{font-family:var(--serif);font-size:22px;letter-spacing:-0.4px;line-height:1.1;}
+  .dash-top .ava{
+    width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1A9151,#0A4D2C);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+  }
+  .dash-balance{
+    margin:8px 22px 0;padding:22px;border-radius:22px;
+    background: linear-gradient(135deg,#0A4D2C 0%, #1A9151 100%);
+    color:#fff;position:relative;overflow:hidden;
+  }
+  .dash-balance::after{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse 70% 60% at 90% 10%, rgba(78,201,138,0.45), transparent 60%);
+    pointer-events:none;
+  }
+  .dash-balance .lbl{
+    font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+    color:rgba(255,255,255,0.7);margin-bottom:6px;
+  }
+  .dash-balance .amt{font-family:var(--serif);font-size:38px;letter-spacing:-1px;line-height:1;}
+  .dash-balance .sub{font-size:11px;color:rgba(255,255,255,0.65);margin-top:6px;}
+  .dash-sec{padding:16px 22px 6px;display:flex;align-items:center;justify-content:space-between;}
+  .dash-sec h4{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:-0.1px;}
+  .dash-sec .see{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fw-emerald);cursor:pointer;}
+  .dash-groups{padding:0 22px 80px;display:flex;flex-direction:column;gap:8px;}
+  .grp{
+    padding:14px;border-radius:14px;background:#fff;border:1px solid var(--fw-border);
+    display:flex;align-items:center;gap:12px;
+  }
+  .grp .emoji{
+    width:42px;height:42px;border-radius:12px;background:var(--fw-bg);
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+  }
+  .grp .info{flex:1;min-width:0;}
+  .grp .nm{font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:-0.2px;}
+  .grp .mt{font-size:11px;color:var(--fw-ink-2);margin-top:2px;}
+  .grp .bal{font-family:var(--serif);font-size:15px;letter-spacing:-0.3px;}
+  .grp .bal.pos{color:var(--fw-emerald);}
+  .grp .bal.neg{color:#C73B3B;}
+
+  /* ── BUTTONS ── */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:14px 18px;border-radius:14px;font-family:var(--sans);font-weight:600;font-size:14px;
+    border:1px solid transparent;cursor:pointer;transition:all .15s;letter-spacing:-0.1px;
+  }
+  .btn-primary{background:var(--fw-ink);color:#fff;}
+  .btn-primary:hover{background:#000;}
+  .btn-primary.grad{background:var(--fw-grad);}
+  .btn-ghost{background:transparent;color:var(--fw-ink-2);border-color:var(--fw-border);}
+  .btn-ghost:hover{color:var(--fw-ink);background:rgba(13,31,20,0.03);}
+  .btn-full{width:100%;}
+  .btn-dark-ghost{background:rgba(255,255,255,0.04);color:#c9d3cc;border-color:rgba(255,255,255,0.08);}
+  .btn-dark-ghost:hover{background:rgba(255,255,255,0.08);color:#fff;}
+
+  /* scr-foot for screens with bottom CTAs */
+  .scr-foot{padding:14px 24px 28px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;}
+  .scr-foot.row{flex-direction:row;}
+  .scr-foot .terms{
+    text-align:center;font-size:10px;color:var(--fw-ink-3);line-height:1.5;margin-top:4px;
+  }
+  .scr-foot[data-dark="1"] .terms{color:#7a8c80;}
+
+  /* haptic flash */
+  .haptic{position:absolute;inset:5px;border-radius:34px;pointer-events:none;z-index:80;
+    background:radial-gradient(circle at center, rgba(78,201,138,0.18), transparent 70%);
+    animation: hap .35s ease-out forwards;}
+  @keyframes hap{ from{opacity:1;} to{opacity:0;} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const STEPS = [
+  { id:'splash',    label:'Boot' },
+  { id:'welcome',   label:'Welcome' },
+  { id:'vault',     label:'Seed Vault' },
+  { id:'connect',   label:'Authenticate' },
+  { id:'success',   label:'Connected' },
+  { id:'instr',     label:'Quick tour' },
+  { id:'dash',      label:'Home' },
+];
+
+/* ── Strata logo SVG ── */
+function StrataLogo({ size=80, variant='gradient' }) {
+  const id = 'sl' + Math.random().toString(36).slice(2,6);
+  if (variant === 'white') return (
+    <svg width={size} height={size} viewBox="0 0 96 96">
+      <rect x="14" y="22" width="68" height="14" rx="7" fill="#fff" opacity="0.65" transform="rotate(-2 48 29)"/>
+      <rect x="11" y="41" width="74" height="14" rx="7" fill="#fff" opacity="0.85"/>
+      <rect x="17" y="60" width="62" height="14" rx="7" fill="#fff" transform="rotate(2 48 67)"/>
+    </svg>
+  );
+  return (
+    <svg width={size} height={size} viewBox="0 0 96 96">
+      <defs>
+        <linearGradient id={id+'d'} x1="8" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse"><stop stopColor="#0A4D2C"/><stop offset="1" stopColor="#0D6B3A"/></linearGradient>
+        <linearGradient id={id+'m'} x1="8" y1="32" x2="88" y2="72" gradientUnits="userSpaceOnUse"><stop stopColor="#0D6B3A"/><stop offset="1" stopColor="#1A9151"/></linearGradient>
+        <linearGradient id={id+'l'} x1="8" y1="56" x2="88" y2="88" gradientUnits="userSpaceOnUse"><stop stopColor="#1A9151"/><stop offset="1" stopColor="#4EC98A"/></linearGradient>
+      </defs>
+      <rect x="14" y="22" width="68" height="14" rx="7" fill={`url(#${id}d)`} transform="rotate(-2 48 29)"/>
+      <rect x="11" y="41" width="74" height="14" rx="7" fill={`url(#${id}m)`}/>
+      <rect x="17" y="60" width="62" height="14" rx="7" fill={`url(#${id}l)`} transform="rotate(2 48 67)"/>
+    </svg>
+  );
+}
+
+/* ── Status bar (Android) ── */
+function StatusBar({ dark }) {
+  const c = dark ? '#f0efe6' : '#0D1F14';
+  return (
+    <div className="status-bar" data-dark={dark?'1':'0'}>
+      <div>9:41</div>
+      <div className="right">
+        {/* signal */}
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+          <rect x="0"  y="7" width="3" height="4" rx="0.5" fill={c}/>
+          <rect x="4"  y="5" width="3" height="6" rx="0.5" fill={c}/>
+          <rect x="8"  y="2" width="3" height="9" rx="0.5" fill={c}/>
+          <rect x="12" y="0" width="3" height="11" rx="0.5" fill={c}/>
+        </svg>
+        {/* wifi */}
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+          <path d="M8 10.5l-2-2a2.83 2.83 0 014 0l-2 2zM4 6.5l-2-2a8.49 8.49 0 0112 0l-2 2a5.66 5.66 0 00-8 0z" fill={c}/>
+        </svg>
+        {/* battery */}
+        <svg width="22" height="11" viewBox="0 0 22 11" fill="none">
+          <rect x="0.5" y="0.5" width="19" height="10" rx="2" fill="none" stroke={c} strokeOpacity="0.5"/>
+          <rect x="2"   y="2"   width="14" height="7"  rx="1" fill={c}/>
+          <rect x="20"  y="3.5" width="1.5" height="4" rx="0.5" fill={c} fillOpacity="0.6"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* ── Device frame ── */
+function Device({ promptFp, scanning, children }) {
+  return (
+    <div className="device" data-prompt-fp={promptFp?'1':'0'} data-scanning={scanning?'1':'0'}>
+      <div className="device-shell"></div>
+      <div className="device-bezel"></div>
+      <div className="device-camera"></div>
+      <div className="btn-volume-up"></div>
+      <div className="btn-volume-down"></div>
+      <div className="fp-halo"></div>
+      <div className="fp-arrow">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M16 7L2 7M8 1L2 7l6 6" stroke="#4EC98A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <span className="lbl">Tap to scan</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/* ── Splash screen ── */
+function Splash() {
+  const [go, setGo] = useState(false);
+  useEffect(()=>{ const t=setTimeout(()=>setGo(true),100); return ()=>clearTimeout(t); },[]);
+  return (
+    <div className={`scr scr-pad splash ${go?'go':''}`} style={{padding:0}}>
+      <StatusBar dark />
+      <div className="stack-zone">
+        <div className="slab slab-1"></div>
+        <div className="slab slab-2"></div>
+        <div className="slab slab-3"></div>
+      </div>
+      <div className="wm">Fund<em>w</em>ise</div>
+      <div className="tag">Stack · split · settle</div>
+      <div className="loadbar"></div>
+      <div className="gesture-pill"></div>
+    </div>
+  );
+}
+
+/* ── Welcome ── */
+function Welcome({ onNext }) {
+  return (
+    <div className="scr scr-welcome">
+      <StatusBar />
+      <div className="scr-pad" style={{padding:0}}>
+        <div className="welcome-hero">
+          <div className="strata-mini"><StrataLogo size={80}/></div>
+          <h2>Welcome to<br/>Fund<em>w</em>ise</h2>
+          <p>Group expenses, on-chain. Split costs, pool funds, and settle in stablecoins — all from your Seeker.</p>
+          <div className="welcome-feats">
+            <div className="feat">
+              <div className="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M12 3v18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></div>
+              <div className="ftxt">Split</div>
+            </div>
+            <div className="feat">
+              <div className="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/><path d="M8 12h8M12 8v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></div>
+              <div className="ftxt">Pool</div>
+            </div>
+            <div className="feat">
+              <div className="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12l5 5L20 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+              <div className="ftxt">Settle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="scr-foot">
+        <button className="btn btn-primary btn-full grad" onClick={onNext}>Get started
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>
+        <div className="terms">By continuing you agree to our Terms &amp; Privacy.</div>
+      </div>
+      <div className="gesture-pill"></div>
+    </div>
+  );
+}
+
+/* ── Seed Vault intro ── */
+function SeedVault({ onNext, onSkip }) {
+  return (
+    <div className="scr scr-seedvault">
+      <StatusBar dark />
+      <div className="vault-illus">
+        <div className="vault-ring r1"></div>
+        <div className="vault-ring r2"></div>
+        <div className="vault-ring r3"></div>
+        <div className="vault-chip">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="10" width="16" height="11" rx="2" stroke="#fff" strokeWidth="1.8"/>
+            <path d="M8 10V7a4 4 0 018 0v3" stroke="#fff" strokeWidth="1.8"/>
+          </svg>
+        </div>
+      </div>
+      <div className="vault-body">
+        <h3>Your keys live in the<br/><em>secure element.</em></h3>
+        <p>Seeker's Seed Vault keeps your wallet signing keys isolated from the OS. FundWise asks the vault to sign — never sees your seed phrase.</p>
+        <div className="vault-bullets">
+          <div className="b">
+            <div className="check"><svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+            <div className="btxt"><b>Hardware-backed.</b> Keys never leave the secure element.</div>
+          </div>
+          <div className="b">
+            <div className="check"><svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+            <div className="btxt"><b>Biometric approval</b> required for every signature.</div>
+          </div>
+          <div className="b">
+            <div className="check"><svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+            <div className="btxt"><b>No seed phrase</b> to copy, share, or lose.</div>
+          </div>
+        </div>
+      </div>
+      <div className="scr-foot row" data-dark="1">
+        <button className="btn btn-dark-ghost" style={{flex:1}} onClick={onSkip}>Skip</button>
+        <button className="btn btn-primary grad" style={{flex:2}} onClick={onNext}>Continue
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>
+      </div>
+      <div className="gesture-pill"></div>
+    </div>
+  );
+}
+
+/* ── Connect (fingerprint) ── */
+function Connect({ scanning, pct }) {
+  return (
+    <div className="scr scr-connect">
+      <StatusBar />
+      <div className="scr-pad" style={{padding:'24px 24px 0'}}>
+        <div className="connect-body">
+          <div style={{fontFamily:'var(--mono)',fontSize:10,letterSpacing:'.22em',textTransform:'uppercase',color:'var(--fw-ink-3)',marginBottom:14}}>Seed Vault · Authorize</div>
+          <h3>{scanning ? 'Hold still…' : 'Authenticate to connect'}</h3>
+          <p>{scanning
+            ? 'Verifying your fingerprint against the secure element.'
+            : 'Place your finger on the side button to unlock your wallet. FundWise will request a single signature.'}</p>
+          <div className={`fp-visual ${scanning?'scanning':''}`}>
+            <div className="fp-rings"><span></span><span></span><span></span></div>
+            <div className="fp-icon">
+              <svg viewBox="0 0 48 48" fill="none">
+                <path d="M24 8c-7 0-13 5.5-13 13v8c0 1.5.5 3 1 4" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M16 24c0-4.5 3.5-8 8-8s8 3.5 8 8v6c0 3-1 5-2.5 7" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M20 24c0-2 2-4 4-4s4 2 4 4v8c0 2-1 4-2 5" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M24 26v8" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M28 36c-1 2-3 4-5 4" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <div className="fp-scan-line"></div>
+            </div>
+          </div>
+          <div className="fp-progress" data-pct={String(pct)}></div>
+          <div className="fp-cta">
+            <span className="pulse-dot"></span>
+            {scanning ? 'Scanning…' : 'Tap the fingerprint reader →'}
+          </div>
+        </div>
+      </div>
+      <div className="scr-foot">
+        <div className="terms" style={{marginTop:0}}>
+          Wallet: <span style={{fontFamily:'var(--mono)',color:'var(--fw-ink-2)'}}>7xKp…mN4q</span> &middot; Network: Solana mainnet-beta
+        </div>
+      </div>
+      <div className="gesture-pill"></div>
+    </div>
+  );
+}
+
+/* ── Success ── */
+function Success({ onNext }) {
+  useEffect(()=>{
+    const t = setTimeout(onNext, 2200);
+    return ()=>clearTimeout(t);
+  },[]);
+  return (
+    <div className="scr scr-success">
+      <StatusBar dark />
+      <div className="scr-pad" style={{padding:0,alignItems:'center',justifyContent:'center'}}>
+        <div className="success-mark">
+          <svg viewBox="0 0 60 60" fill="none">
+            <path className="check-path" d="M14 30l11 11L46 20" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <div className="success-body">
+          <h3>Wallet connected</h3>
+          <p>Signature verified by Seed Vault. You're ready to fund and split.</p>
+          <div className="pubkey-pill">
+            <span className="dot"></span>
+            7xKp4cVnH2qFwMz…mN4q
+          </div>
+        </div>
+      </div>
+      <div className="gesture-pill"></div>
+    </div>
+  );
+}
+
+/* ── Instructions carousel ── */
+function Instructions({ onDone }) {
+  const [i, setI] = useState(0);
+  const cards = [
+    {
+      key:'split',
+      title:<>Log expenses,<br/><em>split it on-chain.</em></>,
+      body:'Snap a receipt, pick who paid, and FundWise calculates everyone\'s share in USDC.',
+      illus:(
+        <div className="illus-split">
+          <div className="receipt receipt-1">
+            <div className="r-amt">$184.20</div>
+            <div className="r-line"><span>Wine dinner</span><span className="r-tag">Split</span></div>
+            <div className="r-line"><span>4 people</span><span>$46.05 ea</span></div>
+          </div>
+          <div className="receipt receipt-2">
+            <div className="r-amt">$48.00</div>
+            <div className="r-line"><span>Airport taxi</span><span className="r-tag">Split</span></div>
+            <div className="r-line"><span>3 people</span><span>$16.00 ea</span></div>
+          </div>
+          <div className="arrows">
+            <div className="ava" style={{background:'#0D6B3A'}}>K</div>
+            <div className="ava" style={{background:'#1A9151'}}>A</div>
+            <div className="ava" style={{background:'#4EC98A',color:'#0D1F14'}}>D</div>
+            <div className="ava" style={{background:'#0A4D2C'}}>Y</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key:'pool',
+      title:<>Pool funds,<br/><em>vote to spend.</em></>,
+      body:'Create a treasury for trips, gifts, or rent. Spending needs a multisig vote — no single point of failure.',
+      illus:(
+        <div className="illus-pool">
+          <div className="coin coin-1">$</div>
+          <div className="coin coin-2">$</div>
+          <div className="coin coin-3">$</div>
+          <div className="jar"><div className="fill"></div></div>
+        </div>
+      ),
+    },
+    {
+      key:'chain',
+      title:<>Settle in seconds,<br/><em>final on Solana.</em></>,
+      body:'One tap to settle balances. Sub-second confirmation, fractions of a cent in fees, never a chargeback.',
+      illus:(
+        <div className="illus-chain">
+          <div className="block b1"><span className="h">BLOCK</span><span className="v">$30</span></div>
+          <div className="block b2"><span className="h">BLOCK</span><span className="v">$120</span></div>
+          <div className="block b3"><span className="h">BLOCK</span><span className="v">$84</span></div>
+          <div className="line ln-1"></div>
+          <div className="line ln-2"></div>
+          <div className="tx-ping"></div>
+        </div>
+      ),
+    },
+  ];
+  const card = cards[i];
+  const next = () => i < cards.length-1 ? setI(i+1) : onDone();
+  return (
+    <div className="scr scr-instr">
+      <StatusBar />
+      <div className="instr-pad">
+        <div className="instr-top">
+          <div className="step-dots">
+            {cards.map((_,n)=>(<div key={n} className={`dot ${n===i?'on':''}`}></div>))}
+          </div>
+          <button className="skip-btn" onClick={onDone}>Skip</button>
+        </div>
+        <div className="instr-card" key={card.key}>
+          <div className="instr-icon-wrap">{card.illus}</div>
+          <h3>{card.title}</h3>
+          <p>{card.body}</p>
+        </div>
+      </div>
+      <div className="scr-foot row">
+        {i > 0 ? (
+          <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setI(i-1)}>Back</button>
+        ) : (
+          <div style={{flex:1}}></div>
+        )}
+        <button className="btn btn-primary grad" style={{flex:2}} onClick={next}>
+          {i < cards.length-1 ? 'Continue' : 'Enter FundWise'}
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>
+      </div>
+      <div className="gesture-pill"></div>
+    </div>
+  );
+}
+
+/* ── Dashboard ── */
+function Dashboard() {
+  return (
+    <div className="scr scr-dash">
+      <StatusBar />
+      <div className="dash-top">
+        <div>
+          <div className="greet">Good morning</div>
+          <div className="name">Sarthi</div>
+        </div>
+        <div className="ava">S</div>
+      </div>
+      <div className="dash-balance">
+        <div className="lbl">Net balance · all groups</div>
+        <div className="amt">+$39.50</div>
+        <div className="sub">USDC owed to you across 2 groups</div>
+      </div>
+      <div className="dash-sec"><h4>Your groups</h4><span className="see">See all</span></div>
+      <div className="dash-groups">
+        <div className="grp"><div className="emoji">🏖️</div><div className="info"><div className="nm">Lisbon Trip</div><div className="mt">4 people · Split mode</div></div><div className="bal pos">+$84.50</div></div>
+        <div className="grp"><div className="emoji">🎁</div><div className="info"><div className="nm">Priya's Gift</div><div className="mt">6 people · Fund mode</div></div><div className="bal">$100</div></div>
+        <div className="grp"><div className="emoji">🏠</div><div className="info"><div className="nm">Flatmates</div><div className="mt">3 people · Split mode</div></div><div className="bal neg">−$45.00</div></div>
+      </div>
+      <div className="gesture-pill"></div>
+    </div>
+  );
+}
+
+/* ── App / state machine ── */
+function App() {
+  const [stepIdx, setStepIdx] = useState(0);
+  const [scanning, setScanning] = useState(false);
+  const [scanPct, setScanPct] = useState(0);
+  const [hapticKey, setHapticKey] = useState(0);
+  const stepId = STEPS[stepIdx].id;
+
+  // Auto-advance from splash → welcome
+  useEffect(()=>{
+    if (stepId === 'splash') {
+      const t = setTimeout(()=>setStepIdx(1), 2600);
+      return ()=>clearTimeout(t);
+    }
+  }, [stepId]);
+
+  const goTo = (id) => {
+    const i = STEPS.findIndex(s=>s.id===id);
+    if (i >= 0) setStepIdx(i);
+  };
+
+  const triggerScan = () => {
+    if (stepId !== 'connect' || scanning) return;
+    setScanning(true);
+    setScanPct(0);
+    let p = 0;
+    const tick = () => {
+      p += 25;
+      setScanPct(p);
+      if (p >= 100) {
+        setHapticKey(k=>k+1);
+        setTimeout(()=>{
+          setScanning(false);
+          setScanPct(0);
+          goTo('success');
+        }, 280);
+      } else {
+        setTimeout(tick, 280);
+      }
+    };
+    setTimeout(tick, 280);
+  };
+
+  const promptFp = (stepId === 'connect') && !scanning;
+
+  const stepClick = (i) => {
+    if (i === stepIdx) return;
+    setScanning(false); setScanPct(0);
+    setStepIdx(i);
+  };
+
+  return (
+    <div className="stage">
+      <div className="caption">
+        <div className="eyebrow">FundWise · Solana Seeker</div>
+        <h1>Onboarding, end&#8209;to&#8209;<em>end.</em></h1>
+        <p>Tap any step to scrub through the flow. On the Connect screen, tap the highlighted fingerprint reader on the right edge of the device.</p>
+        <div className="step-list">
+          {STEPS.map((s, i)=>(
+            <div key={s.id}
+              className={`step ${i===stepIdx?'active':''} ${i<stepIdx?'done':''}`}
+              onClick={()=>stepClick(i)}>
+              <span className="n">{i<stepIdx ? '✓' : String(i+1).padStart(2,'0')}</span>
+              <span>{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Device promptFp={promptFp} scanning={scanning}>
+        <div
+          onClick={triggerScan}
+          className="btn-power-fp"
+          title={promptFp ? 'Tap to authenticate' : 'Power / Fingerprint'}
+        ></div>
+        <div className="device-screen">
+          {stepId === 'splash'  && <Splash />}
+          {stepId === 'welcome' && <Welcome onNext={()=>goTo('vault')}/>}
+          {stepId === 'vault'   && <SeedVault onNext={()=>goTo('connect')} onSkip={()=>goTo('connect')}/>}
+          {stepId === 'connect' && <Connect scanning={scanning} pct={scanPct}/>}
+          {stepId === 'success' && <Success onNext={()=>goTo('instr')}/>}
+          {stepId === 'instr'   && <Instructions onDone={()=>goTo('dash')}/>}
+          {stepId === 'dash'    && <Dashboard />}
+          {hapticKey > 0 && <div key={hapticKey} className="haptic"></div>}
+        </div>
+      </Device>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

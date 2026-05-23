@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Brand Guidelines v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  /* ── Core palette ── */
+  --bg:        #ffffff;
+  --surface:   #f5faf6;
+  --surface-2: #eaf3ec;
+  --border:    #d5e8da;
+  --border-2:  #c0d9c7;
+
+  /* ── Text ── */
+  --text:   #0d1f14;
+  --text-2: #4a6b55;
+  --text-3: #8dab97;
+
+  /* ── Brand greens ── */
+  --g-deep:  #0d6b3a;
+  --g-mid:   #1a9151;
+  --g-fresh: #2db870;
+  --g-light: #72d4a0;
+  --g-pale:  #e6f7ee;
+
+  /* ── Gradient ── */
+  --grad: linear-gradient(135deg, #0d6b3a 0%, #2db870 100%);
+  --grad-light: linear-gradient(135deg, #1a9151 0%, #72d4a0 100%);
+
+  /* ── Semantic ── */
+  --red:    oklch(60% 0.20 25);
+  --amber:  oklch(75% 0.17 75);
+
+  /* ── Type ── */
+  --fserif: 'DM Serif Display', Georgia, serif;
+  --fsans:  'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--fsans);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── LAYOUT ── */
+.page { max-width: 920px; margin: 0 auto; padding: 0 40px 120px; }
+@media(max-width:640px){ .page{ padding: 0 20px 80px; } }
+
+/* ── COVER ── */
+.cover {
+  padding: 100px 0 90px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% -10%, oklch(55% 0.18 155 / 0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cover-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 36px;
+}
+.cover-mark { margin-bottom: 24px; }
+.cover-wordmark {
+  font-family: var(--fserif); font-size: 52px; color: var(--text);
+  letter-spacing: -1px; margin-bottom: 16px;
+}
+.cover-tagline {
+  font-size: 17px; color: var(--text-2); font-style: italic;
+  font-family: var(--fserif); margin-bottom: 6px;
+}
+.cover-sub { font-size: 13px; color: var(--text-3); }
+
+/* ── SECTION ── */
+.section { margin-bottom: 90px; }
+.s-num {
+  display: inline-block;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--g-mid); margin-bottom: 10px;
+}
+.s-title {
+  font-family: var(--fserif); font-size: 36px; letter-spacing: -0.5px;
+  margin-bottom: 10px; line-height: 1.1;
+}
+.s-desc {
+  font-size: 15px; color: var(--text-2); max-width: 560px;
+  line-height: 1.75; margin-bottom: 44px;
+}
+.divider { height: 1px; background: var(--border); margin-bottom: 90px; }
+
+/* ── TABLE OF CONTENTS ── */
+.toc {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 32px; margin-bottom: 90px;
+}
+.toc-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 16px;
+}
+.toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 40px; }
+@media(max-width:500px){ .toc-grid{ grid-template-columns: 1fr; } }
+.toc-item {
+  display: flex; gap: 12px; align-items: baseline;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+  text-decoration: none; color: var(--text-2);
+  font-size: 14px; font-weight: 500; transition: color 0.15s;
+}
+.toc-item:last-child, .toc-item:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+.toc-item:hover { color: var(--g-mid); }
+.toc-n { font-size: 11px; color: var(--text-3); font-family: monospace; min-width: 20px; }
+
+/* ── LOGO SECTION ── */
+.logo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:600px){ .logo-grid{ grid-template-columns: 1fr; } }
+
+.logo-box {
+  border-radius: 20px; padding: 48px 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+  border: 1px solid var(--border);
+}
+.logo-box-label {
+  font-size: 11px; color: var(--text-3); text-align: center;
+  font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.logo-inline { display: flex; align-items: center; gap: 14px; }
+.logo-wordmark-light {
+  font-family: var(--fserif); color: var(--text); letter-spacing: -0.5px;
+}
+.logo-wordmark-dark {
+  font-family: var(--fserif); color: #ffffff; letter-spacing: -0.5px;
+}
+
+/* ── COLORS ── */
+.color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+.color-swatch {
+  border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.color-chip { height: 72px; }
+.color-info { background: var(--surface); padding: 12px; }
+.color-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.color-val { font-size: 11px; font-family: monospace; color: var(--text-2); }
+.color-use { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* ── GRADIENT SHOWCASE ── */
+.grad-showcase {
+  border-radius: 20px; overflow: hidden; border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.grad-bar { height: 80px; background: var(--grad); }
+.grad-info { background: var(--surface); padding: 20px 24px; }
+.grad-stops { display: flex; gap: 24px; flex-wrap: wrap; }
+.grad-stop { display: flex; align-items: center; gap: 10px; }
+.grad-stop-dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--border-2); }
+
+/* ── TYPE SCALE ── */
+.type-stack { display: flex; flex-direction: column; gap: 2px; }
+.type-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 0; flex-wrap: wrap; gap: 12px;
+}
+.type-row:first-child { border-radius: 14px 14px 0 0; }
+.type-row:last-child { border-radius: 0 0 14px 14px; }
+.type-row + .type-row { margin-top: -1px; }
+.type-meta { text-align: right; flex-shrink: 0; }
+.type-meta-name { font-size: 12px; font-weight: 600; color: var(--text-2); }
+.type-meta-spec { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: monospace; }
+
+/* ── SPACING ── */
+.spacing-table { display: flex; flex-direction: column; gap: 0; }
+.spacing-row {
+  display: flex; align-items: center; gap: 20px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.spacing-row:last-child { border-bottom: none; }
+.spacing-token { font-family: monospace; font-size: 12px; color: var(--g-mid); min-width: 40px; }
+.spacing-bar-wrap { flex: 1; }
+.spacing-bar { height: 10px; background: var(--grad); border-radius: 2px; opacity: 0.8; }
+.spacing-label { font-size: 12px; color: var(--text-2); min-width: 80px; }
+
+/* ── RADIUS ── */
+.radius-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+.radius-box {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.radius-demo {
+  background: linear-gradient(135deg, var(--g-pale), #c8f0d8);
+  border: 1.5px solid var(--border-2);
+}
+
+/* ── VOICE ── */
+.copy-pair { margin-bottom: 24px; }
+.copy-pair-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+.copy-box {
+  padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.copy-box.good { border-color: #7bc9a2; background: #f0fbf5; }
+.copy-box.bad { border-color: #f4b8b8; background: #fff5f5; }
+.copy-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+.copy-tag.good { color: var(--g-mid); }
+.copy-tag.bad { color: var(--red); }
+.copy-text { font-size: 14px; color: var(--text-2); }
+
+/* ── MOTION ── */
+.motion-table { display: flex; flex-direction: column; gap: 0; }
+.motion-row {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  padding: 14px 20px; background: var(--surface); border: 1px solid var(--border);
+}
+.motion-row:first-child { border-radius: 14px 14px 0 0; }
+.motion-row:last-child { border-radius: 0 0 14px 14px; }
+.motion-row + .motion-row { margin-top: -1px; }
+.motion-name { font-size: 14px; font-weight: 500; }
+.motion-spec { font-family: monospace; font-size: 11px; color: var(--text-2); }
+.motion-use { font-size: 11px; color: var(--text-3); }
+
+/* ── RULES ── */
+.rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:600px){ .rules-grid{ grid-template-columns: 1fr; } }
+.rule-card { border-radius: 16px; padding: 24px; border: 1px solid var(--border); background: var(--surface); }
+.rule-card.do { border-color: #7bc9a2; background: #f5fcf7; }
+.rule-card.dont { border-color: #f4b8b8; background: #fff8f8; }
+.rule-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+.rule-tag.do { color: var(--g-mid); }
+.rule-tag.dont { color: var(--red); }
+.rule-list { display: flex; flex-direction: column; gap: 8px; }
+.rule-item { font-size: 13px; color: var(--text-2); display: flex; gap: 8px; line-height: 1.5; }
+.rule-bullet { flex-shrink: 0; color: var(--text-3); }
+
+/* ── MODE CHIPS ── */
+.mode-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.mc-split { background: #e8f8ef; color: var(--g-deep); border: 1px solid #9fd8b8; }
+.mc-fund  { background: #e8f0fb; color: #2a4fa8; border: 1px solid #a8c0f0; }
+
+/* ── USAGE ── */
+.usage-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+@media(max-width:600px){ .usage-modes{ grid-template-columns: 1fr; } }
+.mode-identity-card {
+  border-radius: 16px; padding: 28px; border: 1px solid var(--border); background: var(--surface);
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- COVER -->
+<div class="cover">
+  <!-- FundWise Logo Mark SVG (new) -->
+  <div class="cover-mark">
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="80" height="80" rx="22" fill="url(#cov-grad)"/>
+      <!-- Two flowing paths — left arc (split outward) and right arc (fund inward) forming a unified mark -->
+      <!-- Left arm: splits outward-left -->
+      <path d="M24 52 C24 52 20 40 28 32 C34 26 42 26 42 26" stroke="white" stroke-width="5.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+      <!-- Right arm: splits outward-right -->
+      <path d="M24 52 C24 52 20 40 32 34 C38 30 42 26 42 26" stroke="white" stroke-width="5.5" stroke-linecap="round" fill="none" opacity="0"/>
+      <!-- Clean W-like mark: two V shapes -->
+      <path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <!-- Underline dot for "Wise" -->
+      <circle cx="40" cy="60" r="4" fill="white" opacity="0.7"/>
+      <defs>
+        <linearGradient id="cov-grad" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#0d6b3a"/>
+          <stop offset="100%" stop-color="#2db870"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <div class="cover-wordmark">FundWise</div>
+  <div class="cover-tagline">Shared expenses, settled simply.</div>
+  <div style="height:20px"></div>
+  <div class="cover-eyebrow">Brand Guidelines · v2.0 · April 2026</div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-grid">
+    <a href="#logo" class="toc-item"><span class="toc-n">01</span>Logo &amp; Mark</a>
+    <a href="#colors" class="toc-item"><span class="toc-n">02</span>Color System</a>
+    <a href="#gradient" class="toc-item"><span class="toc-n">03</span>The Gradient</a>
+    <a href="#type" class="toc-item"><span class="toc-n">04</span>Typography</a>
+    <a href="#spacing" class="toc-item"><span class="toc-n">05</span>Spacing &amp; Radius</a>
+    <a href="#modes" class="toc-item"><span class="toc-n">06</span>Mode Identity</a>
+    <a href="#motion" class="toc-item"><span class="toc-n">07</span>Motion</a>
+    <a href="#voice" class="toc-item"><span class="toc-n">08</span>Voice &amp; Tone</a>
+    <a href="#rules" class="toc-item"><span class="toc-n">09</span>Usage Rules</a>
+  </div>
+</div>
+
+<!-- 01 LOGO -->
+<div id="logo" class="section">
+  <div class="s-num">01 — Logo &amp; Mark</div>
+  <h2 class="s-title">The FundWise mark</h2>
+  <p class="s-desc">A clean W-form on a deep-to-fresh green gradient rounded square. The W reads as "Wise" and as two people's flows converging — the shared expense and the pooled fund. The dot beneath is the settlement: the moment it's resolved. Always use the provided SVG — never redraw it.</p>
+
+  <div class="logo-grid" style="margin-bottom:16px">
+    <!-- White bg -->
+    <div class="logo-box" style="background:#ffffff">
+      <div class="logo-inline">
+        <svg width="44" height="44" viewBox="0 0 80 80" fill="none">
+          <rect width="80" height="80" rx="22" fill="url(#lg1)"/>
+          <path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="40" cy="61" r="4" fill="white" opacity="0.7"/>
+          <defs><linearGradient id="lg1" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+        </svg>
+        <span class="logo-wordmark-light" style="font-size:30px">FundWise</span>
+      </div>
+      <div class="logo-box-label">Primary — light background</div>
+    </div>
+    <!-- Surface bg -->
+    <div class="logo-box" style="background:var(--surface-2)">
+      <div class="logo-inline">
+        <svg width="44" height="44" viewBox="0 0 80 80" fill="none">
+          <rect width="80" height="80" rx="22" fill="url(#lg2)"/>
+          <path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="40" cy="61" r="4" fill="white" opacity="0.7"/>
+          <defs><linearGradient id="lg2" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+        </svg>
+        <span class="logo-wordmark-light" style="font-size:30px">FundWise</span>
+      </div>
+      <div class="logo-box-label">On tinted surface</div>
+    </div>
+    <!-- Dark bg -->
+    <div class="logo-box" style="background:#0d1f14">
+      <div class="logo-inline">
+        <svg width="44" height="44" viewBox="0 0 80 80" fill="none">
+          <rect width="80" height="80" rx="22" fill="url(#lg3)"/>
+          <path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="40" cy="61" r="4" fill="white" opacity="0.7"/>
+          <defs><linearGradient id="lg3" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+        </svg>
+        <span class="logo-wordmark-dark" style="font-size:30px">FundWise</span>
+      </div>
+      <div class="logo-box-label" style="color:#4a6b55">On dark background</div>
+    </div>
+    <!-- Icon only at scales -->
+    <div class="logo-box" style="background:var(--surface)">
+      <div style="display:flex;align-items:flex-end;gap:16px">
+        <svg width="20" height="20" viewBox="0 0 80 80" fill="none"><rect width="80" height="80" rx="22" fill="url(#ls1)"/><path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="61" r="5" fill="white" opacity="0.7"/><defs><linearGradient id="ls1" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs></svg>
+        <svg width="28" height="28" viewBox="0 0 80 80" fill="none"><rect width="80" height="80" rx="22" fill="url(#ls2)"/><path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="61" r="4.5" fill="white" opacity="0.7"/><defs><linearGradient id="ls2" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs></svg>
+        <svg width="40" height="40" viewBox="0 0 80 80" fill="none"><rect width="80" height="80" rx="22" fill="url(#ls3)"/><path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="61" r="4" fill="white" opacity="0.7"/><defs><linearGradient id="ls3" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs></svg>
+        <svg width="56" height="56" viewBox="0 0 80 80" fill="none"><rect width="80" height="80" rx="22" fill="url(#ls4)"/><path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="61" r="4" fill="white" opacity="0.7"/><defs><linearGradient id="ls4" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs></svg>
+      </div>
+      <div class="logo-box-label">Icon mark · 20 / 28 / 40 / 56px</div>
+    </div>
+  </div>
+
+  <!-- Clearspace note -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:12px;align-items:start">
+    <div style="font-size:16px;flex-shrink:0">📐</div>
+    <div style="font-size:13px;color:var(--text-2);line-height:1.6"><strong style="color:var(--text)">Clear space rule:</strong> Maintain a minimum clear space of 1× the height of the mark on all sides. Never place text or graphic elements inside the clear space zone.</div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- 02 COLORS -->
+<div id="colors" class="section">
+  <div class="s-num">02 — Color System</div>
+  <h2 class="s-title">Palette</h2>
+  <p class="s-desc">The palette is anchored in deep forest green and fresh mint — trustworthy, alive, and unmistakably financial. A warm white base keeps the app airy and readable. Semantic colors are restrained: green for positive, red for negative, nothing else.</p>
+
+  <div style="margin-bottom:32px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:14px">Brand Greens</div>
+    <div class="color-grid">
+      <div class="color-swatch">
+        <div class="color-chip" style="background:#0d6b3a"></div>
+        <div class="color-info"><div class="color-name">Forest</div><div class="color-val">#0d6b3a</div><div class="color-use">Gradient start · Headings</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-chip" style="background:#1a9151"></div>
+        <div class="color-info"><div class="color-name">Canopy</div><div class="color-val">#1a9151</div><div class="color-use">Primary CTA · Links</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-chip" style="background:#2db870"></div>
+        <div class="color-info"><div class="color-name">Fresh</div><div class="color-val">#2db870</div><div class="color-use">Gradient end · Accents</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-chip" style="background:#72d4a0"></div>
+        <div class="color-info"><div class="color-name">Mint</div><div class="color-val">#72d4a0</div><div class="color-use">Highlights · Tags</div></div>
+      </div>
+      <div class="color-swatch">
+        <div class="color-chip" style="background:#e6f7ee;border-bottom:1px solid var(--border)"></div>
+        <div class="color-info"><div class="color-name">Pale</div><div class="color-val">#e6f7ee</div><div class="color-use">Tinted surfaces · Hover</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-bottom:32px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:14px">Neutrals</div>
+    <div class="color-grid">
+      <div class="color-swatch"><div class="color-chip" style="background:#ffffff;border-bottom:1px solid var(--border)"></div><div class="color-info"><div class="color-name">White</div><div class="color-val">#ffffff</div><div class="color-use">App background</div></div></div>
+      <div class="color-swatch"><div class="color-chip" style="background:#f5faf6"></div><div class="color-info"><div class="color-name">Surface</div><div class="color-val">#f5faf6</div><div class="color-use">Cards · Nav</div></div></div>
+      <div class="color-swatch"><div class="color-chip" style="background:#d5e8da"></div><div class="color-info"><div class="color-name">Border</div><div class="color-val">#d5e8da</div><div class="color-use">Dividers · Outlines</div></div></div>
+      <div class="color-swatch"><div class="color-chip" style="background:#0d1f14"></div><div class="color-info"><div class="color-name">Ink</div><div class="color-val">#0d1f14</div><div class="color-use">Body text · Headings</div></div></div>
+      <div class="color-swatch"><div class="color-chip" style="background:#4a6b55"></div><div class="color-info"><div class="color-name">Sage</div><div class="color-val">#4a6b55</div><div class="color-use">Secondary text</div></div></div>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:14px">Semantic</div>
+    <div class="color-grid">
+      <div class="color-swatch"><div class="color-chip" style="background:#1a9151"></div><div class="color-info"><div class="color-name">Positive</div><div class="color-val">#1a9151</div><div class="color-use">Owed to you · Success</div></div></div>
+      <div class="color-swatch"><div class="color-chip" style="background:oklch(60% 0.20 25)"></div><div class="color-info"><div class="color-name">Negative</div><div class="color-val">oklch(60% 0.20 25)</div><div class="color-use">You owe · Error</div></div></div>
+      <div class="color-swatch"><div class="color-chip" style="background:oklch(72% 0.16 75)"></div><div class="color-info"><div class="color-name">Pending</div><div class="color-val">oklch(72% 0.16 75)</div><div class="color-use">Awaiting action</div></div></div>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- 03 GRADIENT -->
+<div id="gradient" class="section">
+  <div class="s-num">03 — The Gradient</div>
+  <h2 class="s-title">Forest to Fresh</h2>
+  <p class="s-desc">The gradient is FundWise's most recognisable element. It appears on the logo mark, primary buttons, progress bars, and the Twitter header. Use it confidently — but only where it has space to breathe. Never apply it to text (except the logo).</p>
+
+  <div class="grad-showcase">
+    <div class="grad-bar"></div>
+    <div class="grad-info">
+      <div style="font-size:12px;color:var(--text-2);margin-bottom:14px;font-weight:600">Primary gradient · 135°</div>
+      <div class="grad-stops">
+        <div class="grad-stop">
+          <div class="grad-stop-dot" style="background:#0d6b3a"></div>
+          <div><div style="font-family:monospace;font-size:12px;color:var(--text)">#0d6b3a</div><div style="font-size:11px;color:var(--text-3)">0% · Forest</div></div>
+        </div>
+        <div style="font-size:18px;color:var(--border-2);align-self:center">→</div>
+        <div class="grad-stop">
+          <div class="grad-stop-dot" style="background:#2db870"></div>
+          <div><div style="font-family:monospace;font-size:12px;color:var(--text)">#2db870</div><div style="font-size:11px;color:var(--text-3)">100% · Fresh</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:12px">Use gradient on</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:#1a9151;flex-shrink:0"></div>Logo mark background</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:#1a9151;flex-shrink:0"></div>Primary action buttons</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:#1a9151;flex-shrink:0"></div>Progress / funding bars</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:#1a9151;flex-shrink:0"></div>Twitter header banner</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:#1a9151;flex-shrink:0"></div>Hero / landing page accent strip</div>
+      </div>
+    </div>
+    <div style="background:#fff8f8;border:1px solid #f4b8b8;border-radius:14px;padding:20px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--red);margin-bottom:12px">Never use gradient on</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:var(--red);opacity:0.4;flex-shrink:0"></div>Body text or captions</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:var(--red);opacity:0.4;flex-shrink:0"></div>Full page / screen backgrounds</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:var(--red);opacity:0.4;flex-shrink:0"></div>Secondary / ghost buttons</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:var(--red);opacity:0.4;flex-shrink:0"></div>Error or warning states</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)"><div style="width:16px;height:16px;border-radius:50%;background:var(--red);opacity:0.4;flex-shrink:0"></div>More than 2 gradient elements per screen</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- 04 TYPOGRAPHY -->
+<div id="type" class="section">
+  <div class="s-num">04 — Typography</div>
+  <h2 class="s-title">Type system</h2>
+  <p class="s-desc">DM Serif Display for all headings — warm, humanist, and premium without being stuffy. It brings personality and trust. Plus Jakarta Sans for all UI, labels, and data — exceptionally clean at small sizes, with a contemporary geometry that pairs perfectly with the serif.</p>
+
+  <div class="type-stack">
+    <div class="type-row">
+      <div style="font-family:'DM Serif Display',serif;font-size:44px;letter-spacing:-1px;line-height:1.05">Display heading</div>
+      <div class="type-meta"><div class="type-meta-name">Display</div><div class="type-meta-spec">DM Serif Display · 44px · -1px</div></div>
+    </div>
+    <div class="type-row">
+      <div style="font-family:'DM Serif Display',serif;font-size:30px;letter-spacing:-0.5px">Section heading</div>
+      <div class="type-meta"><div class="type-meta-name">H1</div><div class="type-meta-spec">DM Serif Display · 30px · -0.5px</div></div>
+    </div>
+    <div class="type-row">
+      <div style="font-family:'DM Serif Display',serif;font-size:22px">Card title</div>
+      <div class="type-meta"><div class="type-meta-name">H2</div><div class="type-meta-spec">DM Serif Display · 22px</div></div>
+    </div>
+    <div class="type-row">
+      <div style="font-size:15px;color:var(--text-2);line-height:1.7;max-width:400px">Body copy reads like this — spacious and clear. Comfortable on white at 15px. Never sacrifice readability for density in a financial app.</div>
+      <div class="type-meta"><div class="type-meta-name">Body</div><div class="type-meta-spec">Plus Jakarta Sans 400 · 15px · 1.7lh</div></div>
+    </div>
+    <div class="type-row">
+      <div style="font-size:13px;font-weight:600;color:var(--text-2)">Label / UI text</div>
+      <div class="type-meta"><div class="type-meta-name">Label</div><div class="type-meta-spec">Plus Jakarta Sans 600 · 13px</div></div>
+    </div>
+    <div class="type-row">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3)">Section label</div>
+      <div class="type-meta"><div class="type-meta-name">Eyebrow</div><div class="type-meta-spec">Plus Jakarta Sans 700 · 11px · 0.1em · CAPS</div></div>
+    </div>
+    <div class="type-row">
+      <div style="font-family:monospace;font-size:13px;color:var(--g-mid)">7xKp2mN4q…3rZa</div>
+      <div class="type-meta"><div class="type-meta-name">Mono / Addresses</div><div class="type-meta-spec">System mono · 13px · Canopy green</div></div>
+    </div>
+    <div class="type-row">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;color:#1a9151">+$84.50</div>
+      <div class="type-meta"><div class="type-meta-name">Amounts</div><div class="type-meta-spec">Plus Jakarta Sans 800 · 28–40px</div></div>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- 05 SPACING -->
+<div id="spacing" class="section">
+  <div class="s-num">05 — Spacing &amp; Radius</div>
+  <h2 class="s-title">Space &amp; form</h2>
+  <p class="s-desc">4px base unit. Generous spacing makes financial information breathe and feel trustworthy. Radii are soft — the app is friendly, not clinical.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px">
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:16px">Spacing scale</div>
+      <div class="spacing-table">
+        <div class="spacing-row"><span class="spacing-token">4</span><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:12px"></div></div><span class="spacing-label">xs · micro</span></div>
+        <div class="spacing-row"><span class="spacing-token">8</span><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:24px"></div></div><span class="spacing-label">sm · tight</span></div>
+        <div class="spacing-row"><span class="spacing-token">12</span><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:36px"></div></div><span class="spacing-label">md · default</span></div>
+        <div class="spacing-row"><span class="spacing-token">16</span><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:48px"></div></div><span class="spacing-label">lg · content</span></div>
+        <div class="spacing-row"><span class="spacing-token">20</span><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:60px"></div></div><span class="spacing-label">xl · section</span></div>
+        <div class="spacing-row"><span class="spacing-token">24</span><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:72px"></div></div><span class="spacing-label">2xl · panel</span></div>
+        <div class="spacing-row"><span class="spacing-token">32</span><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:96px"></div></div><span class="spacing-label">3xl · page</span></div>
+        <div class="spacing-row"><span class="spacing-token">48</span><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:144px"></div></div><span class="spacing-label">4xl · hero</span></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:16px">Border radius</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:14px"><div class="radius-demo" style="width:28px;height:28px;border-radius:6px;flex-shrink:0"></div><div><div style="font-family:monospace;font-size:12px;color:var(--g-mid)">6px</div><div style="font-size:12px;color:var(--text-2)">Tags · Badges</div></div></div>
+        <div style="display:flex;align-items:center;gap:14px"><div class="radius-demo" style="width:36px;height:36px;border-radius:10px;flex-shrink:0"></div><div><div style="font-family:monospace;font-size:12px;color:var(--g-mid)">10px</div><div style="font-size:12px;color:var(--text-2)">Inputs · Buttons</div></div></div>
+        <div style="display:flex;align-items:center;gap:14px"><div class="radius-demo" style="width:48px;height:48px;border-radius:14px;flex-shrink:0"></div><div><div style="font-family:monospace;font-size:12px;color:var(--g-mid)">14px</div><div style="font-size:12px;color:var(--text-2)">Cards · Chips</div></div></div>
+        <div style="display:flex;align-items:center;gap:14px"><div class="radius-demo" style="width:56px;height:56px;border-radius:20px;flex-shrink:0"></div><div><div style="font-family:monospace;font-size:12px;color:var(--g-mid)">20px</div><div style="font-size:12px;color:var(--text-2)">Modals · Sheets</div></div></div>
+        <div style="display:flex;align-items:center;gap:14px"><div class="radius-demo" style="width:44px;height:44px;border-radius:50%;flex-shrink:0"></div><div><div style="font-family:monospace;font-size:12px;color:var(--g-mid)">50%</div><div style="font-size:12px;color:var(--text-2)">Avatars · FAB</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- 06 MODE IDENTITY -->
+<div id="modes" class="section">
+  <div class="s-num">06 — Mode Identity</div>
+  <h2 class="s-title">Split &amp; Fund</h2>
+  <p class="s-desc">The two modes share the same green palette but express differently. Split Mode is sharp and action-oriented — it's about resolution. Fund Mode is rounded and collaborative — it's about pooling and trust.</p>
+
+  <div class="usage-modes">
+    <div class="mode-identity-card" style="border-color:#9fd8b8;background:#f5fcf8">
+      <div class="mode-chip mc-split" style="margin-bottom:16px">⚡ Split Mode</div>
+      <div style="font-family:var(--fserif);font-size:20px;margin-bottom:8px">Clarity · Action · Resolution</div>
+      <div style="font-size:13px;color:var(--text-2);line-height:1.65;margin-bottom:16px">Every interaction ends with someone getting paid. The design should feel crisp, direct, one-tap. Canopy green (#1a9151) dominates — it's the "settle" color.</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:#1a9151;flex-shrink:0"></div>Primary CTA: "Settle up"</div>
+        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:#1a9151;flex-shrink:0"></div>Gradient on settlement button</div>
+        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:#1a9151;flex-shrink:0"></div>Balance chips in Forest/Fresh</div>
+      </div>
+    </div>
+    <div class="mode-identity-card" style="border-color:#a8c0f0;background:#f5f8fd">
+      <div class="mode-chip mc-fund" style="margin-bottom:16px">🏦 Fund Mode</div>
+      <div style="font-family:var(--fserif);font-size:20px;margin-bottom:8px">Trust · Pooling · Together</div>
+      <div style="font-size:13px;color:var(--text-2);line-height:1.65;margin-bottom:16px">The treasury is a shared thing — the design should feel collaborative and calm. A cool slate-blue accent (#2a4fa8) distinguishes Fund Mode from Split Mode within the same green system.</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:#2a4fa8;flex-shrink:0"></div>Treasury card accent border</div>
+        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:#2a4fa8;flex-shrink:0"></div>"Propose" CTA button</div>
+        <div style="font-size:12px;color:var(--text-2);display:flex;gap:8px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:#2a4fa8;flex-shrink:0"></div>Proposal status chips</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- 07 MOTION -->
+<div id="motion" class="section">
+  <div class="s-num">07 — Motion</div>
+  <h2 class="s-title">Animation</h2>
+  <p class="s-desc">Motion is precise and purposeful. Fast enough to feel responsive, gentle enough to feel trustworthy. No bounce. No spring. Cubic-bezier only.</p>
+  <div class="motion-table">
+    <div class="motion-row"><div><div class="motion-name">Screen push / pop</div><div class="motion-use">Navigate between screens</div></div><div class="motion-spec">350ms cubic-bezier(0.4,0,0.2,1)</div></div>
+    <div class="motion-row"><div><div class="motion-name">Bottom sheet open/close</div><div class="motion-use">Add expense, propose</div></div><div class="motion-spec">320ms cubic-bezier(0.4,0,0.2,1) · translateY</div></div>
+    <div class="motion-row"><div><div class="motion-name">Button press</div><div class="motion-use">All interactive elements</div></div><div class="motion-spec">120ms ease · scale(0.97)</div></div>
+    <div class="motion-row"><div><div class="motion-name">Card hover</div><div class="motion-use">Group cards, feat cards</div></div><div class="motion-spec">180ms ease · translateY(-3px)</div></div>
+    <div class="motion-row"><div><div class="motion-name">TX broadcast spinner</div><div class="motion-use">Solana confirmation wait</div></div><div class="motion-spec">1s linear infinite · border-top Canopy</div></div>
+    <div class="motion-row"><div><div class="motion-name">TX success</div><div class="motion-use">Post-settlement</div></div><div class="motion-spec">200ms ease-out · fade in + scale(1.05→1)</div></div>
+    <div class="motion-row"><div><div class="motion-name">Progress bar fill</div><div class="motion-use">Fund treasury progress</div></div><div class="motion-spec">600ms cubic-bezier(0.4,0,0.2,1) on mount</div></div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- 08 VOICE -->
+<div id="voice" class="section">
+  <div class="s-num">08 — Voice &amp; Tone</div>
+  <h2 class="s-title">How FundWise speaks</h2>
+  <p class="s-desc">Calm, clear, human. We're not a bank — we're the friend who takes care of the tab and never makes it awkward. Speak like a person, not a product. Use plain language. Be direct. Never hide behind jargon.</p>
+
+  <div class="copy-pair">
+    <div class="copy-pair-label">Settlement actions</div>
+    <div class="copy-box good"><div class="copy-tag good">✓ Do</div><div class="copy-text">"Settle up · takes 2 seconds, costs less than a cent."</div></div>
+    <div class="copy-box bad"><div class="copy-tag bad">✗ Don't</div><div class="copy-text">"Initiate an on-chain SPL token transfer to your counterparty's wallet address."</div></div>
+  </div>
+  <div class="copy-pair">
+    <div class="copy-pair-label">Balances</div>
+    <div class="copy-box good"><div class="copy-tag good">✓ Do</div><div class="copy-text">"Kiran owes you $30" · "You owe Asha $24.50"</div></div>
+    <div class="copy-box bad"><div class="copy-tag bad">✗ Don't</div><div class="copy-text">"Your net receivable balance is +$30.00 USD equivalent."</div></div>
+  </div>
+  <div class="copy-pair">
+    <div class="copy-pair-label">Blockchain</div>
+    <div class="copy-box good"><div class="copy-tag good">✓ Do</div><div class="copy-text">"Confirmed · recorded forever." · "Done in 1.4 seconds."</div></div>
+    <div class="copy-box bad"><div class="copy-tag bad">✗ Don't</div><div class="copy-text">"Transaction validated by Solana consensus mechanism."</div></div>
+  </div>
+  <div class="copy-pair">
+    <div class="copy-pair-label">Errors</div>
+    <div class="copy-box good"><div class="copy-tag good">✓ Do</div><div class="copy-text">"Not enough USDC · top up your wallet and try again."</div></div>
+    <div class="copy-box bad"><div class="copy-tag bad">✗ Don't</div><div class="copy-text">"RPC Error 0x1A7: Insufficient token balance. Retry."</div></div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- 09 RULES -->
+<div id="rules" class="section">
+  <div class="s-num">09 — Usage Rules</div>
+  <h2 class="s-title">Do &amp; don't</h2>
+  <p class="s-desc">Protect brand consistency across every surface — app, landing page, social, and beyond.</p>
+  <div class="rules-grid">
+    <div class="rule-card do">
+      <div class="rule-tag do">✓ Do</div>
+      <div class="rule-list">
+        <div class="rule-item"><span class="rule-bullet">–</span>Use the logo on white, pale green, or very dark backgrounds only</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Write "FundWise" — capital F, capital W, no space</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Use DM Serif Display for all section and card headings</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Keep the gradient to buttons, bars, and the logo mark</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Show green for positive balances, red for negative — always</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Maintain generous whitespace — airy, not cramped</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Scale the mark proportionally — never stretch or distort</div>
+      </div>
+    </div>
+    <div class="rule-card dont">
+      <div class="rule-tag dont">✗ Don't</div>
+      <div class="rule-list">
+        <div class="rule-item"><span class="rule-bullet">–</span>Apply the gradient to body text, captions, or large BGs</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Write "fundwise", "Fundwise", or "FUNDWISE"</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Add drop shadows or glows to the wordmark</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Use more than 2 accent colors in a single view</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Use Split Mode green for Fund Mode UI (use the blue accent)</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Place the mark on a gradient or photographic background</div>
+        <div class="rule-item"><span class="rule-bullet">–</span>Use Inter, Roboto, or system fonts — always load the brand fonts</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="text-align:center;padding:60px 0 0;border-top:1px solid var(--border)">
+  <svg width="40" height="40" viewBox="0 0 80 80" fill="none" style="margin-bottom:14px">
+    <rect width="80" height="80" rx="22" fill="url(#ft-g)"/>
+    <path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <circle cx="40" cy="61" r="4" fill="white" opacity="0.7"/>
+    <defs><linearGradient id="ft-g" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+  </svg>
+  <div style="font-family:var(--fserif);font-size:22px;margin-bottom:6px">FundWise</div>
+  <div style="font-size:12px;color:var(--text-3)">Brand Guidelines v2.0 · April 2026 · Colosseum Frontier Hackathon</div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Logo Designs Round 2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7faf8;--surface:#fff;--border:#dde9e0;--border-2:#b8d4c0;
+  --text:#0d1f14;--text-2:#4a6b55;--text-3:#8dab97;
+  --fserif:'DM Serif Display',serif;--fsans:'Plus Jakarta Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fsans);-webkit-font-smoothing:antialiased;padding:64px 40px 100px;}
+@media(max-width:600px){body{padding:40px 20px 80px;}}
+
+.page-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#1a9151;text-align:center;margin-bottom:10px;}
+.page-head{font-family:var(--fserif);font-size:42px;text-align:center;letter-spacing:-0.8px;margin-bottom:8px;line-height:1.1;}
+.page-sub{font-size:14px;color:var(--text-2);text-align:center;margin-bottom:60px;line-height:1.7;max-width:620px;margin-left:auto;margin-right:auto;}
+
+.intro-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:24px 28px;max-width:720px;margin:0 auto 64px;
+}
+.intro-title{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;}
+.intro-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+@media(max-width:560px){.intro-grid{grid-template-columns:1fr;}}
+.intro-cell{font-size:12.5px;color:var(--text-2);line-height:1.6;}
+.intro-cell b{color:var(--text);display:block;font-family:var(--fserif);font-size:15px;letter-spacing:-0.2px;margin-bottom:4px;font-weight:400;}
+
+.section{margin-bottom:96px;}
+.section-num{font-family:var(--fserif);font-size:13px;color:#1a9151;letter-spacing:0.05em;font-style:italic;margin-bottom:6px;}
+.section-title{font-family:var(--fserif);font-size:28px;letter-spacing:-0.4px;margin-bottom:6px;}
+.section-meta{font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:14px;}
+.section-meta .pill{display:inline-block;padding:3px 9px;border-radius:100px;background:#eef7f1;color:#1a4a2c;border:1px solid #c8e3d2;margin-right:6px;font-weight:600;text-transform:none;letter-spacing:0;font-size:10.5px;}
+.section-desc{font-size:13.5px;color:var(--text-2);max-width:620px;line-height:1.7;margin-bottom:32px;}
+.section-divider{height:1px;background:var(--border);margin:64px 0;}
+
+.lockup-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;
+}
+.lock-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:24px;
+  padding:36px 20px 22px;display:flex;flex-direction:column;align-items:center;gap:18px;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+.lock-card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(13,107,58,0.10);border-color:var(--border-2);}
+.lock-card.dark{background:#0a1a10;border-color:#143020;}
+.lock-card.grad{background:linear-gradient(135deg,#0a4d2c,#2db870);border-color:transparent;}
+.lock-card.tinted{background:#eef7f1;}
+
+.lock-name{font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:0.05em;text-align:center;}
+.lock-desc{font-size:11px;color:var(--text-3);text-align:center;line-height:1.55;max-width:160px;}
+.dark .lock-name{color:#7fa28d;}
+.dark .lock-desc{color:#5a8070;}
+.grad .lock-name{color:rgba(255,255,255,0.78);}
+.grad .lock-desc{color:rgba(255,255,255,0.52);}
+
+.compare-strip{
+  display:flex;gap:20px;align-items:flex-end;padding:32px 28px;flex-wrap:wrap;justify-content:space-around;
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;margin-top:24px;
+}
+.sz{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.sz-label{font-size:10px;color:var(--text-3);font-weight:700;font-family:monospace;text-align:center;letter-spacing:0.04em;}
+
+.note-row{
+  display:flex;gap:8px;align-items:flex-start;padding:16px 20px;
+  background:#f0f9f4;border:1px solid #c8e3d2;border-radius:12px;
+  font-size:13px;color:#1a4a2c;line-height:1.65;max-width:680px;margin-top:24px;
+}
+</style>
+</head>
+<body>
+
+<div class="page-eyebrow">Round 2 · Concept-driven marks</div>
+<div class="page-head">Splitting, settling, flowing</div>
+<p class="page-sub">Six new directions that lean harder into what FundWise actually does — split a bill, settle on-chain, route money between people. Same gradient, more meaning.</p>
+
+<div class="intro-box">
+  <div class="intro-title">What each mark is "saying"</div>
+  <div class="intro-grid">
+    <div class="intro-cell"><b>Split</b>One amount divided among many. Bill-splitting at its core.</div>
+    <div class="intro-cell"><b>Settle</b>Money flowing from debtor to creditor. The on-chain transfer.</div>
+    <div class="intro-cell"><b>Group</b>People pooled together. The Group as the unit of trust.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 06 · PRISM — split bill -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 06</div>
+  <div class="section-title">Prism</div>
+  <div class="section-meta"><span class="pill">SPLIT</span> One ray entering, multiple rays leaving</div>
+  <p class="section-desc">A single beam of money enters from the top, splits into three even rays leaving the bottom — exactly what happens when one person pays a bill and FundWise divides it across the group. Direct visual metaphor; reads as a W from far away.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="p1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="p1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#p1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#p1-hi)"/>
+        <!-- Single ray in -->
+        <path d="M48 18 L48 34" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <!-- Splitting node -->
+        <circle cx="48" cy="40" r="4.5" fill="white"/>
+        <!-- Three rays out -->
+        <path d="M48 44 L26 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L48 76" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L70 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <!-- End dots -->
+        <circle cx="26" cy="72" r="2.6" fill="white"/>
+        <circle cx="48" cy="76" r="2.6" fill="white"/>
+        <circle cx="70" cy="72" r="2.6" fill="white"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">1 in, 3 out</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="p2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="p2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#p2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#p2-hi)"/>
+        <path d="M48 18 L48 34" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="48" cy="40" r="4.5" fill="white"/>
+        <path d="M48 44 L26 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L48 76" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L70 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="26" cy="72" r="2.6" fill="white"/><circle cx="48" cy="76" r="2.6" fill="white"/><circle cx="70" cy="72" r="2.6" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <path d="M48 18 L48 34" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="48" cy="40" r="4.5" fill="white"/>
+        <path d="M48 44 L26 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L48 76" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L70 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="26" cy="72" r="2.6" fill="white"/><circle cx="48" cy="76" r="2.6" fill="white"/><circle cx="70" cy="72" r="2.6" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="p4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="p4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#p4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#p4-hi)"/>
+        <path d="M48 18 L48 34" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="48" cy="40" r="4.5" fill="white"/>
+        <path d="M48 44 L26 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L48 76" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L70 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="26" cy="72" r="2.6" fill="white"/><circle cx="48" cy="76" r="2.6" fill="white"/><circle cx="70" cy="72" r="2.6" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 07 · CONVERGE — settle to one -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 07</div>
+  <div class="section-title">Converge</div>
+  <div class="section-meta"><span class="pill">SETTLE</span> Many rays in, one ray out — the inverse</div>
+  <p class="section-desc">The opposite of Prism: three rays converge into one. This is settlement — multiple debts netted into a single payment. Pair Prism (Split mode) and Converge (Fund mode) and you have a logo system that mirrors your two product modes.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="cv1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="cv1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#cv1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cv1-hi)"/>
+        <!-- Three start dots -->
+        <circle cx="22" cy="22" r="3.4" fill="white"/>
+        <circle cx="48" cy="20" r="3.4" fill="white"/>
+        <circle cx="74" cy="22" r="3.4" fill="white"/>
+        <!-- Three converging rays -->
+        <path d="M22 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 24 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <!-- Convergence node -->
+        <circle cx="48" cy="56" r="5" fill="white"/>
+        <!-- Single ray out -->
+        <path d="M48 62 L48 78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">3 in, 1 out</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cv2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cv2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cv2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cv2-hi)"/>
+        <circle cx="22" cy="22" r="3.4" fill="white"/><circle cx="48" cy="20" r="3.4" fill="white"/><circle cx="74" cy="22" r="3.4" fill="white"/>
+        <path d="M22 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 24 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="48" cy="56" r="5" fill="white"/>
+        <path d="M48 62 L48 78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <circle cx="22" cy="22" r="3.4" fill="white"/><circle cx="48" cy="20" r="3.4" fill="white"/><circle cx="74" cy="22" r="3.4" fill="white"/>
+        <path d="M22 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 24 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="48" cy="56" r="5" fill="white"/>
+        <path d="M48 62 L48 78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cv4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cv4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cv4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cv4-hi)"/>
+        <circle cx="22" cy="22" r="3.4" fill="white"/><circle cx="48" cy="20" r="3.4" fill="white"/><circle cx="74" cy="22" r="3.4" fill="white"/>
+        <path d="M22 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 24 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="48" cy="56" r="5" fill="white"/>
+        <path d="M48 62 L48 78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 08 · ROUTE — settle from-to -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 08</div>
+  <div class="section-title">Route</div>
+  <div class="section-meta"><span class="pill">SETTLE</span> Sender → recipient with arc</div>
+  <p class="section-desc">A single arc connecting two nodes — debtor to creditor — with a dot mid-flight to suggest motion. The "exact net amount" line on a Receipt, drawn. Quiet, precise, very payments-product. Reads instantly as "money moves between two people."</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="r1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="r1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#r1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#r1-hi)"/>
+        <!-- Sender (filled) -->
+        <circle cx="24" cy="62" r="7" fill="white"/>
+        <!-- Recipient (ring) -->
+        <circle cx="72" cy="34" r="7" stroke="white" stroke-width="3" fill="none"/>
+        <!-- Arc connecting them -->
+        <path d="M30 58 Q 48 22 66 36" stroke="white" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+        <!-- Mid-flight money dot -->
+        <circle cx="48" cy="34" r="3.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">A → B with arc</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="r2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="r2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#r2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#r2-hi)"/>
+        <circle cx="24" cy="62" r="7" fill="white"/>
+        <circle cx="72" cy="34" r="7" stroke="white" stroke-width="3" fill="none"/>
+        <path d="M30 58 Q 48 22 66 36" stroke="white" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+        <circle cx="48" cy="34" r="3.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <circle cx="24" cy="62" r="7" fill="white"/>
+        <circle cx="72" cy="34" r="7" stroke="white" stroke-width="3" fill="none"/>
+        <path d="M30 58 Q 48 22 66 36" stroke="white" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+        <circle cx="48" cy="34" r="3.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="r4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="r4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#r4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#r4-hi)"/>
+        <circle cx="24" cy="62" r="7" fill="white"/>
+        <circle cx="72" cy="34" r="7" stroke="white" stroke-width="3" fill="none"/>
+        <path d="M30 58 Q 48 22 66 36" stroke="white" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+        <circle cx="48" cy="34" r="3.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 09 · SLICE — pie chart split -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 09</div>
+  <div class="section-title">Slice</div>
+  <div class="section-meta"><span class="pill">SPLIT</span> A bill divided, one slice highlighted</div>
+  <p class="section-desc">A circle cut into four — three quiet quarters and one bright slice popped out. The bright slice is "your share." Reads exactly like a bill split: the whole is the total, your slice is what you owe. Quietly clever, instantly readable.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="s1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="s1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#s1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#s1-hi)"/>
+        <!-- Three quarters as a 3/4 ring -->
+        <path d="M 48 22 A 26 26 0 1 1 22 48" stroke="white" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.55"/>
+        <!-- Highlighted quarter, slightly offset -->
+        <g transform="translate(4 -4)">
+          <path d="M 48 48 L 48 22 A 26 26 0 0 1 74 48 Z" fill="white"/>
+        </g>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">Your slice popped</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="s2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="s2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#s2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#s2-hi)"/>
+        <path d="M 48 22 A 26 26 0 1 1 22 48" stroke="white" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.55"/>
+        <g transform="translate(4 -4)"><path d="M 48 48 L 48 22 A 26 26 0 0 1 74 48 Z" fill="white"/></g>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <path d="M 48 22 A 26 26 0 1 1 22 48" stroke="white" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.55"/>
+        <g transform="translate(4 -4)"><path d="M 48 48 L 48 22 A 26 26 0 0 1 74 48 Z" fill="white"/></g>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="s4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="s4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#s4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#s4-hi)"/>
+        <path d="M 48 22 A 26 26 0 1 1 22 48" stroke="white" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.55"/>
+        <g transform="translate(4 -4)"><path d="M 48 48 L 48 22 A 26 26 0 0 1 74 48 Z" fill="white"/></g>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 10 · ORBIT — group around -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 10</div>
+  <div class="section-title">Orbit</div>
+  <div class="section-meta"><span class="pill">GROUP</span> Members orbiting a shared tab</div>
+  <p class="section-desc">Four nodes evenly spaced around a central node — the group around the shared expense. The big middle dot is the bill, the four around are the members. Group-first, very approachable, very Splitwise-meets-Solana.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="o1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="o1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#o1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#o1-hi)"/>
+        <!-- Faint orbit ring -->
+        <circle cx="48" cy="48" r="22" stroke="white" stroke-width="1" fill="none" opacity="0.3"/>
+        <!-- Center node (the bill) -->
+        <circle cx="48" cy="48" r="7" fill="white"/>
+        <!-- Four members -->
+        <circle cx="48" cy="22" r="4.5" fill="white"/>
+        <circle cx="74" cy="48" r="4.5" fill="white"/>
+        <circle cx="48" cy="74" r="4.5" fill="white"/>
+        <circle cx="22" cy="48" r="4.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">Group around tab</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="o2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="o2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#o2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#o2-hi)"/>
+        <circle cx="48" cy="48" r="22" stroke="white" stroke-width="1" fill="none" opacity="0.3"/>
+        <circle cx="48" cy="48" r="7" fill="white"/>
+        <circle cx="48" cy="22" r="4.5" fill="white"/><circle cx="74" cy="48" r="4.5" fill="white"/><circle cx="48" cy="74" r="4.5" fill="white"/><circle cx="22" cy="48" r="4.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <circle cx="48" cy="48" r="22" stroke="white" stroke-width="1" fill="none" opacity="0.3"/>
+        <circle cx="48" cy="48" r="7" fill="white"/>
+        <circle cx="48" cy="22" r="4.5" fill="white"/><circle cx="74" cy="48" r="4.5" fill="white"/><circle cx="48" cy="74" r="4.5" fill="white"/><circle cx="22" cy="48" r="4.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="o4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="o4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#o4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#o4-hi)"/>
+        <circle cx="48" cy="48" r="22" stroke="white" stroke-width="1" fill="none" opacity="0.3"/>
+        <circle cx="48" cy="48" r="7" fill="white"/>
+        <circle cx="48" cy="22" r="4.5" fill="white"/><circle cx="74" cy="48" r="4.5" fill="white"/><circle cx="48" cy="74" r="4.5" fill="white"/><circle cx="22" cy="48" r="4.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 11 · KNOT — interlocking arrows -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 11</div>
+  <div class="section-title">Knot</div>
+  <div class="section-meta"><span class="pill">SETTLE</span> Two arrows resolving the loop</div>
+  <p class="section-desc">Two interlocking arrows, one going down-left one going up-right — debt and repayment, the loop closing. The negative space in the center is a subtle "S" for Settle / Solana / Split. Most graphic and confident of the set; reads as an action mark.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="k1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="k1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#k1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#k1-hi)"/>
+        <!-- Down arrow (left) -->
+        <path d="M30 22 L30 64 M22 56 L30 64 L38 56" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- Up arrow (right) -->
+        <path d="M66 74 L66 32 M58 40 L66 32 L74 40" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">Owe / paid loop</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="k2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="k2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#k2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#k2-hi)"/>
+        <path d="M30 22 L30 64 M22 56 L30 64 L38 56" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M66 74 L66 32 M58 40 L66 32 L74 40" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <path d="M30 22 L30 64 M22 56 L30 64 L38 56" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M66 74 L66 32 M58 40 L66 32 L74 40" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="k4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="k4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#k4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#k4-hi)"/>
+        <path d="M30 22 L30 64 M22 56 L30 64 L38 56" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M66 74 L66 32 M58 40 L66 32 L74 40" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- COMPARE ALL ROUND 2 -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Round 2 · Side by side</div>
+  <div class="section-title">Compare at app icon size</div>
+  <p class="section-desc">All six new concepts at the same scale, plus your three favorites from round one for direct comparison.</p>
+
+  <div class="compare-strip">
+    <!-- Round 2 -->
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmpP" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmpPh" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmpP)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmpPh)"/>
+        <path d="M48 18 L48 34" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="48" cy="40" r="4.5" fill="white"/>
+        <path d="M48 44 L26 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L48 76" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 44 L70 72" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="26" cy="72" r="2.6" fill="white"/><circle cx="48" cy="76" r="2.6" fill="white"/><circle cx="70" cy="72" r="2.6" fill="white"/>
+      </svg>
+      <div class="sz-label">06 Prism</div>
+    </div>
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmpC" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmpCh" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmpC)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmpCh)"/>
+        <circle cx="22" cy="22" r="3.4" fill="white"/><circle cx="48" cy="20" r="3.4" fill="white"/><circle cx="74" cy="22" r="3.4" fill="white"/>
+        <path d="M22 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M48 24 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 26 L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="48" cy="56" r="5" fill="white"/>
+        <path d="M48 62 L48 78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="sz-label">07 Converge</div>
+    </div>
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmpR" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmpRh" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmpR)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmpRh)"/>
+        <circle cx="24" cy="62" r="7" fill="white"/>
+        <circle cx="72" cy="34" r="7" stroke="white" stroke-width="3" fill="none"/>
+        <path d="M30 58 Q 48 22 66 36" stroke="white" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+        <circle cx="48" cy="34" r="3.5" fill="white"/>
+      </svg>
+      <div class="sz-label">08 Route</div>
+    </div>
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmpS" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmpSh" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmpS)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmpSh)"/>
+        <path d="M 48 22 A 26 26 0 1 1 22 48" stroke="white" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.55"/>
+        <g transform="translate(4 -4)"><path d="M 48 48 L 48 22 A 26 26 0 0 1 74 48 Z" fill="white"/></g>
+      </svg>
+      <div class="sz-label">09 Slice</div>
+    </div>
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmpO" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmpOh" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmpO)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmpOh)"/>
+        <circle cx="48" cy="48" r="22" stroke="white" stroke-width="1" fill="none" opacity="0.3"/>
+        <circle cx="48" cy="48" r="7" fill="white"/>
+        <circle cx="48" cy="22" r="4.5" fill="white"/><circle cx="74" cy="48" r="4.5" fill="white"/><circle cx="48" cy="74" r="4.5" fill="white"/><circle cx="22" cy="48" r="4.5" fill="white"/>
+      </svg>
+      <div class="sz-label">10 Orbit</div>
+    </div>
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmpK" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmpKh" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmpK)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmpKh)"/>
+        <path d="M30 22 L30 64 M22 56 L30 64 L38 56" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M66 74 L66 32 M58 40 L66 32 L74 40" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92"/>
+      </svg>
+      <div class="sz-label">11 Knot</div>
+    </div>
+  </div>
+
+  <div style="height:18px"></div>
+  <div style="font-size:11px;color:var(--text-3);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px;">From round one (your favorites)</div>
+  <div class="compare-strip">
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="o2c" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="o2ch" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#o2c)"/>
+        <rect width="96" height="48" rx="22" fill="url(#o2ch)"/>
+        <path d="M22 32 L48 60 L74 32" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M22 64 L48 36 L74 64" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+      </svg>
+      <div class="sz-label">02 Ledger</div>
+    </div>
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="o3c" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="o3ch" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#o3c)"/>
+        <rect width="96" height="48" rx="22" fill="url(#o3ch)"/>
+        <path d="M 24 38 A 30 30 0 1 0 72 38" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+        <path d="M28 36 L38 60 L48 42 L58 60 L68 36" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="sz-label">03 Arc</div>
+    </div>
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="o4c" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="o4ch" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#o4c)"/>
+        <rect width="96" height="48" rx="22" fill="url(#o4ch)"/>
+        <path d="M16 28 L24 28 L30 60 L36 38 L40 38 L46 38 L48 38 L50 38 L56 38 L60 38 L66 60 L72 28 L80 28 L72 70 L62 70 L56 46 L48 70 L40 46 L34 70 L24 70 Z" fill="white" opacity="0.96"/>
+      </svg>
+      <div class="sz-label">04 Cipher</div>
+    </div>
+  </div>
+
+  <div class="note-row">
+    <div>
+      <strong>My picks for FundWise:</strong> &nbsp;<b>09 Slice</b> &mdash; the most product-truthful (a bill divided is literally what you do), and <b>06 Prism + 07 Converge as a pair</b> &mdash; one logo for Split mode, the inverse for Fund mode. Tell me a number (or pair) and I&rsquo;ll lock it across the whole brand.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

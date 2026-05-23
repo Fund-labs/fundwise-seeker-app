@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" role="img" aria-label="FundWise app icon">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A4D2C"></stop>
+      <stop offset="0.55" stop-color="#1A9151"></stop>
+      <stop offset="1" stop-color="#4EC98A"></stop>
+    </linearGradient>
+    <linearGradient id="tile-hi" x1="512" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.18"></stop>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="232" fill="url(#tile)"></rect>
+  <rect width="1024" height="512" rx="232" fill="url(#tile-hi)"></rect>
+  <g transform="translate(192 192) scale(6.667)">
+    <rect x="14" y="22" width="68" height="14" rx="7" fill="#FFFFFF" transform="rotate(-2 48 29)"></rect>
+    <rect x="11" y="41" width="74" height="14" rx="7" fill="#FFFFFF" opacity="0.78"></rect>
+    <rect x="17" y="60" width="62" height="14" rx="7" fill="#FFFFFF" opacity="0.55" transform="rotate(2 48 67)"></rect>
+  </g>
+</svg>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Logo Designs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7faf8;--surface:#fff;--border:#dde9e0;--border-2:#b8d4c0;
+  --text:#0d1f14;--text-2:#4a6b55;--text-3:#8dab97;
+  --fserif:'DM Serif Display',serif;--fsans:'Plus Jakarta Sans',sans-serif;
+  --g1:#0a4d2c;--g2:#0d6b3a;--g3:#1a9151;--g4:#2db870;--g5:#4ec98a;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fsans);-webkit-font-smoothing:antialiased;padding:64px 40px 100px;}
+@media(max-width:600px){body{padding:40px 20px 80px;}}
+
+.page-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--g3);text-align:center;margin-bottom:10px;}
+.page-head{font-family:var(--fserif);font-size:42px;text-align:center;letter-spacing:-0.8px;margin-bottom:8px;line-height:1.1;}
+.page-sub{font-size:14px;color:var(--text-2);text-align:center;margin-bottom:72px;line-height:1.7;max-width:540px;margin-left:auto;margin-right:auto;}
+
+.section{margin-bottom:88px;}
+.section-num{font-family:var(--fserif);font-size:13px;color:var(--g3);letter-spacing:0.05em;font-style:italic;margin-bottom:6px;}
+.section-title{font-family:var(--fserif);font-size:26px;letter-spacing:-0.4px;margin-bottom:6px;}
+.section-desc{font-size:13px;color:var(--text-2);max-width:560px;line-height:1.7;margin-bottom:32px;}
+.section-divider{height:1px;background:var(--border);margin:64px 0;}
+
+.lockup-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;
+}
+.lock-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:24px;
+  padding:36px 20px 22px;display:flex;flex-direction:column;align-items:center;gap:18px;
+  position:relative;transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+.lock-card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(13,107,58,0.10);border-color:var(--border-2);}
+.lock-card.dark{background:#0a1a10;border-color:#143020;}
+.lock-card.grad{background:linear-gradient(135deg,var(--g1),var(--g4));border-color:transparent;}
+.lock-card.tinted{background:#eef7f1;}
+
+.lock-name{font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:0.05em;text-align:center;}
+.lock-desc{font-size:11px;color:var(--text-3);text-align:center;line-height:1.55;max-width:140px;}
+.dark .lock-name{color:#7fa28d;}
+.dark .lock-desc{color:#5a8070;}
+.grad .lock-name{color:rgba(255,255,255,0.78);}
+.grad .lock-desc{color:rgba(255,255,255,0.52);}
+
+.recommended-tag{
+  position:absolute;top:14px;right:14px;
+  font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--g2);background:#e6f7ee;padding:4px 9px;border-radius:100px;
+  border:1px solid #9fd8b8;
+}
+
+/* size strip */
+.size-strip{
+  display:flex;gap:24px;align-items:flex-end;padding:28px 32px;
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;flex-wrap:wrap;
+  margin-top:24px;
+}
+.sz{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.sz-label{font-size:9px;color:var(--text-3);font-weight:600;font-family:monospace;text-align:center;letter-spacing:0.04em;}
+
+/* wordmark lockup */
+.wm-block{
+  display:flex;align-items:center;gap:18px;padding:32px 36px;
+  background:var(--surface);border:1px solid var(--border);border-radius:24px;
+  flex-wrap:wrap;
+}
+.wm-block.dark{background:#0a1a10;border-color:#143020;}
+.wm-text{font-family:var(--fserif);letter-spacing:-0.6px;color:var(--text);}
+.wm-white{font-family:var(--fserif);letter-spacing:-0.6px;color:#fff;}
+.wm-tag{font-size:10px;color:var(--text-3);font-family:monospace;letter-spacing:0.04em;margin-left:auto;}
+.dark .wm-tag{color:#5a8070;}
+
+.note-row{
+  display:flex;gap:8px;align-items:flex-start;padding:14px 18px;
+  background:#f0f9f4;border:1px solid #c8e3d2;border-radius:12px;
+  font-size:12px;color:#1a4a2c;line-height:1.6;max-width:560px;margin-top:16px;
+}
+
+.modes-strip{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:580px;}
+@media(max-width:520px){.modes-strip{grid-template-columns:1fr;}}
+.mode-card{padding:24px;border-radius:18px;display:flex;align-items:center;gap:14px;}
+.mode-card.split{background:#eef7f1;border:1px solid #c8e3d2;}
+.mode-card.fund{background:#eef2fb;border:1px solid #c8d4ee;}
+.mode-card-name{font-family:var(--fserif);font-size:18px;letter-spacing:-0.3px;}
+.mode-card-tag{font-size:10px;color:var(--text-3);letter-spacing:0.04em;text-transform:uppercase;font-weight:700;margin-top:2px;}
+</style>
+</head>
+<body>
+
+<div class="page-eyebrow">FundWise · Brand Identity</div>
+<div class="page-head">Logo Designs</div>
+<p class="page-sub">Five refined concepts in the signature green gradient. Each is engineered for clarity at small sizes, depth at large sizes, and a premium feel that matches a serious payments product.</p>
+
+<!-- ════════════════════════════════════ -->
+<!-- 01 · MERIDIAN — flowing W -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 01</div>
+  <div class="section-title">Meridian</div>
+  <p class="section-desc">A continuous, flowing W traced as one fluid line — like a financial signature. The mark reads as both a W and the path of money flowing between people. Confident, premium, distinctive.</p>
+
+  <div class="lockup-row">
+    <!-- Light -->
+    <div class="lock-card">
+      <span class="recommended-tag">Recommended</span>
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="m1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0a4d2c"/>
+            <stop offset="50%" stop-color="#0d6b3a"/>
+            <stop offset="100%" stop-color="#2db870"/>
+          </linearGradient>
+          <linearGradient id="m1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="24" fill="url(#m1-bg)"/>
+        <rect width="96" height="48" rx="24" fill="url(#m1-hi)"/>
+        <!-- Flowing W as a single curved path -->
+        <path d="M20 30 C 22 50, 30 66, 36 66 C 42 66, 46 54, 48 42 C 50 54, 54 66, 60 66 C 66 66, 74 50, 76 30"
+              stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="48" cy="78" r="3.2" fill="white" opacity="0.88"/>
+      </svg>
+      <div>
+        <div class="lock-name">Light · Primary</div>
+        <div class="lock-desc">Default mark</div>
+      </div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="m2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="m2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="24" fill="url(#m2-bg)"/>
+        <rect width="96" height="48" rx="24" fill="url(#m2-hi)"/>
+        <path d="M20 30 C 22 50, 30 66, 36 66 C 42 66, 46 54, 48 42 C 50 54, 54 66, 60 66 C 66 66, 74 50, 76 30"
+              stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="48" cy="78" r="3.2" fill="white" opacity="0.88"/>
+      </svg>
+      <div>
+        <div class="lock-name">On dark</div>
+        <div class="lock-desc">App dark mode</div>
+      </div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="24" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="24" fill="rgba(255,255,255,0.06)"/>
+        <path d="M20 30 C 22 50, 30 66, 36 66 C 42 66, 46 54, 48 42 C 50 54, 54 66, 60 66 C 66 66, 74 50, 76 30"
+              stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="48" cy="78" r="3.2" fill="white" opacity="0.88"/>
+      </svg>
+      <div>
+        <div class="lock-name">On gradient</div>
+        <div class="lock-desc">Banners, headers</div>
+      </div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="m4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="m4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="24" fill="url(#m4-bg)"/>
+        <rect width="96" height="48" rx="24" fill="url(#m4-hi)"/>
+        <path d="M20 30 C 22 50, 30 66, 36 66 C 42 66, 46 54, 48 42 C 50 54, 54 66, 60 66 C 66 66, 74 50, 76 30"
+              stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="48" cy="78" r="3.2" fill="white" opacity="0.88"/>
+      </svg>
+      <div>
+        <div class="lock-name">On surface</div>
+        <div class="lock-desc">Cards, tinted bg</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wm-block" style="margin-top:24px">
+    <svg width="56" height="56" viewBox="0 0 96 96" fill="none">
+      <defs>
+        <linearGradient id="m-wm-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+        <linearGradient id="m-wm-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+      </defs>
+      <rect width="96" height="96" rx="24" fill="url(#m-wm-bg)"/>
+      <rect width="96" height="48" rx="24" fill="url(#m-wm-hi)"/>
+      <path d="M20 30 C 22 50, 30 66, 36 66 C 42 66, 46 54, 48 42 C 50 54, 54 66, 60 66 C 66 66, 74 50, 76 30"
+            stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <circle cx="48" cy="78" r="3.2" fill="white" opacity="0.88"/>
+    </svg>
+    <div class="wm-text" style="font-size:38px">FundWise</div>
+    <div class="wm-tag">Horizontal lockup</div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 02 · LEDGER — chevron monogram -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 02</div>
+  <div class="section-title">Ledger</div>
+  <p class="section-desc">Two interlocking chevrons forming an abstract W. The downward chevron represents money out (Split), the upward chevron money in (Fund). Reads as a settlement glyph — clean, geometric, deliberate.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="l1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="l1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#l1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#l1-hi)"/>
+        <!-- Solid downward chevron (split) -->
+        <path d="M22 32 L48 60 L74 32" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- Faded upward chevron (fund) — interlocking -->
+        <path d="M22 64 L48 36 L74 64" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">Two modes, one mark</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="l2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="l2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#l2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#l2-hi)"/>
+        <path d="M22 32 L48 60 L74 32" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M22 64 L48 36 L74 64" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <path d="M22 32 L48 60 L74 32" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M22 64 L48 36 L74 64" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="l4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="l4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#l4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#l4-hi)"/>
+        <path d="M22 32 L48 60 L74 32" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M22 64 L48 36 L74 64" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 03 · ARC — circular receipt -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 03</div>
+  <div class="section-title">Arc</div>
+  <p class="section-desc">A precise W enclosed by an arc — the arc is the on-chain receipt, closing the loop on a settlement. Subtle but rich symbolism: the W is the action, the arc is the proof. Gives the mark a coin-like quality.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="ar1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="ar1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="24" fill="url(#ar1-bg)"/>
+        <rect width="96" height="48" rx="24" fill="url(#ar1-hi)"/>
+        <!-- Receipt arc (3/4 circle, opening at top) -->
+        <path d="M 24 38 A 30 30 0 1 0 72 38" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+        <!-- Precision W -->
+        <path d="M28 36 L38 60 L48 42 L58 60 L68 36" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">W + receipt arc</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="ar2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="ar2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="24" fill="url(#ar2-bg)"/>
+        <rect width="96" height="48" rx="24" fill="url(#ar2-hi)"/>
+        <path d="M 24 38 A 30 30 0 1 0 72 38" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+        <path d="M28 36 L38 60 L48 42 L58 60 L68 36" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="24" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="24" fill="rgba(255,255,255,0.06)"/>
+        <path d="M 24 38 A 30 30 0 1 0 72 38" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+        <path d="M28 36 L38 60 L48 42 L58 60 L68 36" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="ar4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="ar4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="24" fill="url(#ar4-bg)"/>
+        <rect width="96" height="48" rx="24" fill="url(#ar4-hi)"/>
+        <path d="M 24 38 A 30 30 0 1 0 72 38" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+        <path d="M28 36 L38 60 L48 42 L58 60 L68 36" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 04 · CIPHER — pure monogram -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 04</div>
+  <div class="section-title">Cipher</div>
+  <p class="section-desc">A serif-style W carved from the gradient itself — no strokes, just shape. Inspired by old-money financial monograms, but rendered modern. Most distinctive of the set; reads as a single character at every size.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="c1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="c1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#c1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#c1-hi)"/>
+        <!-- Serif W as filled shape -->
+        <path d="M16 28 L24 28 L30 60 L36 38 L40 38 L46 38 L48 38 L50 38 L56 38 L60 38 L66 60 L72 28 L80 28 L72 70 L62 70 L56 46 L48 70 L40 46 L34 70 L24 70 Z"
+              fill="white" opacity="0.96"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">Solid serif W</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="c2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="c2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#c2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#c2-hi)"/>
+        <path d="M16 28 L24 28 L30 60 L36 38 L40 38 L46 38 L48 38 L50 38 L56 38 L60 38 L66 60 L72 28 L80 28 L72 70 L62 70 L56 46 L48 70 L40 46 L34 70 L24 70 Z" fill="white" opacity="0.96"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <path d="M16 28 L24 28 L30 60 L36 38 L40 38 L46 38 L48 38 L50 38 L56 38 L60 38 L66 60 L72 28 L80 28 L72 70 L62 70 L56 46 L48 70 L40 46 L34 70 L24 70 Z" fill="white" opacity="0.96"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="c4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="c4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#c4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#c4-hi)"/>
+        <path d="M16 28 L24 28 L30 60 L36 38 L40 38 L46 38 L48 38 L50 38 L56 38 L60 38 L66 60 L72 28 L80 28 L72 70 L62 70 L56 46 L48 70 L40 46 L34 70 L24 70 Z" fill="white" opacity="0.96"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 05 · NODES — connection mark -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">Concept 05</div>
+  <div class="section-title">Nodes</div>
+  <p class="section-desc">Five nodes connected in a W formation — each node a person in the group, the lines the settlements between them. Reads as both a network diagram and a W. Most contemporary; closer to crypto-native marks like Solana, Phantom.</p>
+
+  <div class="lockup-row">
+    <div class="lock-card">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="n1-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="n1-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#n1-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#n1-hi)"/>
+        <!-- Connecting lines -->
+        <path d="M22 32 L34 60 L48 38 L62 60 L74 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55"/>
+        <!-- Nodes -->
+        <circle cx="22" cy="32" r="4.5" fill="white"/>
+        <circle cx="34" cy="60" r="4.5" fill="white"/>
+        <circle cx="48" cy="38" r="5" fill="white"/>
+        <circle cx="62" cy="60" r="4.5" fill="white"/>
+        <circle cx="74" cy="32" r="4.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">Light · Primary</div><div class="lock-desc">Network of 5</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="n2-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="n2-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#n2-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#n2-hi)"/>
+        <path d="M22 32 L34 60 L48 38 L62 60 L74 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55"/>
+        <circle cx="22" cy="32" r="4.5" fill="white"/><circle cx="34" cy="60" r="4.5" fill="white"/><circle cx="48" cy="38" r="5" fill="white"/><circle cx="62" cy="60" r="4.5" fill="white"/><circle cx="74" cy="32" r="4.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">Dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="96" height="42" rx="22" fill="rgba(255,255,255,0.06)"/>
+        <path d="M22 32 L34 60 L48 38 L62 60 L74 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55"/>
+        <circle cx="22" cy="32" r="4.5" fill="white"/><circle cx="34" cy="60" r="4.5" fill="white"/><circle cx="48" cy="38" r="5" fill="white"/><circle cx="62" cy="60" r="4.5" fill="white"/><circle cx="74" cy="32" r="4.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">Banners</div></div>
+    </div>
+    <div class="lock-card tinted">
+      <svg width="84" height="84" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="n4-bg" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="n4-hi" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.17)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#n4-bg)"/>
+        <rect width="96" height="48" rx="22" fill="url(#n4-hi)"/>
+        <path d="M22 32 L34 60 L48 38 L62 60 L74 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55"/>
+        <circle cx="22" cy="32" r="4.5" fill="white"/><circle cx="34" cy="60" r="4.5" fill="white"/><circle cx="48" cy="38" r="5" fill="white"/><circle cx="62" cy="60" r="4.5" fill="white"/><circle cx="74" cy="32" r="4.5" fill="white"/>
+      </svg>
+      <div><div class="lock-name">On surface</div><div class="lock-desc">Cards</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- SIZE COMPARISON ALL CONCEPTS -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-num">All five concepts</div>
+  <div class="section-title">Side-by-side at app icon size</div>
+  <p class="section-desc">Compare all five marks at the same scale to feel the difference. Each renders pixel-perfect from 16px to 1024px.</p>
+
+  <div class="size-strip" style="justify-content:space-around">
+    <div class="sz">
+      <svg width="72" height="72" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmp1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmp1h" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmp1)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmp1h)"/>
+        <path d="M20 30 C 22 50, 30 66, 36 66 C 42 66, 46 54, 48 42 C 50 54, 54 66, 60 66 C 66 66, 74 50, 76 30" stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="48" cy="78" r="3.2" fill="white" opacity="0.88"/>
+      </svg>
+      <div class="sz-label">01 Meridian</div>
+    </div>
+    <div class="sz">
+      <svg width="72" height="72" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmp2" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmp2h" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmp2)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmp2h)"/>
+        <path d="M22 32 L48 60 L74 32" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M22 64 L48 36 L74 64" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5"/>
+      </svg>
+      <div class="sz-label">02 Ledger</div>
+    </div>
+    <div class="sz">
+      <svg width="72" height="72" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmp3" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmp3h" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmp3)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmp3h)"/>
+        <path d="M 24 38 A 30 30 0 1 0 72 38" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+        <path d="M28 36 L38 60 L48 42 L58 60 L68 36" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="sz-label">03 Arc</div>
+    </div>
+    <div class="sz">
+      <svg width="72" height="72" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmp4" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmp4h" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmp4)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmp4h)"/>
+        <path d="M16 28 L24 28 L30 60 L36 38 L40 38 L46 38 L48 38 L50 38 L56 38 L60 38 L66 60 L72 28 L80 28 L72 70 L62 70 L56 46 L48 70 L40 46 L34 70 L24 70 Z" fill="white" opacity="0.96"/>
+      </svg>
+      <div class="sz-label">04 Cipher</div>
+    </div>
+    <div class="sz">
+      <svg width="72" height="72" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmp5" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="cmp5h" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmp5)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmp5h)"/>
+        <path d="M22 32 L34 60 L48 38 L62 60 L74 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.55"/>
+        <circle cx="22" cy="32" r="4.5" fill="white"/><circle cx="34" cy="60" r="4.5" fill="white"/><circle cx="48" cy="38" r="5" fill="white"/><circle cx="62" cy="60" r="4.5" fill="white"/><circle cx="74" cy="32" r="4.5" fill="white"/>
+      </svg>
+      <div class="sz-label">05 Nodes</div>
+    </div>
+  </div>
+
+  <div class="note-row">
+    <strong>Recommendation:</strong> &nbsp;01 Meridian &mdash; the flowing W reads as a financial signature, scales beautifully, and feels distinctively FundWise rather than generic-fintech. Tell me a number (01&ndash;05) and I&rsquo;ll lock it across every asset.
+  </div>
+</div>
+
+</body>
+</html>

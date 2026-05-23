@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Logo Designs Round 3</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7faf8;--surface:#fff;--border:#dde9e0;--border-2:#b8d4c0;
+  --text:#0d1f14;--text-2:#4a6b55;--text-3:#8dab97;
+  --fserif:'DM Serif Display',serif;--fsans:'Plus Jakarta Sans',sans-serif;--fmono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fsans);-webkit-font-smoothing:antialiased;padding:64px 40px 100px;}
+@media(max-width:600px){body{padding:40px 20px 80px;}}
+
+.page-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a9151;text-align:center;margin-bottom:12px;}
+.page-head{font-family:var(--fserif);font-size:46px;text-align:center;letter-spacing:-1px;margin-bottom:10px;line-height:1.05;}
+.page-sub{font-size:14.5px;color:var(--text-2);text-align:center;margin-bottom:48px;line-height:1.7;max-width:620px;margin-left:auto;margin-right:auto;}
+
+/* Research panel */
+.research{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:30px 34px;max-width:840px;margin:0 auto 80px;
+}
+.research-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.research-eyebrow::before{content:'';width:18px;height:1px;background:var(--text-3);}
+.research-title{font-family:var(--fserif);font-size:22px;letter-spacing:-0.3px;margin-bottom:18px;}
+.research-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px 28px;}
+.research-cell{}
+.research-cell-h{font-size:11px;font-weight:700;color:#1a9151;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:6px;font-family:var(--fmono);}
+.research-cell-b{font-size:13px;color:var(--text-2);line-height:1.65;}
+.research-cell-b b{color:var(--text);font-weight:600;}
+
+.benchmark-row{display:flex;gap:14px;margin-top:22px;padding-top:22px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap;}
+.bm-label{font-size:10px;color:var(--text-3);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;font-family:var(--fmono);margin-right:4px;}
+.bm-tag{font-size:11px;color:var(--text-2);padding:4px 10px;background:#eef7f1;border:1px solid #c8e3d2;border-radius:100px;font-weight:600;}
+
+/* Section structure */
+.section{margin-bottom:104px;}
+.section-meta{display:flex;align-items:baseline;gap:14px;margin-bottom:10px;flex-wrap:wrap;}
+.section-num{font-family:var(--fmono);font-size:11px;color:#1a9151;letter-spacing:0.08em;font-weight:500;}
+.section-title{font-family:var(--fserif);font-size:36px;letter-spacing:-0.6px;line-height:1;}
+.section-tagline{font-size:14px;color:var(--text-2);font-style:italic;font-family:var(--fserif);}
+.section-desc{font-size:14px;color:var(--text-2);max-width:660px;line-height:1.75;margin-bottom:36px;}
+
+/* Hero showcase — big mark */
+.hero-show{
+  background:var(--surface);border:1px solid var(--border);border-radius:32px;
+  padding:64px 40px;display:flex;align-items:center;justify-content:center;gap:60px;
+  margin-bottom:18px;flex-wrap:wrap;
+}
+.hero-show.dark{background:#0a1a10;border-color:#143020;}
+.hero-meta{flex:1;min-width:240px;max-width:340px;}
+.hero-meta-h{font-family:var(--fmono);font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;}
+.dark .hero-meta-h{color:#5a8070;}
+.hero-meta-list{display:flex;flex-direction:column;gap:14px;}
+.hero-meta-item{display:flex;gap:12px;align-items:flex-start;font-size:13px;color:var(--text-2);line-height:1.6;}
+.dark .hero-meta-item{color:#9fbeac;}
+.hero-meta-item::before{content:'';flex-shrink:0;width:6px;height:6px;border-radius:100px;background:#1a9151;margin-top:7px;}
+.hero-meta-item b{color:var(--text);display:block;font-weight:600;font-size:13.5px;margin-bottom:1px;}
+.dark .hero-meta-item b{color:#e8f5ec;}
+
+/* Lockup grid */
+.lockup-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;
+}
+.lock-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:22px;
+  padding:32px 18px 18px;display:flex;flex-direction:column;align-items:center;gap:14px;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+.lock-card:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(13,107,58,0.10);border-color:var(--border-2);}
+.lock-card.dark{background:#0a1a10;border-color:#143020;}
+.lock-card.grad{background:linear-gradient(135deg,#0a4d2c,#2db870);border-color:transparent;}
+.lock-card.tinted{background:#eef7f1;}
+.lock-card.mono{background:#0d1f14;border-color:#0d1f14;}
+.lock-name{font-size:10.5px;font-weight:700;color:var(--text-2);letter-spacing:0.05em;text-align:center;}
+.lock-desc{font-size:10px;color:var(--text-3);text-align:center;line-height:1.5;font-family:var(--fmono);}
+.dark .lock-name,.mono .lock-name{color:#7fa28d;}
+.dark .lock-desc,.mono .lock-desc{color:#5a8070;}
+.grad .lock-name{color:rgba(255,255,255,0.78);}
+.grad .lock-desc{color:rgba(255,255,255,0.52);}
+
+/* Sizes */
+.size-strip{
+  display:flex;gap:32px;align-items:flex-end;padding:36px 32px;
+  background:var(--surface);border:1px solid var(--border);border-radius:22px;flex-wrap:wrap;justify-content:center;margin-top:18px;
+}
+.sz{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.sz-label{font-size:10px;color:var(--text-3);font-weight:600;font-family:var(--fmono);letter-spacing:0.04em;}
+
+/* Compare panel */
+.compare-panel{
+  background:#0d1f14;border-radius:24px;padding:48px 32px;margin:0 auto;
+  display:flex;gap:36px;align-items:center;justify-content:space-around;flex-wrap:wrap;
+}
+.compare-cell{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.compare-cell-name{font-family:var(--fserif);font-size:16px;color:#e8f5ec;letter-spacing:-0.2px;}
+.compare-cell-meta{font-size:10px;color:#5a8070;font-family:var(--fmono);letter-spacing:0.05em;}
+
+.note-row{
+  display:flex;gap:8px;align-items:flex-start;padding:18px 22px;
+  background:#f0f9f4;border:1px solid #c8e3d2;border-radius:14px;
+  font-size:13.5px;color:#1a4a2c;line-height:1.7;max-width:720px;margin:32px auto 0;
+}
+
+.section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:80px 0;}
+</style>
+</head>
+<body>
+
+<div class="page-eyebrow">Round 3 · Researched & refined</div>
+<div class="page-head">Marks worth wearing</div>
+<p class="page-sub">Four abstract, professional concepts pulled from how the best fintech and crypto-native brands actually work. Each is a single confident shape — not literal symbolism. The gradient does the warmth; the form does the credibility.</p>
+
+<!-- ════════════════════════════════════ -->
+<!-- RESEARCH PANEL -->
+<!-- ════════════════════════════════════ -->
+<div class="research">
+  <div class="research-eyebrow">What the market taught us</div>
+  <div class="research-title">The principles guiding round three</div>
+
+  <div class="research-grid">
+    <div class="research-cell">
+      <div class="research-cell-h">01 · Subtract</div>
+      <div class="research-cell-b">The best fintech marks <b>reduce meaning rather than add it</b>. Stripe avoids symbolism entirely. PayPal subtracted, didn&rsquo;t reinvent. We stop trying to draw a "split."</div>
+    </div>
+    <div class="research-cell">
+      <div class="research-cell-h">02 · One bold gesture</div>
+      <div class="research-cell-b">Phantom = a ghost. MetaMask = a fox. Chainlink = a link. <b>One confident shape</b> beats a clever composite of three meanings every time.</div>
+    </div>
+    <div class="research-cell">
+      <div class="research-cell-h">03 · Modular system</div>
+      <div class="research-cell-b">PayPal&rsquo;s monogram works alone in app icons; the wordmark works for headers. We design the mark and the wordmark to <b>live separately or together</b>.</div>
+    </div>
+    <div class="research-cell">
+      <div class="research-cell-h">04 · Trust × tech</div>
+      <div class="research-cell-b">Fintech logos must <b>balance stability and innovation</b>. Sharp geometry reads as tech; depth and weight read as trust. We use both.</div>
+    </div>
+    <div class="research-cell">
+      <div class="research-cell-h">05 · Sketchable</div>
+      <div class="research-cell-b">Paul Rand&rsquo;s test: distinctive, memorable, clear. If you can&rsquo;t sketch it from memory, it&rsquo;s not working. <b>All four marks here pass.</b></div>
+    </div>
+    <div class="research-cell">
+      <div class="research-cell-h">06 · Owns the gradient</div>
+      <div class="research-cell-b">FundWise green is your most distinctive asset. We let it carry weight — not as decoration, but as <b>the mark itself</b>.</div>
+    </div>
+  </div>
+
+  <div class="benchmark-row">
+    <span class="bm-label">Benchmark</span>
+    <span class="bm-tag">Stripe</span>
+    <span class="bm-tag">Phantom</span>
+    <span class="bm-tag">Linear</span>
+    <span class="bm-tag">Robinhood</span>
+    <span class="bm-tag">Wise</span>
+    <span class="bm-tag">Vercel</span>
+    <span class="bm-tag">Solana</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 12 · STRATA -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-meta">
+    <span class="section-num">CONCEPT 12 ─ STRATA</span>
+    <span class="section-tagline">Layers of liquidity</span>
+  </div>
+  <div class="section-title">Strata</div>
+  <p class="section-desc">Three soft horizontal bands stacked at slight angles, fading from deep forest into bright lime. Reads as layered liquidity — settlements stacking, ledgers compounding. Sophisticated, abstract, distinctly modern. The mark IS the gradient: no white shapes fighting for attention, just three slabs of color.</p>
+
+  <div class="hero-show">
+    <svg width="240" height="240" viewBox="0 0 240 240" fill="none" style="filter:drop-shadow(0 24px 48px rgba(13,107,58,0.18));">
+      <defs>
+        <linearGradient id="st-d" x1="20" y1="20" x2="220" y2="220" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#0d6b3a"/></linearGradient>
+        <linearGradient id="st-m" x1="20" y1="80" x2="220" y2="180" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#1a9151"/></linearGradient>
+        <linearGradient id="st-l" x1="20" y1="140" x2="220" y2="220" gradientUnits="userSpaceOnUse"><stop stop-color="#1a9151"/><stop offset="1" stop-color="#4ec98a"/></linearGradient>
+      </defs>
+      <!-- 3 stacked slabs at different heights, slight angle -->
+      <rect x="36" y="56" width="168" height="36" rx="18" fill="url(#st-d)" transform="rotate(-2 120 74)"/>
+      <rect x="28" y="102" width="184" height="36" rx="18" fill="url(#st-m)"/>
+      <rect x="44" y="148" width="152" height="36" rx="18" fill="url(#st-l)" transform="rotate(2 120 166)"/>
+    </svg>
+    <div class="hero-meta">
+      <div class="hero-meta-h">Why this works</div>
+      <div class="hero-meta-list">
+        <div class="hero-meta-item"><span><b>Owns the gradient</b>The form IS color. No competing white shapes.</span></div>
+        <div class="hero-meta-item"><span><b>Reads as motion</b>Slight rotation gives it energy without being playful.</span></div>
+        <div class="hero-meta-item"><span><b>Crypto-native</b>Echoes Solana&rsquo;s parallel bars but warmer, less harsh.</span></div>
+        <div class="hero-meta-item"><span><b>Scales clean</b>Three slabs hold their identity from 16px to 1024px.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lockup-grid">
+    <div class="lock-card">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="st1d" x1="8" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#0d6b3a"/></linearGradient>
+          <linearGradient id="st1m" x1="8" y1="32" x2="88" y2="72" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#1a9151"/></linearGradient>
+          <linearGradient id="st1l" x1="8" y1="56" x2="88" y2="88" gradientUnits="userSpaceOnUse"><stop stop-color="#1a9151"/><stop offset="1" stop-color="#4ec98a"/></linearGradient>
+        </defs>
+        <rect x="14" y="22" width="68" height="14" rx="7" fill="url(#st1d)" transform="rotate(-2 48 29)"/>
+        <rect x="11" y="41" width="74" height="14" rx="7" fill="url(#st1m)"/>
+        <rect x="17" y="60" width="62" height="14" rx="7" fill="url(#st1l)" transform="rotate(2 48 67)"/>
+      </svg>
+      <div><div class="lock-name">App icon · 96×96</div><div class="lock-desc">primary</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <rect x="14" y="22" width="68" height="14" rx="7" fill="url(#st1d)" transform="rotate(-2 48 29)"/>
+        <rect x="11" y="41" width="74" height="14" rx="7" fill="url(#st1m)"/>
+        <rect x="17" y="60" width="62" height="14" rx="7" fill="url(#st1l)" transform="rotate(2 48 67)"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">app dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <rect x="14" y="22" width="68" height="14" rx="7" fill="rgba(255,255,255,0.95)" transform="rotate(-2 48 29)"/>
+        <rect x="11" y="41" width="74" height="14" rx="7" fill="rgba(255,255,255,0.78)"/>
+        <rect x="17" y="60" width="62" height="14" rx="7" fill="rgba(255,255,255,0.55)" transform="rotate(2 48 67)"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">white knockout</div></div>
+    </div>
+    <div class="lock-card mono">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <rect x="14" y="22" width="68" height="14" rx="7" fill="#fff" transform="rotate(-2 48 29)"/>
+        <rect x="11" y="41" width="74" height="14" rx="7" fill="#fff" opacity="0.72"/>
+        <rect x="17" y="60" width="62" height="14" rx="7" fill="#fff" opacity="0.45" transform="rotate(2 48 67)"/>
+      </svg>
+      <div><div class="lock-name">Monochrome</div><div class="lock-desc">print, embossing</div></div>
+    </div>
+  </div>
+
+  <!-- Wordmark lockup -->
+  <div style="display:flex;align-items:center;gap:22px;padding:32px 36px;background:var(--surface);border:1px solid var(--border);border-radius:24px;flex-wrap:wrap;margin-top:14px;">
+    <svg width="60" height="60" viewBox="0 0 96 96" fill="none">
+      <rect x="14" y="22" width="68" height="14" rx="7" fill="url(#st1d)" transform="rotate(-2 48 29)"/>
+      <rect x="11" y="41" width="74" height="14" rx="7" fill="url(#st1m)"/>
+      <rect x="17" y="60" width="62" height="14" rx="7" fill="url(#st1l)" transform="rotate(2 48 67)"/>
+    </svg>
+    <div style="font-family:var(--fserif);font-size:42px;letter-spacing:-0.8px;color:var(--text);">FundWise</div>
+    <div style="font-family:var(--fmono);font-size:10px;color:var(--text-3);letter-spacing:0.06em;margin-left:auto;">HORIZONTAL LOCKUP</div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 13 · APERTURE -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-meta">
+    <span class="section-num">CONCEPT 13 ─ APERTURE</span>
+    <span class="section-tagline">A monogram with a window</span>
+  </div>
+  <div class="section-title">Aperture</div>
+  <p class="section-desc">A solid rounded square in the gradient, with a precise geometric F-cut carved through it — negative-space monogram. The F is the hinge of "FundWise"; the carved-out form lets the gradient breathe through it. This is the most "Stripe-tier" of the four: confident, restrained, immediately ownable.</p>
+
+  <div class="hero-show">
+    <svg width="240" height="240" viewBox="0 0 240 240" fill="none" style="filter:drop-shadow(0 24px 48px rgba(13,107,58,0.20));">
+      <defs>
+        <linearGradient id="ap-bg" x1="20" y1="20" x2="220" y2="220" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#0a4d2c"/>
+          <stop offset="55%" stop-color="#1a9151"/>
+          <stop offset="100%" stop-color="#4ec98a"/>
+        </linearGradient>
+        <linearGradient id="ap-hi" x1="120" y1="20" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+          <stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/>
+        </linearGradient>
+        <mask id="ap-mask">
+          <rect width="240" height="240" fill="white"/>
+          <!-- carved F: vertical bar + 2 horizontal arms -->
+          <rect x="80" y="60" width="32" height="120" rx="6" fill="black"/>
+          <rect x="80" y="60" width="86" height="32" rx="6" fill="black"/>
+          <rect x="80" y="108" width="64" height="28" rx="6" fill="black"/>
+        </mask>
+      </defs>
+      <rect width="240" height="240" rx="56" fill="url(#ap-bg)" mask="url(#ap-mask)"/>
+      <rect width="240" height="120" rx="56" fill="url(#ap-hi)" mask="url(#ap-mask)"/>
+    </svg>
+    <div class="hero-meta">
+      <div class="hero-meta-h">Why this works</div>
+      <div class="hero-meta-list">
+        <div class="hero-meta-item"><span><b>Negative space</b>The gradient flows through the cut — same energy as Apple, NBC, FedEx.</span></div>
+        <div class="hero-meta-item"><span><b>Monogram, modern</b>An F that doesn&rsquo;t feel corporate-stuffy.</span></div>
+        <div class="hero-meta-item"><span><b>Highly recognizable</b>Distinctive silhouette at thumbnail scale.</span></div>
+        <div class="hero-meta-item"><span><b>Universal lockups</b>Works white-on-grad, grad-on-white, mono.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lockup-grid">
+    <div class="lock-card">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="ap1bg" x1="8" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.55" stop-color="#1a9151"/><stop offset="1" stop-color="#4ec98a"/></linearGradient>
+          <linearGradient id="ap1hi" x1="48" y1="8" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+          <mask id="ap1m"><rect width="96" height="96" fill="white"/><rect x="32" y="24" width="13" height="48" rx="2.5" fill="black"/><rect x="32" y="24" width="34" height="13" rx="2.5" fill="black"/><rect x="32" y="43" width="26" height="11" rx="2.5" fill="black"/></mask>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#ap1bg)" mask="url(#ap1m)"/>
+        <rect width="96" height="48" rx="22" fill="url(#ap1hi)" mask="url(#ap1m)"/>
+      </svg>
+      <div><div class="lock-name">App icon · 96×96</div><div class="lock-desc">primary</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="url(#ap1bg)" mask="url(#ap1m)"/>
+        <rect width="96" height="48" rx="22" fill="url(#ap1hi)" mask="url(#ap1m)"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <mask id="ap1mw"><rect width="96" height="96" fill="white"/><rect x="32" y="24" width="13" height="48" rx="2.5" fill="black"/><rect x="32" y="24" width="34" height="13" rx="2.5" fill="black"/><rect x="32" y="43" width="26" height="11" rx="2.5" fill="black"/></mask>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="white" mask="url(#ap1mw)"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">white knockout</div></div>
+    </div>
+    <div class="lock-card mono">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <rect width="96" height="96" rx="22" fill="white" mask="url(#ap1mw)"/>
+      </svg>
+      <div><div class="lock-name">Monochrome</div><div class="lock-desc">print, embossing</div></div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:22px;padding:32px 36px;background:var(--surface);border:1px solid var(--border);border-radius:24px;flex-wrap:wrap;margin-top:14px;">
+    <svg width="60" height="60" viewBox="0 0 96 96" fill="none">
+      <rect width="96" height="96" rx="22" fill="url(#ap1bg)" mask="url(#ap1m)"/>
+      <rect width="96" height="48" rx="22" fill="url(#ap1hi)" mask="url(#ap1m)"/>
+    </svg>
+    <div style="font-family:var(--fserif);font-size:42px;letter-spacing:-0.8px;color:var(--text);">FundWise</div>
+    <div style="font-family:var(--fmono);font-size:10px;color:var(--text-3);letter-spacing:0.06em;margin-left:auto;">HORIZONTAL LOCKUP</div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 14 · COIN -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-meta">
+    <span class="section-num">CONCEPT 14 ─ COIN</span>
+    <span class="section-tagline">A token, abstracted</span>
+  </div>
+  <div class="section-title">Coin</div>
+  <p class="section-desc">A perfect circle, two-toned along a soft diagonal — like a coin caught mid-rotation. Half rich green, half luminous lime, with a hairline highlight where the two meet. Reads as currency, unity, and motion. The simplest possible mark; the strongest token-economy resonance.</p>
+
+  <div class="hero-show">
+    <svg width="240" height="240" viewBox="0 0 240 240" fill="none" style="filter:drop-shadow(0 24px 48px rgba(13,107,58,0.22));">
+      <defs>
+        <linearGradient id="cn-d" x1="40" y1="40" x2="200" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.45" stop-color="#0d6b3a"/><stop offset="1" stop-color="#1a9151"/></linearGradient>
+        <linearGradient id="cn-l" x1="80" y1="80" x2="200" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#1a9151"/><stop offset="0.5" stop-color="#2db870"/><stop offset="1" stop-color="#7ee0a6"/></linearGradient>
+        <clipPath id="cn-clip"><circle cx="120" cy="120" r="92"/></clipPath>
+      </defs>
+      <g clip-path="url(#cn-clip)">
+        <rect x="28" y="28" width="184" height="184" fill="url(#cn-d)"/>
+        <!-- diagonal split -->
+        <path d="M28 200 L240 -12 L240 240 L28 240 Z" fill="url(#cn-l)"/>
+        <!-- subtle hairline where they meet -->
+        <line x1="28" y1="200" x2="240" y2="-12" stroke="rgba(255,255,255,0.32)" stroke-width="1.5"/>
+      </g>
+      <circle cx="120" cy="120" r="92" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    </svg>
+    <div class="hero-meta">
+      <div class="hero-meta-h">Why this works</div>
+      <div class="hero-meta-list">
+        <div class="hero-meta-item"><span><b>Perfect circle</b>The most enduring shape in finance — coin, token, seal.</span></div>
+        <div class="hero-meta-item"><span><b>Maximum simplicity</b>No literal symbols. Pure form, pure color.</span></div>
+        <div class="hero-meta-item"><span><b>Two-tone identity</b>The diagonal split is uniquely yours — sketchable in seconds.</span></div>
+        <div class="hero-meta-item"><span><b>Crypto-native</b>Lives comfortably next to SOL, USDC, ETH.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lockup-grid">
+    <div class="lock-card">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="cn1d" x1="16" y1="16" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.45" stop-color="#0d6b3a"/><stop offset="1" stop-color="#1a9151"/></linearGradient>
+          <linearGradient id="cn1l" x1="32" y1="32" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#1a9151"/><stop offset="0.5" stop-color="#2db870"/><stop offset="1" stop-color="#7ee0a6"/></linearGradient>
+          <clipPath id="cn1c"><circle cx="48" cy="48" r="36"/></clipPath>
+        </defs>
+        <g clip-path="url(#cn1c)">
+          <rect x="12" y="12" width="72" height="72" fill="url(#cn1d)"/>
+          <path d="M12 80 L96 -4 L96 96 L12 96 Z" fill="url(#cn1l)"/>
+          <line x1="12" y1="80" x2="96" y2="-4" stroke="rgba(255,255,255,0.32)" stroke-width="0.8"/>
+        </g>
+      </svg>
+      <div><div class="lock-name">App icon · 96×96</div><div class="lock-desc">primary</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <g clip-path="url(#cn1c)">
+          <rect x="12" y="12" width="72" height="72" fill="url(#cn1d)"/>
+          <path d="M12 80 L96 -4 L96 96 L12 96 Z" fill="url(#cn1l)"/>
+          <line x1="12" y1="80" x2="96" y2="-4" stroke="rgba(255,255,255,0.32)" stroke-width="0.8"/>
+        </g>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <defs><clipPath id="cn1cw"><circle cx="48" cy="48" r="36"/></clipPath></defs>
+        <g clip-path="url(#cn1cw)">
+          <rect x="12" y="12" width="72" height="72" fill="rgba(255,255,255,0.95)"/>
+          <path d="M12 80 L96 -4 L96 96 L12 96 Z" fill="rgba(255,255,255,0.55)"/>
+        </g>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">white knockout</div></div>
+    </div>
+    <div class="lock-card mono">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <defs><clipPath id="cn1cm"><circle cx="48" cy="48" r="36"/></clipPath></defs>
+        <g clip-path="url(#cn1cm)">
+          <rect x="12" y="12" width="72" height="72" fill="#fff"/>
+          <path d="M12 80 L96 -4 L96 96 L12 96 Z" fill="#fff" opacity="0.55"/>
+        </g>
+      </svg>
+      <div><div class="lock-name">Monochrome</div><div class="lock-desc">print, embossing</div></div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:22px;padding:32px 36px;background:var(--surface);border:1px solid var(--border);border-radius:24px;flex-wrap:wrap;margin-top:14px;">
+    <svg width="60" height="60" viewBox="0 0 96 96" fill="none">
+      <g clip-path="url(#cn1c)">
+        <rect x="12" y="12" width="72" height="72" fill="url(#cn1d)"/>
+        <path d="M12 80 L96 -4 L96 96 L12 96 Z" fill="url(#cn1l)"/>
+        <line x1="12" y1="80" x2="96" y2="-4" stroke="rgba(255,255,255,0.32)" stroke-width="0.8"/>
+      </g>
+    </svg>
+    <div style="font-family:var(--fserif);font-size:42px;letter-spacing:-0.8px;color:var(--text);">FundWise</div>
+    <div style="font-family:var(--fmono);font-size:10px;color:var(--text-3);letter-spacing:0.06em;margin-left:auto;">HORIZONTAL LOCKUP</div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- 15 · MERIDIAN II — refined flowing F -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-meta">
+    <span class="section-num">CONCEPT 15 ─ MERIDIAN</span>
+    <span class="section-tagline">A signature in motion</span>
+  </div>
+  <div class="section-title">Meridian</div>
+  <p class="section-desc">A single continuous stroke — bold, calligraphic, drawn in one breath. The shape suggests an F flowing into a curve, a financial signature, a current of money. Custom gradient stroke (no flat fill) gives it dimensionality. Most distinctive of the set; the only one that could not exist as someone else&rsquo;s mark.</p>
+
+  <div class="hero-show dark">
+    <svg width="240" height="240" viewBox="0 0 240 240" fill="none" style="filter:drop-shadow(0 24px 48px rgba(13,107,58,0.35));">
+      <defs>
+        <linearGradient id="md-stroke" x1="60" y1="40" x2="180" y2="200" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#0d6b3a"/>
+          <stop offset="50%" stop-color="#1a9151"/>
+          <stop offset="100%" stop-color="#7ee0a6"/>
+        </linearGradient>
+      </defs>
+      <!-- single continuous flowing stroke: vertical → cross-bar → curl down -->
+      <path d="M 78 48 L 78 192 M 78 48 L 168 48 M 78 110 L 152 110 M 78 192 C 110 192, 130 168, 130 140"
+            stroke="url(#md-stroke)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <div class="hero-meta">
+      <div class="hero-meta-h">Why this works</div>
+      <div class="hero-meta-list">
+        <div class="hero-meta-item"><span><b>Most distinctive</b>Custom shape — no template, no clip-art lineage.</span></div>
+        <div class="hero-meta-item"><span><b>Reads as F</b>Without spelling it out. Subtle monogram.</span></div>
+        <div class="hero-meta-item"><span><b>Calligraphic energy</b>Confident, drawn-in-one-stroke. Personal.</span></div>
+        <div class="hero-meta-item"><span><b>Stroke gradient</b>The line itself transitions — a move very few crypto brands make.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lockup-grid">
+    <div class="lock-card">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="md1s" x1="24" y1="16" x2="72" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="0.5" stop-color="#1a9151"/><stop offset="1" stop-color="#7ee0a6"/></linearGradient></defs>
+        <path d="M 31 19 L 31 77 M 31 19 L 67 19 M 31 44 L 61 44 M 31 77 C 44 77, 52 67, 52 56" stroke="url(#md1s)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div><div class="lock-name">On light</div><div class="lock-desc">grad stroke</div></div>
+    </div>
+    <div class="lock-card dark">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <path d="M 31 19 L 31 77 M 31 19 L 67 19 M 31 44 L 61 44 M 31 77 C 44 77, 52 67, 52 56" stroke="url(#md1s)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div><div class="lock-name">On dark</div><div class="lock-desc">primary · dark mode</div></div>
+    </div>
+    <div class="lock-card grad">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <path d="M 31 19 L 31 77 M 31 19 L 67 19 M 31 44 L 61 44 M 31 77 C 44 77, 52 67, 52 56" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div><div class="lock-name">On gradient</div><div class="lock-desc">white solid</div></div>
+    </div>
+    <div class="lock-card mono">
+      <svg width="76" height="76" viewBox="0 0 96 96" fill="none">
+        <path d="M 31 19 L 31 77 M 31 19 L 67 19 M 31 44 L 61 44 M 31 77 C 44 77, 52 67, 52 56" stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div><div class="lock-name">Monochrome</div><div class="lock-desc">print, embossing</div></div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:22px;padding:32px 36px;background:#0a1a10;border:1px solid #143020;border-radius:24px;flex-wrap:wrap;margin-top:14px;">
+    <svg width="60" height="60" viewBox="0 0 96 96" fill="none">
+      <path d="M 31 19 L 31 77 M 31 19 L 67 19 M 31 44 L 61 44 M 31 77 C 44 77, 52 67, 52 56" stroke="url(#md1s)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <div style="font-family:var(--fserif);font-size:42px;letter-spacing:-0.8px;color:#e8f5ec;">FundWise</div>
+    <div style="font-family:var(--fmono);font-size:10px;color:#5a8070;letter-spacing:0.06em;margin-left:auto;">HORIZONTAL LOCKUP</div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ════════════════════════════════════ -->
+<!-- COMPARE PANEL -->
+<!-- ════════════════════════════════════ -->
+<div class="section">
+  <div class="section-meta">
+    <span class="section-num">SIDE BY SIDE</span>
+    <span class="section-tagline">All four, app-icon scale</span>
+  </div>
+  <div class="section-title">Compare</div>
+  <p class="section-desc">Same canvas, same gradient, same scale. Pick the one that feels like FundWise to you.</p>
+
+  <div class="compare-panel">
+    <div class="compare-cell">
+      <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="cmpst1" x1="8" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="1" stop-color="#0d6b3a"/></linearGradient>
+          <linearGradient id="cmpst2" x1="8" y1="32" x2="88" y2="72" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#1a9151"/></linearGradient>
+          <linearGradient id="cmpst3" x1="8" y1="56" x2="88" y2="88" gradientUnits="userSpaceOnUse"><stop stop-color="#1a9151"/><stop offset="1" stop-color="#4ec98a"/></linearGradient>
+        </defs>
+        <rect x="14" y="22" width="68" height="14" rx="7" fill="url(#cmpst1)" transform="rotate(-2 48 29)"/>
+        <rect x="11" y="41" width="74" height="14" rx="7" fill="url(#cmpst2)"/>
+        <rect x="17" y="60" width="62" height="14" rx="7" fill="url(#cmpst3)" transform="rotate(2 48 67)"/>
+      </svg>
+      <div class="compare-cell-name">Strata</div>
+      <div class="compare-cell-meta">12 ─ LAYERED</div>
+    </div>
+    <div class="compare-cell">
+      <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="cmpap" x1="8" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.55" stop-color="#1a9151"/><stop offset="1" stop-color="#4ec98a"/></linearGradient>
+          <linearGradient id="cmpaph" x1="48" y1="8" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+          <mask id="cmpapm"><rect width="96" height="96" fill="white"/><rect x="32" y="24" width="13" height="48" rx="2.5" fill="black"/><rect x="32" y="24" width="34" height="13" rx="2.5" fill="black"/><rect x="32" y="43" width="26" height="11" rx="2.5" fill="black"/></mask>
+        </defs>
+        <rect width="96" height="96" rx="22" fill="url(#cmpap)" mask="url(#cmpapm)"/>
+        <rect width="96" height="48" rx="22" fill="url(#cmpaph)" mask="url(#cmpapm)"/>
+      </svg>
+      <div class="compare-cell-name">Aperture</div>
+      <div class="compare-cell-meta">13 ─ MONOGRAM</div>
+    </div>
+    <div class="compare-cell">
+      <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+        <defs>
+          <linearGradient id="cmpcnd" x1="16" y1="16" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a4d2c"/><stop offset="0.45" stop-color="#0d6b3a"/><stop offset="1" stop-color="#1a9151"/></linearGradient>
+          <linearGradient id="cmpcnl" x1="32" y1="32" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#1a9151"/><stop offset="0.5" stop-color="#2db870"/><stop offset="1" stop-color="#7ee0a6"/></linearGradient>
+          <clipPath id="cmpcnc"><circle cx="48" cy="48" r="36"/></clipPath>
+        </defs>
+        <g clip-path="url(#cmpcnc)">
+          <rect x="12" y="12" width="72" height="72" fill="url(#cmpcnd)"/>
+          <path d="M12 80 L96 -4 L96 96 L12 96 Z" fill="url(#cmpcnl)"/>
+          <line x1="12" y1="80" x2="96" y2="-4" stroke="rgba(255,255,255,0.32)" stroke-width="0.8"/>
+        </g>
+      </svg>
+      <div class="compare-cell-name">Coin</div>
+      <div class="compare-cell-meta">14 ─ TOKEN</div>
+    </div>
+    <div class="compare-cell">
+      <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+        <defs><linearGradient id="cmpmd" x1="24" y1="16" x2="72" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="0.5" stop-color="#1a9151"/><stop offset="1" stop-color="#7ee0a6"/></linearGradient></defs>
+        <path d="M 31 19 L 31 77 M 31 19 L 67 19 M 31 44 L 61 44 M 31 77 C 44 77, 52 67, 52 56" stroke="url(#cmpmd)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="compare-cell-name">Meridian</div>
+      <div class="compare-cell-meta">15 ─ STROKE</div>
+    </div>
+  </div>
+
+  <div class="note-row">
+    <div>
+      <strong>My pick:</strong> &nbsp;<b>13 Aperture</b> &mdash; the negative-space F is the most ownable, scales beautifully, and signals seriousness without being stiff. <b>14 Coin</b> is the strongest if you want pure crypto-native simplicity. <b>15 Meridian</b> if you want the most distinctive (and most personal) of all four.
+      <br><br>Tell me a number and I&rsquo;ll lock it across every brand surface &mdash; Twitter header, app icon, system, the whole brand.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

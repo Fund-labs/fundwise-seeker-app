@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — App Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface-2:#21262d;--border:#30363d;
+  --text:#f0f6fc;--text-2:#8b949e;--text-3:#484f58;
+  --cyan:oklch(75% 0.15 195);--cyan-dim:oklch(75% 0.15 195 / 0.12);--cyan-border:oklch(75% 0.15 195 / 0.25);
+  --purple:oklch(65% 0.18 290);--purple-dim:oklch(65% 0.18 290 / 0.12);--purple-border:oklch(65% 0.18 290 / 0.25);
+  --green:oklch(70% 0.18 155);--red:oklch(65% 0.20 25);
+  --fh:'Space Grotesk',sans-serif;--fb:'Inter',sans-serif;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--fb);-webkit-font-smoothing:antialiased;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:24px;padding:40px 24px;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(48,54,61,0.3) 1px,transparent 1px),linear-gradient(90deg,rgba(48,54,61,0.3) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 100%);
+}
+#root{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:24px;}
+
+/* ── APP SHELL (fills the iOS frame) ── */
+.app{width:100%;height:100%;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;position:relative;font-family:var(--fb);}
+
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s;}
+.screen.s-right{transform:translateX(100%);opacity:0;pointer-events:none;}
+.screen.s-left{transform:translateX(-30%);opacity:0;pointer-events:none;}
+.screen.s-active{transform:translateX(0);opacity:1;}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px 8px;flex-shrink:0;}
+.topbar-title{font-family:var(--fh);font-size:17px;font-weight:700;letter-spacing:-0.3px;}
+.back-btn{display:flex;align-items:center;gap:4px;color:var(--cyan);font-size:14px;font-weight:500;background:none;border:none;cursor:pointer;font-family:var(--fb);padding:4px 0;}
+.icon-btn{width:32px;height:32px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;}
+
+/* scroll */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* bottom nav */
+.btm-nav{display:flex;align-items:center;padding:8px 0 4px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:500;color:var(--text-3);cursor:pointer;padding:4px 0;transition:color 0.15s;}
+.nav-item.on{color:var(--cyan);}
+.nav-ico{font-size:19px;line-height:1;}
+
+/* wallet screen */
+.wallet-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 24px;text-align:center;flex:1;}
+.w-h1{font-family:var(--fh);font-size:24px;font-weight:700;letter-spacing:-0.5px;margin:24px 0 8px;}
+.w-sub{font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:36px;max-width:240px;}
+.w-btns{width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+.w-btn{width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:var(--fb);display:flex;align-items:center;gap:10px;transition:all 0.15s;}
+.w-btn-icon{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.w-terms{font-size:10px;color:var(--text-3);line-height:1.5;}
+
+/* home */
+.home-hdr{padding:16px 20px 0;}
+.home-greet{font-size:12px;color:var(--text-2);}
+.home-name{font-family:var(--fh);font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-top:2px;}
+.home-addr{font-size:10px;color:var(--text-3);margin-top:2px;font-family:monospace;}
+
+.net-card{margin:14px 20px;padding:18px;border-radius:16px;background:var(--surface);border:1px solid var(--border);}
+.net-lbl{font-size:11px;color:var(--text-2);margin-bottom:4px;}
+.net-amt{font-family:var(--fh);font-size:30px;font-weight:700;letter-spacing:-1px;}
+.net-sub{font-size:11px;color:var(--text-2);margin-top:3px;}
+
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 8px;}
+.sec-hdr-t{font-family:var(--fh);font-size:14px;font-weight:600;}
+.sec-hdr-a{font-size:12px;color:var(--cyan);font-weight:500;cursor:pointer;background:none;border:none;font-family:var(--fb);}
+
+.grp-card{margin:0 20px 8px;padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:10px;}
+.grp-card:active{transform:scale(0.98);}
+.grp-emoji{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.grp-info{flex:1;min-width:0;}
+.grp-name{font-family:var(--fh);font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.grp-meta{font-size:11px;color:var(--text-2);margin-top:1px;}
+.grp-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;}
+.b-split{background:var(--cyan-dim);color:var(--cyan);border:1px solid var(--cyan-border);}
+.b-fund{background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple-border);}
+.grp-bal{font-family:var(--fh);font-size:14px;font-weight:600;margin-top:4px;text-align:right;}
+
+.fab{position:absolute;bottom:76px;right:18px;width:50px;height:50px;border-radius:50%;background:var(--cyan);color:#0d1117;border:none;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px oklch(75% 0.15 195 / 0.4);z-index:10;transition:transform 0.15s;}
+.fab:active{transform:scale(0.95);}
+
+/* split detail */
+.bal-strip{display:flex;gap:8px;padding:12px 20px;overflow-x:auto;}
+.bal-strip::-webkit-scrollbar{display:none;}
+.bal-chip{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:10px 12px;min-width:90px;}
+.bal-chip-n{font-size:10px;color:var(--text-2);margin-bottom:3px;}
+.bal-chip-v{font-family:var(--fh);font-size:15px;font-weight:700;}
+
+.settle-banner{margin:0 20px 12px;padding:12px 14px;border-radius:11px;background:oklch(70% 0.18 155 / 0.08);border:1px solid oklch(70% 0.18 155 / 0.25);display:flex;align-items:center;gap:10px;cursor:pointer;}
+.settle-banner:active{background:oklch(70% 0.18 155 / 0.14);}
+
+.exp-list{padding:0 20px 100px;}
+.exp-day{font-size:10px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;padding:10px 0 5px;}
+.exp-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.exp-row:last-child{border-bottom:none;}
+.exp-ico{width:36px;height:36px;border-radius:9px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.exp-main{flex:1;min-width:0;}
+.exp-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.exp-who{font-size:10px;color:var(--text-2);}
+.exp-rt{text-align:right;}
+.exp-total{font-family:var(--fh);font-size:13px;font-weight:600;}
+.exp-share{font-size:10px;}
+
+/* bottom action bar */
+.action-bar{padding:10px 20px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.btn-full{width:100%;padding:14px;border-radius:11px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--fb);letter-spacing:-0.2px;transition:all 0.15s;}
+.btn-cyan{background:var(--cyan);color:#0d1117;}
+.btn-cyan:active{filter:brightness(1.1);}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-ghost{background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);}
+
+/* settle up */
+.settle-card{margin:14px 20px 10px;padding:20px;border-radius:16px;background:var(--surface);border:1px solid var(--border);}
+.settle-ppl{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.settle-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;background:var(--surface-2);border:1px solid var(--border);}
+.settle-arrow-txt{flex:1;text-align:center;}
+.settle-pays{font-size:10px;color:var(--text-3);}
+.settle-pays-amt{font-family:var(--fh);font-size:15px;font-weight:700;color:var(--cyan);}
+.settle-name{font-size:10px;color:var(--text-2);text-align:center;margin-top:3px;}
+
+/* tx states */
+.tx-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;flex:1;}
+.tx-spinner{width:56px;height:56px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--cyan);animation:spin 1s linear infinite;margin-bottom:20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.tx-ok{width:56px;height:56px;border-radius:50%;background:oklch(70% 0.18 155 / 0.15);border:2px solid oklch(70% 0.18 155 / 0.4);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px;}
+.tx-h1{font-family:var(--fh);font-size:20px;font-weight:700;letter-spacing:-0.3px;margin-bottom:6px;}
+.tx-sub{font-size:13px;color:var(--text-2);margin-bottom:20px;line-height:1.6;}
+.tx-sig{font-size:9px;font-family:monospace;color:var(--text-3);background:var(--surface);padding:8px 12px;border-radius:8px;border:1px solid var(--border);word-break:break-all;margin-bottom:20px;text-align:left;width:100%;}
+.tx-sig-lbl{font-size:9px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;}
+
+/* fund detail */
+.treasury-card{margin:14px 20px;padding:20px;border-radius:16px;background:linear-gradient(135deg,var(--purple-dim),oklch(65% 0.18 290 / 0.04));border:1px solid var(--purple-border);}
+.t-lbl{font-size:10px;color:var(--purple);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.t-amt{font-family:var(--fh);font-size:32px;font-weight:700;letter-spacing:-1px;margin-bottom:3px;}
+.t-sub{font-size:11px;color:var(--text-2);}
+.t-bar-wrap{margin-top:14px;}
+.t-bar-lbls{display:flex;justify-content:space-between;font-size:10px;color:var(--text-2);margin-bottom:5px;}
+.t-bar{height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden;}
+.t-bar-fill{height:100%;border-radius:3px;background:var(--purple);}
+
+.mbr-strip{display:flex;gap:10px;padding:12px 20px;overflow-x:auto;}
+.mbr-strip::-webkit-scrollbar{display:none;}
+.mbr-chip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.mbr-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;background:var(--surface-2);border:2px solid var(--border);}
+.mbr-name{font-size:9px;color:var(--text-2);}
+.mbr-contrib{font-size:10px;font-weight:600;}
+
+.prop-list{padding:0 20px 100px;}
+.prop-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px;margin-bottom:8px;cursor:pointer;}
+.prop-card:active{border-color:var(--purple-border);}
+.prop-hd{display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;}
+.prop-title{font-family:var(--fh);font-size:14px;font-weight:600;letter-spacing:-0.2px;}
+.prop-memo{font-size:11px;color:var(--text-2);margin-top:1px;}
+.prop-status{font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;}
+.ps-pending{background:oklch(80% 0.15 80 / 0.15);color:oklch(80% 0.15 80);border:1px solid oklch(80% 0.15 80 / 0.3);}
+.ps-approved{background:oklch(70% 0.18 155 / 0.15);color:var(--green);border:1px solid oklch(70% 0.18 155 / 0.3);}
+.ps-executed{background:var(--cyan-dim);color:var(--cyan);border:1px solid var(--cyan-border);}
+.prop-amt{font-family:var(--fh);font-size:16px;font-weight:700;margin-bottom:7px;}
+.prop-bar{height:3px;background:var(--surface-2);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.prop-bar-fill{height:100%;border-radius:2px;}
+.prop-votes{display:flex;gap:6px;}
+.vote-btn{flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);font-family:var(--fb);transition:all 0.15s;}
+.vote-btn:active{transform:scale(0.97);}
+
+/* sheet */
+.sheet-ov{position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:50;display:flex;align-items:flex-end;transition:opacity 0.25s;}
+.sheet-ov.gone{opacity:0;pointer-events:none;}
+.sheet{width:100%;background:var(--surface);border-radius:20px 20px 0 0;padding:18px 20px 36px;transform:translateY(0);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);}
+.sheet-ov.gone .sheet{transform:translateY(100%);}
+.sheet-handle{width:32px;height:3px;border-radius:2px;background:var(--border);margin:0 auto 16px;}
+.sheet-title{font-family:var(--fh);font-size:17px;font-weight:700;letter-spacing:-0.3px;margin-bottom:16px;}
+.fld{margin-bottom:12px;}
+.fld-lbl{font-size:10px;color:var(--text-2);font-weight:600;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em;}
+.fld-input{width:100%;padding:11px 13px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-size:14px;font-family:var(--fb);outline:none;transition:border-color 0.15s;}
+.fld-input:focus{border-color:var(--cyan);}
+.fld-input::placeholder{color:var(--text-3);}
+.pill-row{display:flex;gap:7px;flex-wrap:wrap;}
+.pill-btn{padding:7px 12px;border-radius:7px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:var(--fb);}
+.pill-btn.on-c{background:var(--cyan-dim);border-color:var(--cyan-border);color:var(--cyan);}
+.pill-btn.on-p{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple);}
+
+/* onboard */
+.onboard-wrap{flex:1;overflow-y:auto;padding:24px 24px 40px;}
+.step-dots{display:flex;gap:5px;margin-bottom:20px;}
+.step-dot{height:5px;border-radius:3px;background:var(--border);transition:all 0.25s;}
+.step-dot.on{background:var(--cyan);width:18px;}
+.step-dot:not(.on){width:5px;}
+.ob-h1{font-family:var(--fh);font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:7px;}
+.ob-sub{font-size:13px;color:var(--text-2);margin-bottom:28px;line-height:1.6;}
+.mode-pick{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+.mode-card{padding:16px;border-radius:13px;background:var(--surface);border:2px solid var(--border);cursor:pointer;transition:all 0.15s;}
+.mode-card.sel-c{border-color:var(--cyan);background:var(--cyan-dim);}
+.mode-card.sel-p{border-color:var(--purple);background:var(--purple-dim);}
+.mode-card-t{font-family:var(--fh);font-size:14px;font-weight:600;margin-bottom:4px;}
+.mode-card-d{font-size:11px;color:var(--text-2);line-height:1.5;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+// ── DATA ──
+const GROUPS = [
+  { id:1, name:'Lisbon Trip', emoji:'🏖️', mode:'split', members:4, coin:'USDC', myBalance:+84.50,
+    expenses:[
+      {id:1,name:'Wine dinner',icon:'🍷',payer:'Asha',total:120,myShare:-30,date:'Today'},
+      {id:2,name:'Airport taxi',icon:'🚕',payer:'You',total:48,myShare:+36,date:'Today'},
+      {id:3,name:'Hotel (2 nights)',icon:'🏨',payer:'Kiran',total:320,myShare:-80,date:'Yesterday'},
+      {id:4,name:'Lunch - LX Market',icon:'🥗',payer:'You',total:72,myShare:+54,date:'Yesterday'},
+      {id:5,name:'Museum tickets',icon:'🎨',payer:'Dev',total:80,myShare:-20,date:'Apr 22'},
+    ],
+    balances:[{n:'You',v:+84.50},{n:'Kiran',v:-30},{n:'Asha',v:-24.50},{n:'Dev',v:-30}],
+    settlements:[{from:'Kiran',to:'You',amt:30},{from:'Dev',to:'You',amt:30},{from:'Asha',to:'Kiran',amt:24.50}]
+  },
+  { id:2, name:"Priya's Gift", emoji:'🎁', mode:'fund', members:6, coin:'USDC',
+    total:600, goal:750, myContrib:100,
+    proposals:[
+      {id:1,title:'Gift card order',memo:'Amazon · $450',amt:450,status:'pending',yes:3,no:0,tot:6},
+      {id:2,title:'Delivery flowers',memo:'FTD bouquet',amt:80,status:'approved',yes:5,no:0,tot:6},
+      {id:3,title:'Dinner reservation',memo:'Deposit at Nobu',amt:120,status:'executed',yes:6,no:0,tot:6},
+    ],
+    members:[{n:'You',e:'🧑',c:100},{n:'Asha',e:'👩',c:100},{n:'Kiran',e:'🧔',c:100},{n:'Dev',e:'👨',c:100},{n:'Mia',e:'👱',c:100},{n:'Raj',e:'🧕',c:100}]
+  },
+  { id:3, name:'Flatmates', emoji:'🏠', mode:'split', members:3, coin:'USDC', myBalance:-45,
+    expenses:[
+      {id:1,name:'Internet bill',icon:'📡',payer:'Kiran',total:60,myShare:-20,date:'Apr 21'},
+      {id:2,name:'Groceries',icon:'🛒',payer:'You',total:90,myShare:+60,date:'Apr 19'},
+    ],
+    balances:[{n:'You',v:-45},{n:'Kiran',v:+30},{n:'Asha',v:+15}],
+    settlements:[{from:'You',to:'Kiran',amt:30},{from:'You',to:'Asha',amt:15}]
+  },
+  { id:4, name:'Berlin Conf', emoji:'🧳', mode:'fund', members:8, coin:'USDC',
+    total:1200, goal:2000, myContrib:150,
+    proposals:[
+      {id:1,title:'Conference tickets',memo:'x8 @ $80 each',amt:640,status:'executed',yes:8,no:0,tot:8},
+      {id:2,title:'Airbnb deposit',memo:'3-night stay',amt:480,status:'pending',yes:4,no:1,tot:8},
+    ],
+    members:[{n:'You',e:'🧑',c:150},{n:'Asha',e:'👩',c:150},{n:'Kiran',e:'🧔',c:150},{n:'Dev',e:'👨',c:150},{n:'Mia',e:'👱',c:150},{n:'Raj',e:'🧕',c:150},{n:'Sam',e:'🧒',c:150},{n:'Pat',e:'🙋',c:150}]
+  },
+];
+
+// ── LOGO ──
+const Logo = ({size=24}) => (
+  <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+    <path d="M14 2 L26 14 L14 26 Z" fill="oklch(75% 0.15 195)"/>
+    <path d="M14 2 L2 14 L14 26 Z" fill="oklch(65% 0.18 290)"/>
+    <line x1="14" y1="2" x2="14" y2="26" stroke="#0d1117" strokeWidth="1.5"/>
+  </svg>
+);
+
+// ── WALLET CONNECT ──
+function WalletScreen({onConnect}) {
+  const [busy, setBusy] = useState(null);
+  const connect = (w) => { setBusy(w); setTimeout(()=>{ setBusy(null); onConnect(); }, 1400); };
+  const wallets = [
+    {id:'phantom',label:'Phantom',icon:'👻',bg:'#4C44C6'},
+    {id:'solflare',label:'Solflare',icon:'☀️',bg:'#FC7227'},
+    {id:'backpack',label:'Backpack',icon:'🎒',bg:'#E33E3F'},
+  ];
+  return (
+    <div className="screen s-active" style={{display:'flex',flexDirection:'column'}}>
+      <div className="wallet-wrap">
+        <Logo size={60}/>
+        <div className="w-h1">Welcome to<br/>FundWise</div>
+        <div className="w-sub">Connect your Solana wallet to split expenses and settle on-chain.</div>
+        <div className="w-btns">
+          {wallets.map(w=>(
+            <button key={w.id} className="w-btn" style={{background:w.bg,color:'#fff'}} onClick={()=>connect(w.id)} disabled={!!busy}>
+              <div className="w-btn-icon">{busy===w.id?'⏳':w.icon}</div>
+              {busy===w.id?'Connecting…':`Connect ${w.label}`}
+            </button>
+          ))}
+        </div>
+        <div className="w-terms">No email · No password · Your wallet is your identity</div>
+      </div>
+    </div>
+  );
+}
+
+// ── ONBOARD ──
+function OnboardScreen({onDone}) {
+  const [step, setStep] = useState(0);
+  const [mode, setMode] = useState(null);
+  const [name, setName] = useState('');
+  const [token, setToken] = useState('USDC');
+  const N = 4;
+  const next = () => step < N-1 ? setStep(s=>s+1) : onDone();
+
+  return (
+    <div className="screen s-active" style={{display:'flex',flexDirection:'column'}}>
+      <div className="topbar" style={{paddingTop:14}}>
+        <Logo size={20}/>
+        <div style={{fontFamily:'var(--fh)',fontSize:15,fontWeight:600}}>Create Group</div>
+        <div style={{width:20}}></div>
+      </div>
+      <div className="onboard-wrap">
+        <div className="step-dots">
+          {Array.from({length:N}).map((_,i)=><div key={i} className={`step-dot${i===step?' on':''}`}></div>)}
+        </div>
+
+        {step===0 && <>
+          <div className="ob-h1">Pick a mode</div>
+          <div className="ob-sub">Choose how your group handles money. Can't be changed later.</div>
+          <div className="mode-pick">
+            <div className={`mode-card${mode==='split'?' sel-c':''}`} onClick={()=>setMode('split')}>
+              <div className="mode-card-t">⚡ Split Mode</div>
+              <div className="mode-card-d">Log expenses, see who owes what, settle with one-click stablecoin transfers.</div>
+            </div>
+            <div className={`mode-card${mode==='fund'?' sel-p':''}`} onClick={()=>setMode('fund')}>
+              <div className="mode-card-t">🏦 Fund Mode</div>
+              <div className="mode-card-d">Pool stablecoins upfront. Spend via proposal + threshold vote.</div>
+            </div>
+          </div>
+          <button className="btn-full btn-cyan" style={{opacity:mode?1:0.4}} disabled={!mode} onClick={next}>Continue →</button>
+        </>}
+
+        {step===1 && <>
+          <div className="ob-h1">Name your group</div>
+          <div className="ob-sub">Something your friends will recognise when they join.</div>
+          <div className="fld">
+            <div className="fld-lbl">Group name</div>
+            <input className="fld-input" placeholder="e.g. Lisbon Trip…" value={name} onChange={e=>setName(e.target.value)}/>
+          </div>
+          <div style={{height:16}}></div>
+          <button className="btn-full btn-cyan" style={{opacity:name.trim()?1:0.4}} disabled={!name.trim()} onClick={next}>Continue →</button>
+        </>}
+
+        {step===2 && <>
+          <div className="ob-h1">Pick a stablecoin</div>
+          <div className="ob-sub">All expenses and settlements use this token.</div>
+          <div className="fld">
+            <div className="fld-lbl">Token</div>
+            <div className="pill-row">
+              {['USDC','USDT','PYUSD'].map(t=>(
+                <button key={t} className={`pill-btn${token===t?' on-c':''}`} onClick={()=>setToken(t)}>{t}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{marginTop:20,padding:'14px',background:'var(--surface-2)',borderRadius:11,border:'1px solid var(--border)',marginBottom:20}}>
+            <div style={{fontSize:12,color:'var(--text-2)',lineHeight:1.7}}>
+              <div>Mode: <strong style={{color:mode==='split'?'var(--cyan)':'var(--purple)'}}>{mode==='split'?'Split':'Fund'}</strong></div>
+              <div>Name: <strong style={{color:'var(--text)'}}>{name}</strong></div>
+              <div>Token: <strong style={{color:'var(--text)'}}>{token}</strong></div>
+            </div>
+          </div>
+          <button className="btn-full btn-cyan" onClick={next}>Create group →</button>
+        </>}
+
+        {step===3 && <>
+          <div style={{textAlign:'center',paddingTop:32}}>
+            <div className="tx-ok" style={{margin:'0 auto 18px'}}>✓</div>
+            <div className="tx-h1">Group created!</div>
+            <div className="tx-sub">Share the link to invite members.</div>
+            <div style={{background:'var(--surface-2)',borderRadius:10,padding:'11px 13px',border:'1px solid var(--border)',marginBottom:20,textAlign:'left'}}>
+              <div style={{fontSize:9,color:'var(--text-3)',marginBottom:3,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>Invite link</div>
+              <div style={{fontSize:12,fontFamily:'monospace',color:'var(--cyan)',wordBreak:'break-all'}}>fundwise.app/join/g7xK2mN</div>
+            </div>
+            <button className="btn-full btn-cyan" onClick={onDone}>Open group →</button>
+          </div>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+// ── HOME ──
+function HomeScreen({onGroup, onNewGroup}) {
+  return (
+    <div className="screen s-active" style={{display:'flex',flexDirection:'column',height:'100%'}}>
+      <div className="topbar" style={{paddingTop:14}}>
+        <Logo size={20}/>
+        <div style={{fontFamily:'var(--fh)',fontSize:17,fontWeight:700}}>FundWise</div>
+        <div className="icon-btn">👤</div>
+      </div>
+      <div className="scroll">
+        <div className="home-hdr">
+          <div className="home-greet">Good morning,</div>
+          <div className="home-name">Sarthi 👋</div>
+          <div className="home-addr">7xKp…mN4q</div>
+        </div>
+        <div className="net-card">
+          <div className="net-lbl">Net balance · all groups</div>
+          <div className="net-amt" style={{color:'var(--green)'}}>+$39.50</div>
+          <div className="net-sub">Owed across 2 groups</div>
+        </div>
+        <div className="sec-hdr">
+          <div className="sec-hdr-t">Your groups</div>
+          <button className="sec-hdr-a" onClick={onNewGroup}>+ New</button>
+        </div>
+        {GROUPS.map(g=>{
+          const isPos = g.mode==='split' && g.myBalance > 0;
+          const isNeg = g.mode==='split' && g.myBalance < 0;
+          const balColor = isPos?'var(--green)':isNeg?'var(--red)':'var(--text-2)';
+          const balText = g.mode==='split'
+            ? (isPos?`+$${g.myBalance.toFixed(2)}`:isNeg?`-$${Math.abs(g.myBalance).toFixed(2)}`:'settled')
+            : `$${g.myContrib} in`;
+          return (
+            <div key={g.id} className="grp-card" onClick={()=>onGroup(g)}>
+              <div className="grp-emoji" style={{background:g.mode==='split'?'var(--cyan-dim)':'var(--purple-dim)'}}>{g.emoji}</div>
+              <div className="grp-info">
+                <div className="grp-name">{g.name}</div>
+                <div className="grp-meta">{g.members} members · {g.coin}</div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <div className={`grp-badge b-${g.mode}`}>{g.mode==='split'?'Split':'Fund'}</div>
+                <div className="grp-bal" style={{color:balColor}}>{balText}</div>
+              </div>
+            </div>
+          );
+        })}
+        <div style={{height:90}}></div>
+      </div>
+      <div className="btm-nav">
+        <div className="nav-item on"><div className="nav-ico">🏠</div>Home</div>
+        <div className="nav-item"><div className="nav-ico">🔔</div>Activity</div>
+        <div className="nav-item"><div className="nav-ico">⚙️</div>Settings</div>
+      </div>
+      <button className="fab" onClick={onNewGroup}>+</button>
+    </div>
+  );
+}
+
+// ── SPLIT GROUP ──
+function SplitGroupScreen({group, onBack, onSettle}) {
+  const [showAdd, setShowAdd] = useState(false);
+  const [token, setToken] = useState('USDC');
+  const [splitType, setSplitType] = useState('Equal');
+  const days = [...new Set(group.expenses.map(e=>e.date))];
+  return (
+    <div className="screen s-active" style={{display:'flex',flexDirection:'column',height:'100%'}}>
+      <div className="topbar" style={{paddingTop:14}}>
+        <button className="back-btn" onClick={onBack}>← Back</button>
+        <div className="topbar-title">{group.emoji} {group.name}</div>
+        <div className="icon-btn">⋯</div>
+      </div>
+      <div className="scroll">
+        <div className="bal-strip">
+          {group.balances.map(b=>(
+            <div key={b.n} className="bal-chip">
+              <div className="bal-chip-n">{b.n}</div>
+              <div className="bal-chip-v" style={{color:b.v>0?'var(--green)':b.v<0?'var(--red)':'var(--text-2)'}}>
+                {b.v>0?'+':''}{b.v.toFixed(2)}
+              </div>
+            </div>
+          ))}
+        </div>
+        {group.myBalance !== 0 && (
+          <div className="settle-banner" onClick={onSettle}>
+            <div style={{fontSize:18}}>{group.myBalance>0?'💸':'💳'}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12,fontWeight:600,color:'var(--green)'}}>
+                {group.myBalance>0?`Collect $${group.myBalance.toFixed(2)}`:`You owe $${Math.abs(group.myBalance).toFixed(2)}`}
+              </div>
+              <div style={{fontSize:10,color:'var(--text-2)'}}>
+                {group.myBalance>0?'Remind friends to settle':'One click · on-chain settlement'}
+              </div>
+            </div>
+            <div style={{color:'var(--green)',fontSize:14}}>→</div>
+          </div>
+        )}
+        <div className="exp-list">
+          {days.map(day=>{
+            const exps = group.expenses.filter(e=>e.date===day);
+            return (
+              <div key={day}>
+                <div className="exp-day">{day}</div>
+                {exps.map(e=>(
+                  <div key={e.id} className="exp-row">
+                    <div className="exp-ico">{e.icon}</div>
+                    <div className="exp-main">
+                      <div className="exp-name">{e.name}</div>
+                      <div className="exp-who">{e.payer==='You'?'Paid by you':`Paid by ${e.payer}`}</div>
+                    </div>
+                    <div className="exp-rt">
+                      <div className="exp-total">${e.total.toFixed(2)}</div>
+                      <div className="exp-share" style={{color:e.myShare>0?'var(--green)':e.myShare<0?'var(--red)':'var(--text-2)'}}>
+                        {e.myShare>0?`+$${e.myShare.toFixed(2)}`:e.myShare<0?`-$${Math.abs(e.myShare).toFixed(2)}`:'—'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="action-bar">
+        <button className="btn-full btn-cyan" onClick={()=>setShowAdd(true)}>+ Add expense</button>
+      </div>
+      {/* Add Expense Sheet */}
+      <div className={`sheet-ov${showAdd?'':' gone'}`} onClick={e=>e.target===e.currentTarget&&setShowAdd(false)}>
+        <div className="sheet">
+          <div className="sheet-handle"></div>
+          <div className="sheet-title">Add expense</div>
+          <div className="fld"><div className="fld-lbl">Description</div><input className="fld-input" placeholder="e.g. Dinner, Taxi…"/></div>
+          <div className="fld"><div className="fld-lbl">Amount</div><input className="fld-input" placeholder="0.00" type="number"/></div>
+          <div className="fld">
+            <div className="fld-lbl">Token</div>
+            <div className="pill-row">{['USDC','USDT','PYUSD'].map(t=><button key={t} className={`pill-btn${token===t?' on-c':''}`} onClick={()=>setToken(t)}>{t}</button>)}</div>
+          </div>
+          <div className="fld">
+            <div className="fld-lbl">Split type</div>
+            <div className="pill-row">{['Equal','Shares','Exact','%'].map(s=><button key={s} className={`pill-btn${splitType===s?' on-c':''}`} onClick={()=>setSplitType(s)}>{s}</button>)}</div>
+          </div>
+          <button className="btn-full btn-cyan" onClick={()=>setShowAdd(false)}>Add expense</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SETTLE UP ──
+function SettleUpScreen({group, onBack}) {
+  const [step, setStep] = useState('review');
+  if(step==='busy') return (
+    <div className="screen s-active" style={{display:'flex',flexDirection:'column',height:'100%'}}>
+      <div className="topbar" style={{paddingTop:14}}>
+        <button className="back-btn" onClick={()=>setStep('review')}>← Back</button>
+        <div className="topbar-title">Confirming…</div>
+        <div style={{width:20}}></div>
+      </div>
+      <div className="tx-screen">
+        <div className="tx-spinner"></div>
+        <div className="tx-h1">Broadcasting</div>
+        <div className="tx-sub">Sending to Solana…<br/>Under 3 seconds.</div>
+      </div>
+    </div>
+  );
+  if(step==='done') return (
+    <div className="screen s-active" style={{display:'flex',flexDirection:'column',height:'100%'}}>
+      <div className="topbar" style={{paddingTop:14}}>
+        <div style={{width:20}}></div>
+        <div className="topbar-title">Settled ✓</div>
+        <div style={{width:20}}></div>
+      </div>
+      <div className="tx-screen">
+        <div className="tx-ok">✓</div>
+        <div className="tx-h1">Payment confirmed!</div>
+        <div className="tx-sub">$30.00 USDC sent to Kiran.<br/>Recorded on-chain forever.</div>
+        <div style={{width:'100%',marginBottom:16}}>
+          <div className="tx-sig-lbl">Transaction signature</div>
+          <div className="tx-sig">4xKp2mN7qRt8sJvL1wXz9YhBcDfGiElUoAn3PkrVbMsQwTyFuNdCeHgIjOa5lZ6</div>
+        </div>
+        <button className="btn-full btn-cyan" onClick={onBack}>Back to group</button>
+      </div>
+    </div>
+  );
+  return (
+    <div className="screen s-active" style={{display:'flex',flexDirection:'column',height:'100%'}}>
+      <div className="topbar" style={{paddingTop:14}}>
+        <button className="back-btn" onClick={onBack}>← Back</button>
+        <div className="topbar-title">Settle up</div>
+        <div style={{width:20}}></div>
+      </div>
+      <div className="scroll" style={{padding:'0 0 40px'}}>
+        <div style={{padding:'12px 20px 4px',fontSize:11,color:'var(--text-2)'}}>
+          {group.settlements.length} transfers to zero everyone out:
+        </div>
+        {group.settlements.map((s,i)=>(
+          <div key={i} className="settle-card">
+            <div className="settle-ppl">
+              <div>
+                <div className="settle-av">{s.from==='You'?'🧑':s.from==='Kiran'?'🧔':s.from==='Asha'?'👩':'👨'}</div>
+                <div className="settle-name">{s.from}</div>
+              </div>
+              <div className="settle-arrow-txt">
+                <div className="settle-pays">pays</div>
+                <div className="settle-pays-amt">${s.amt.toFixed(2)}</div>
+              </div>
+              <div>
+                <div className="settle-av">{s.to==='You'?'🧑':s.to==='Kiran'?'🧔':s.to==='Asha'?'👩':'👨'}</div>
+                <div className="settle-name">{s.to}</div>
+              </div>
+            </div>
+            {s.from==='You'
+              ? <button className="btn-full btn-cyan" onClick={()=>{setStep('busy');setTimeout(()=>setStep('done'),2000);}}>Pay ${s.amt.toFixed(2)} USDC →</button>
+              : <button className="btn-full btn-ghost">Remind {s.from}</button>
+            }
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── FUND GROUP ──
+function FundGroupScreen({group, onBack}) {
+  const [showProp, setShowProp] = useState(false);
+  const pct = Math.round((group.total/group.goal)*100);
+  return (
+    <div className="screen s-active" style={{display:'flex',flexDirection:'column',height:'100%'}}>
+      <div className="topbar" style={{paddingTop:14}}>
+        <button className="back-btn" onClick={onBack}>← Back</button>
+        <div className="topbar-title">{group.emoji} {group.name}</div>
+        <div className="icon-btn">⋯</div>
+      </div>
+      <div className="scroll">
+        <div className="treasury-card">
+          <div className="t-lbl">Treasury · {group.coin}</div>
+          <div className="t-amt">${group.total.toLocaleString()}</div>
+          <div className="t-sub">Goal ${group.goal.toLocaleString()} · Your share ${group.myContrib}</div>
+          <div className="t-bar-wrap">
+            <div className="t-bar-lbls"><span>Funded</span><span>{pct}%</span></div>
+            <div className="t-bar"><div className="t-bar-fill" style={{width:`${pct}%`}}></div></div>
+          </div>
+        </div>
+        <div className="sec-hdr"><div className="sec-hdr-t">Members</div><div style={{fontSize:11,color:'var(--text-3)'}}>{group.members.length} contributors</div></div>
+        <div className="mbr-strip">
+          {group.members.map(m=>(
+            <div key={m.n} className="mbr-chip">
+              <div className="mbr-av" style={{background:m.n==='You'?'var(--purple-dim)':'var(--surface-2)',borderColor:m.n==='You'?'var(--purple)':'var(--border)'}}>{m.e}</div>
+              <div className="mbr-name">{m.n}</div>
+              <div className="mbr-contrib">${m.c}</div>
+            </div>
+          ))}
+        </div>
+        <div className="sec-hdr">
+          <div className="sec-hdr-t">Proposals</div>
+          <button className="sec-hdr-a" onClick={()=>setShowProp(true)}>+ Propose</button>
+        </div>
+        <div className="prop-list">
+          {group.proposals.map(p=>(
+            <div key={p.id} className="prop-card">
+              <div className="prop-hd">
+                <div>
+                  <div className="prop-title">{p.title}</div>
+                  <div className="prop-memo">{p.memo}</div>
+                </div>
+                <div className={`prop-status ps-${p.status}`}>{p.status}</div>
+              </div>
+              <div className="prop-amt">${p.amt.toFixed(2)} {group.coin}</div>
+              <div style={{fontSize:11,color:'var(--text-2)',marginBottom:6}}>{p.yes} of {p.tot} approved{p.no>0?` · ${p.no} rejected`:''}</div>
+              <div className="prop-bar">
+                <div className="prop-bar-fill" style={{width:`${(p.yes/p.tot)*100}%`,background:p.status==='executed'?'var(--cyan)':'var(--green)'}}></div>
+              </div>
+              {p.status==='pending' && (
+                <div className="prop-votes">
+                  <button className="vote-btn" style={{'--hover-bg':'oklch(70% 0.18 155 / 0.15)'}} onMouseEnter={e=>{e.target.style.background='oklch(70% 0.18 155 / 0.15)';e.target.style.borderColor='oklch(70% 0.18 155 / 0.4)';e.target.style.color='var(--green)';}} onMouseLeave={e=>{e.target.style.background='';e.target.style.borderColor='';e.target.style.color='';}} >✓ Approve</button>
+                  <button className="vote-btn" onMouseEnter={e=>{e.target.style.background='oklch(65% 0.20 25 / 0.15)';e.target.style.borderColor='oklch(65% 0.20 25 / 0.3)';e.target.style.color='var(--red)';}} onMouseLeave={e=>{e.target.style.background='';e.target.style.borderColor='';e.target.style.color='';}} >✗ Reject</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="action-bar">
+        <button className="btn-full btn-purple" onClick={()=>setShowProp(true)}>+ New proposal</button>
+      </div>
+      <div className={`sheet-ov${showProp?'':' gone'}`} onClick={e=>e.target===e.currentTarget&&setShowProp(false)}>
+        <div className="sheet">
+          <div className="sheet-handle"></div>
+          <div className="sheet-title">New proposal</div>
+          <div className="fld"><div className="fld-lbl">Title</div><input className="fld-input" placeholder="e.g. Book Airbnb…"/></div>
+          <div className="fld"><div className="fld-lbl">Amount ({group.coin})</div><input className="fld-input" placeholder="0.00" type="number"/></div>
+          <div className="fld"><div className="fld-lbl">Recipient</div><input className="fld-input" placeholder="Solana address or handle" style={{fontFamily:'monospace',fontSize:12}}/></div>
+          <div className="fld"><div className="fld-lbl">Memo</div><input className="fld-input" placeholder="What is this for?"/></div>
+          <button className="btn-full btn-purple" onClick={()=>setShowProp(false)}>Submit proposal</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MAIN ──
+function App() {
+  const [screen, setScreen] = useState('wallet');
+  const [group, setGroup] = useState(null);
+  const [stack, setStack] = useState([]);
+
+  const push = (s, g=null) => { setStack(st=>[...st,screen]); if(g)setGroup(g); setScreen(s); };
+  const pop  = () => { const st=[...stack]; const prev=st.pop()||'home'; setStack(st); setScreen(prev); if(prev==='home')setGroup(null); };
+
+  return (
+    <div className="app">
+      {screen==='wallet'  && <WalletScreen onConnect={()=>push('home')}/>}
+      {screen==='onboard' && <OnboardScreen onDone={()=>{setStack([]);setScreen('home');}}/>}
+      {screen==='home'    && <HomeScreen onGroup={g=>push(g.mode==='split'?'split':'fund',g)} onNewGroup={()=>push('onboard')}/>}
+      {screen==='split'   && group && <SplitGroupScreen group={group} onBack={pop} onSettle={()=>push('settle',group)}/>}
+      {screen==='settle'  && group && <SettleUpScreen group={group} onBack={pop}/>}
+      {screen==='fund'    && group && <FundGroupScreen group={group} onBack={pop}/>}
+    </div>
+  );
+}
+
+// ── INLINE PHONE FRAME ──
+function PhoneFrame({children}) {
+  return (
+    <div style={{
+      position:'relative',
+      width:393,
+      height:852,
+      borderRadius:54,
+      background:'#1a1a1a',
+      boxShadow:'0 0 0 1px #333, 0 0 0 10px #111, 0 32px 80px rgba(0,0,0,0.7), inset 0 0 0 2px #2a2a2a',
+      overflow:'hidden',
+      flexShrink:0,
+    }}>
+      {/* Dynamic island */}
+      <div style={{
+        position:'absolute',top:14,left:'50%',transform:'translateX(-50%)',
+        width:126,height:37,borderRadius:20,background:'#000',zIndex:50,
+      }}></div>
+      {/* Status bar */}
+      <div style={{
+        position:'absolute',top:0,left:0,right:0,height:59,
+        display:'flex',alignItems:'flex-end',justifyContent:'space-between',
+        padding:'0 28px 8px',zIndex:40,
+        background:'linear-gradient(to bottom,rgba(13,17,23,0.95),rgba(13,17,23,0))',
+      }}>
+        <span style={{fontFamily:'-apple-system,system-ui',fontWeight:600,fontSize:15,color:'#f0f6fc'}}>9:41</span>
+        <div style={{display:'flex',gap:6,alignItems:'center'}}>
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="1" fill="#f0f6fc"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="#f0f6fc"/><rect x="9" y="0" width="3" height="12" rx="1" fill="#f0f6fc"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="#f0f6fc" opacity="0.3"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.5C10.5 2.5 12.7 3.6 14.2 5.3L15.5 4C13.6 1.9 11 0.5 8 0.5C5 0.5 2.4 1.9 0.5 4L1.8 5.3C3.3 3.6 5.5 2.5 8 2.5Z" fill="#f0f6fc"/><path d="M8 5.5C9.7 5.5 11.2 6.2 12.3 7.3L13.6 6C12.1 4.5 10.2 3.5 8 3.5C5.8 3.5 3.9 4.5 2.4 6L3.7 7.3C4.8 6.2 6.3 5.5 8 5.5Z" fill="#f0f6fc"/><circle cx="8" cy="10" r="2" fill="#f0f6fc"/></svg>
+          <div style={{display:'flex',alignItems:'center',gap:2}}>
+            <div style={{width:25,height:12,borderRadius:3,border:'1.5px solid rgba(240,246,252,0.4)',padding:'1.5px',display:'flex',alignItems:'center'}}>
+              <div style={{width:'70%',height:'100%',borderRadius:1.5,background:'#f0f6fc'}}></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* App content */}
+      <div style={{position:'absolute',inset:0,borderRadius:54,overflow:'hidden'}}>
+        {children}
+      </div>
+      {/* Home indicator */}
+      <div style={{
+        position:'absolute',bottom:8,left:'50%',transform:'translateX(-50%)',
+        width:134,height:5,borderRadius:3,background:'rgba(240,246,252,0.3)',zIndex:50,
+      }}></div>
+    </div>
+  );
+}
+
+// ── ENTRY POINT — single root mount ──
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:20}}>
+    <div style={{fontFamily:'Space Grotesk,sans-serif',fontSize:12,fontWeight:600,color:'oklch(45% 0.05 220)',letterSpacing:'0.1em',textTransform:'uppercase'}}>
+      FundWise · Interactive Prototype
+    </div>
+    <PhoneFrame>
+      <App/>
+    </PhoneFrame>
+    <div style={{fontFamily:'Inter,sans-serif',fontSize:11,color:'oklch(40% 0.05 220)',textAlign:'center',maxWidth:280,lineHeight:1.6}}>
+      Tap <span style={{color:'oklch(75% 0.15 195)',fontWeight:600}}>Connect Phantom</span> to start ·
+      Tap groups to explore Split &amp; Fund flows
+    </div>
+  </div>
+);
+</script>
+</body>
+</html>

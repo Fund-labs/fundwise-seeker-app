@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Dashboard, Groups & Flows v3</title>
+<link rel="icon" type="image/svg+xml" href="app/brand/mark-gradient.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after { box-sizing: border-box; margin:0; padding:0; }
+html, body { height:100%; background:#F4F1EA; font-family:'Plus Jakarta Sans', system-ui, sans-serif; -webkit-font-smoothing:antialiased; overflow:hidden; }
+#root { width:100vw; height:100vh; }
+
+/* Hide scrollbars inside artboards but keep functional */
+.dc-artboard *::-webkit-scrollbar { width: 4px; height: 4px; }
+.dc-artboard *::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+
+@keyframes caret { 50% { opacity: 0; } }
+@keyframes float0 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes float1 { 0%,100%{transform:translateY(-3px)} 50%{transform:translateY(4px)} }
+@keyframes float2 { 0%,100%{transform:translateY(4px)} 50%{transform:translateY(-5px)} }
+@keyframes float3 { 0%,100%{transform:translateY(-2px)} 50%{transform:translateY(6px)} }
+
+/* Haptic visual feedback */
+.haptic-flash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background: radial-gradient(circle at center, rgba(45,184,112,0.06), transparent 60%);
+  animation: hapticPulse 0.22s ease-out forwards;
+}
+.haptic-flash[data-kind="success"] { background: radial-gradient(circle at center, rgba(45,184,112,0.1), transparent 60%); }
+.haptic-flash[data-kind="error"]   { background: radial-gradient(circle at center, rgba(199,59,59,0.1), transparent 60%); }
+@keyframes hapticPulse { from { opacity: 1; } to { opacity: 0; } }
+
+/* Dark theme — override DesignCanvas inline bg via specific selector + body */
+html[data-theme="dark"], html[data-theme="dark"] body { background: #020806 !important; }
+html[data-theme="dark"] [style*="height: 100vh"][style*="width: 100vw"] {
+  background: #020806 !important;
+}
+/* Override DesignCanvas section title/subtitle/label inline colors in dark mode */
+html[data-theme="dark"] [style*="rgba(40, 30, 20"],
+html[data-theme="dark"] [style*="rgba(40,30,20"] { color: #E8F1EB !important; }
+html[data-theme="dark"] [style*="rgba(60, 50, 40"],
+html[data-theme="dark"] [style*="rgba(60,50,40"] { color: #9EB6A7 !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="app/ios-frame.jsx" type="text/babel"></script>
+<script src="app/data.jsx" type="text/babel"></script>
+<script src="app/primitives.jsx" type="text/babel"></script>
+<script src="app/premium.jsx" type="text/babel"></script>
+<script src="app/desktop.jsx" type="text/babel"></script>
+<script src="app/mobile.jsx" type="text/babel"></script>
+<script src="app/flows.jsx" type="text/babel"></script>
+<script src="app/design-canvas.jsx" type="text/babel"></script>
+<script src="app/tweaks-panel.jsx" type="text/babel"></script>
+
+<script type="text/babel" data-presets="react">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "dark",
+  "density": "cozy",
+  "fundAccent": "#2A4FA8"
+}/*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [, force] = React.useReducer(x => x + 1, 0);
+
+  /* apply tweaks as side effects */
+  React.useEffect(() => {
+    setBrandTheme(t.theme);
+    setFundAccent(t.fundAccent);
+    document.documentElement.dataset.theme = t.theme;
+    document.documentElement.dataset.density = t.density;
+    document.body.style.background = BRAND.canvasBg;
+    force();
+  }, [t.theme, t.density, t.fundAccent]);
+
+  return (
+    <>
+      {/* Always-visible theme toggle (bottom-left of the canvas) */}
+      <button
+        onClick={() => setTweak('theme', t.theme === 'dark' ? 'light' : 'dark')}
+        title={`Switch to ${t.theme === 'dark' ? 'light' : 'dark'} mode`}
+        style={{
+          position:'fixed', bottom:24, left:24, zIndex:200,
+          width:48, height:48, borderRadius:24,
+          background: t.theme === 'dark' ? 'rgba(20,40,32,0.85)' : 'rgba(255,255,255,0.95)',
+          border:`1px solid ${t.theme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(13,31,20,0.08)'}`,
+          color: t.theme === 'dark' ? '#F0F6F2' : '#0D1F14',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          cursor:'pointer', boxShadow:'0 6px 18px rgba(0,0,0,0.15)',
+          backdropFilter:'blur(10px)',
+          transition:'all 0.2s ease',
+        }}
+        onMouseEnter={(e)=> e.currentTarget.style.transform = 'translateY(-2px) scale(1.04)'}
+        onMouseLeave={(e)=> e.currentTarget.style.transform = 'translateY(0) scale(1)'}
+      >
+        {t.theme === 'dark' ? (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>
+          </svg>
+        ) : (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>
+          </svg>
+        )}
+      </button>
+
+      <DesignCanvas>
+        {/* ─── 01 HOME DASHBOARD ─── */}
+        <DCSection id="home" title="01 · Home Dashboard" subtitle="The first thing you see after connecting. Net balance, what needs attention, your groups, recent activity. Same data model — adapts shell + density to surface.">
+          <DCArtboard id="home-desktop" label="Desktop · 1280" width={1280} height={920}>
+            <DesktopHome/>
+          </DCArtboard>
+          <DCArtboard id="home-mobile" label="Mobile · iOS" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileHome/>
+            </div>
+          </DCArtboard>
+          <DCArtboard id="home-tg" label="Telegram Mini App" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <TelegramMiniApp/>
+            </div>
+          </DCArtboard>
+
+          <DCPostIt top={40} right={60} rotate={3}>
+            Mode chip is the single visual anchor that follows you everywhere — green for Split, blue for Fund. Never both.
+          </DCPostIt>
+        </DCSection>
+
+        {/* ─── 02 SPLIT MODE ─── */}
+        <DCSection id="split" title="02 · Split-mode group" subtitle="Lisbon Trip · expenses, balances per member, suggested settlement, spending breakdown. Sticky 'Settle up · 1-click' as primary CTA when you're owed.">
+          <DCArtboard id="split-desktop" label="Split · Desktop" width={1280} height={1100}>
+            <DesktopSplitDetail/>
+          </DCArtboard>
+          <DCArtboard id="split-mobile" label="Split · Mobile" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileSplitDetail/>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 03 FUND MODE ─── */}
+        <DCSection id="fund" title="03 · Fund-mode group" subtitle="Priya's Wedding Gift · pooled treasury, contributor chips, proposals with threshold voting (4-of-6). Vault on Solana — locks until goal or threshold withdraw.">
+          <DCArtboard id="fund-desktop" label="Fund · Desktop" width={1280} height={1100}>
+            <DesktopFundDetail/>
+          </DCArtboard>
+          <DCArtboard id="fund-mobile" label="Fund · Mobile" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileFundDetail/>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 04 FLOWS ─── */}
+        <DCSection id="flows" title="04 · Money flows" subtitle="Add expense (Split), Contribute (Fund), Settle up batch, Create proposal, Vote with discussion. All bottom-sheets with grippy handle, draggable, sticky CTAs.">
+          <DCArtboard id="flow-expense" label="Add expense" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileAddExpense/>
+            </div>
+          </DCArtboard>
+          <DCArtboard id="flow-deposit" label="Contribute" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileDeposit/>
+            </div>
+          </DCArtboard>
+          <DCArtboard id="flow-settle" label="Settle up · batch" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileSettle/>
+            </div>
+          </DCArtboard>
+          <DCArtboard id="flow-propose" label="New proposal" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileCreateProposal/>
+            </div>
+          </DCArtboard>
+          <DCArtboard id="flow-vote" label="Vote + discuss" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileVoteSheet/>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─── 05 ONBOARDING ─── */}
+        <DCSection id="onboard" title="05 · Onboarding" subtitle="Welcome / wallet connect, then mode pick. Mode is the first decision because it can't be switched later — surfacing it early sets the mental model.">
+          <DCArtboard id="onb-connect" label="Wallet connect" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileOnboardConnect/>
+            </div>
+          </DCArtboard>
+          <DCArtboard id="onb-mode" label="Pick mode" width={430} height={870}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%' }}>
+              <MobileOnboardCreate/>
+            </div>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Appearance">
+          <TweakRadio label="Theme" value={t.theme} options={[{value:'light',label:'Light'},{value:'dark',label:'Dark'}]} onChange={(v)=> setTweak('theme', v)}/>
+          <TweakRadio label="Density" value={t.density} options={[{value:'cozy',label:'Cozy'},{value:'compact',label:'Compact'}]} onChange={(v)=> setTweak('density', v)}/>
+        </TweakSection>
+        <TweakSection label="Mode color separation">
+          <TweakColor label="Fund accent" value={t.fundAccent} options={['#2A4FA8','#5B3FB8','#0F8C8C','#0D6B3A']} onChange={(v)=> setTweak('fundAccent', v)}/>
+        </TweakSection>
+        <TweakSection label="About this prototype">
+          <div style={{ fontSize:12, color:'#4a6b55', lineHeight:1.6 }}>
+            12 artboards across 5 sections. Drag pan, scroll zoom. Click an artboard label to focus fullscreen. Use ← → in focus mode to step through.
+          </div>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>

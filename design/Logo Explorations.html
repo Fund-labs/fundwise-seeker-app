@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Logo Explorations v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7faf8;--surface:#fff;--border:#d5e8da;--border-2:#b8d4c0;
+  --text:#0d1f14;--text-2:#4a6b55;--text-3:#8dab97;
+  --fserif:'DM Serif Display',serif;--fsans:'Plus Jakarta Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fsans);-webkit-font-smoothing:antialiased;padding:60px 40px 100px;}
+@media(max-width:600px){body{padding:40px 20px 80px;}}
+
+.page-head{font-family:var(--fserif);font-size:36px;text-align:center;letter-spacing:-0.5px;margin-bottom:6px;}
+.page-sub{font-size:14px;color:var(--text-2);text-align:center;margin-bottom:64px;line-height:1.6;max-width:520px;margin-left:auto;margin-right:auto;}
+
+.section-lbl{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;display:flex;align-items:center;gap:12px;}
+.section-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+.section-desc{font-size:13px;color:var(--text-2);margin-bottom:28px;line-height:1.65;max-width:560px;}
+
+.logo-section{margin-bottom:80px;}
+.logo-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px;}
+
+.logo-box{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:22px;
+  padding:40px 20px 22px;display:flex;flex-direction:column;align-items:center;gap:18px;
+  transition:all 0.2s;position:relative;
+}
+.logo-box:hover{border-color:var(--border-2);box-shadow:0 8px 32px rgba(13,107,58,0.09);transform:translateY(-3px);}
+.logo-name{font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:0.04em;text-align:center;}
+.logo-desc{font-size:11px;color:var(--text-3);text-align:center;line-height:1.5;max-width:150px;}
+.logo-dark{background:#0d1f14;}
+.logo-grad{background:linear-gradient(135deg,#0a5530,#2db870);}
+
+/* size strip */
+.size-strip{
+  display:flex;gap:20px;align-items:flex-end;padding:24px 28px;
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;flex-wrap:wrap;
+}
+.sz{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.sz-label{font-size:9px;color:var(--text-3);font-weight:600;font-family:monospace;text-align:center;}
+
+/* mode section */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:580px;}
+@media(max-width:520px){.mode-grid{grid-template-columns:1fr;}}
+.mode-card{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:28px;}
+.mode-card-title{font-family:var(--fserif);font-size:22px;letter-spacing:-0.3px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.mode-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px;border-radius:100px;font-size:10px;font-weight:700;
+  letter-spacing:0.05em;text-transform:uppercase;
+}
+.pill-split{background:#e6f7ee;color:#0d6b3a;border:1px solid #9fd8b8;}
+.pill-fund{background:#e8f0fb;color:#1e3a8a;border:1px solid #a8c0f0;}
+
+/* wordmark section */
+.wm-row{display:flex;align-items:center;gap:14px;padding:28px 32px;background:var(--surface);border:1.5px solid var(--border);border-radius:22px;flex-wrap:wrap;margin-bottom:12px;}
+.wm-row.dark-bg{background:#0d1f14;}
+.wm-text{font-family:var(--fserif);color:var(--text);letter-spacing:-0.5px;}
+.wm-white{font-family:var(--fserif);color:#fff;letter-spacing:-0.5px;}
+</style>
+</head>
+<body>
+
+<div class="page-head">Logo Explorations</div>
+<p class="page-sub">Three refined directions — each with a more elegant, precision-crafted mark. Thinner strokes, richer gradients, glass-effect container.</p>
+
+<!-- ══════════════════════════════ -->
+<!-- OPTION A — PRECISION W -->
+<!-- ══════════════════════════════ -->
+<div class="logo-section">
+  <div class="section-lbl">Option A — Precision W · The Flagship</div>
+  <p class="section-desc">Thin, precise strokes on a deep forest-to-mint gradient. Glass highlight at the top of the container. The W has slightly asymmetric peaks — the left arm is the split (outward), the right arm is the fund (inward convergence). The dot is the settlement. This is the one.</p>
+
+  <div class="logo-row">
+    <div class="logo-box">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs>
+          <linearGradient id="a-bg1" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0a5530"/>
+            <stop offset="50%" stop-color="#0d6b3a"/>
+            <stop offset="100%" stop-color="#2db870"/>
+          </linearGradient>
+          <linearGradient id="a-hi1" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+        </defs>
+        <rect width="80" height="80" rx="20" fill="url(#a-bg1)"/>
+        <!-- Glass highlight -->
+        <rect width="80" height="40" rx="20" fill="url(#a-hi1)"/>
+        <!-- Thin elegant W -->
+        <path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- Dot -->
+        <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/>
+      </svg>
+      <div class="logo-name">Primary · Light</div>
+      <div class="logo-desc">White / pale green backgrounds</div>
+    </div>
+
+    <div class="logo-box logo-dark">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs>
+          <linearGradient id="a-bg2" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0a5530"/>
+            <stop offset="50%" stop-color="#0d6b3a"/>
+            <stop offset="100%" stop-color="#2db870"/>
+          </linearGradient>
+          <linearGradient id="a-hi2" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+        </defs>
+        <rect width="80" height="80" rx="20" fill="url(#a-bg2)"/>
+        <rect width="80" height="40" rx="20" fill="url(#a-hi2)"/>
+        <path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/>
+      </svg>
+      <div class="logo-name" style="color:#4a6b55">On Dark</div>
+      <div class="logo-desc" style="color:#2a4a35">App dark backgrounds</div>
+    </div>
+
+    <div class="logo-box logo-grad">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <rect width="80" height="80" rx="20" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.24)" stroke-width="1"/>
+        <rect width="80" height="36" rx="20" fill="rgba(255,255,255,0.07)"/>
+        <path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/>
+      </svg>
+      <div class="logo-name" style="color:rgba(255,255,255,0.65)">On Gradient</div>
+      <div class="logo-desc" style="color:rgba(255,255,255,0.4)">Twitter, Telegram banners</div>
+    </div>
+
+    <div class="logo-box" style="background:#f0f9f4">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs>
+          <linearGradient id="a-bg4" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0a5530"/>
+            <stop offset="50%" stop-color="#0d6b3a"/>
+            <stop offset="100%" stop-color="#2db870"/>
+          </linearGradient>
+          <linearGradient id="a-hi4" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+        </defs>
+        <rect width="80" height="80" rx="20" fill="url(#a-bg4)"/>
+        <rect width="80" height="40" rx="20" fill="url(#a-hi4)"/>
+        <path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/>
+      </svg>
+      <div class="logo-name">On Surface</div>
+      <div class="logo-desc">Tinted card backgrounds</div>
+    </div>
+  </div>
+
+  <!-- Wordmark pairings -->
+  <div class="wm-row" style="margin-bottom:12px">
+    <svg width="48" height="48" viewBox="0 0 80 80" fill="none">
+      <defs>
+        <linearGradient id="wm1-bg" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+        <linearGradient id="wm1-hi" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+      </defs>
+      <rect width="80" height="80" rx="20" fill="url(#wm1-bg)"/>
+      <rect width="80" height="40" rx="20" fill="url(#wm1-hi)"/>
+      <path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/>
+    </svg>
+    <div class="wm-text" style="font-size:32px">FundWise</div>
+    <div style="font-size:11px;color:var(--text-3);margin-left:8px">Lockup · light bg</div>
+  </div>
+  <div class="wm-row dark-bg">
+    <svg width="48" height="48" viewBox="0 0 80 80" fill="none">
+      <defs>
+        <linearGradient id="wm2-bg" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+        <linearGradient id="wm2-hi" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+      </defs>
+      <rect width="80" height="80" rx="20" fill="url(#wm2-bg)"/>
+      <rect width="80" height="40" rx="20" fill="url(#wm2-hi)"/>
+      <path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/>
+    </svg>
+    <div class="wm-white" style="font-size:32px">FundWise</div>
+    <div style="font-size:11px;color:#2a4a35;margin-left:8px">Lockup · dark bg</div>
+  </div>
+
+  <!-- Scale strip -->
+  <div class="size-strip" style="margin-top:20px">
+    <div class="sz">
+      <svg width="16" height="16" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="sz1" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#sz1)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="5" fill="white" opacity="0.9"/></svg>
+      <div class="sz-label">16px</div>
+    </div>
+    <div class="sz">
+      <svg width="24" height="24" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="sz2" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#sz2)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="4.5" fill="white" opacity="0.9"/></svg>
+      <div class="sz-label">24px</div>
+    </div>
+    <div class="sz">
+      <svg width="32" height="32" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="sz3" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#sz3)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="4" fill="white" opacity="0.9"/></svg>
+      <div class="sz-label">32px</div>
+    </div>
+    <div class="sz">
+      <svg width="48" height="48" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="sz4" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="sz4h" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#sz4)"/><rect width="80" height="40" rx="20" fill="url(#sz4h)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/></svg>
+      <div class="sz-label">48px</div>
+    </div>
+    <div class="sz">
+      <svg width="64" height="64" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="sz5" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="sz5h" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#sz5)"/><rect width="80" height="40" rx="20" fill="url(#sz5h)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/></svg>
+      <div class="sz-label">64px</div>
+    </div>
+    <div class="sz">
+      <svg width="96" height="96" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="sz6" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="sz6h" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#sz6)"/><rect width="80" height="40" rx="20" fill="url(#sz6h)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/></svg>
+      <div class="sz-label">96px</div>
+    </div>
+    <div class="sz">
+      <svg width="128" height="128" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="sz7" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="sz7h" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.16)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#sz7)"/><rect width="80" height="40" rx="20" fill="url(#sz7h)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/></svg>
+      <div class="sz-label">128px</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ -->
+<!-- OPTION B — WEIGHT CONTRAST W -->
+<!-- ══════════════════════════════ -->
+<div class="logo-section">
+  <div class="section-lbl">Option B — Weight Contrast · Calligraphic Feel</div>
+  <p class="section-desc">The outer arms of the W are thicker, tapering to thin at the peaks. Creates a calligraphic, high-fashion quality — closer to luxury branding. More distinctive at large sizes.</p>
+  <div class="logo-row">
+    <div class="logo-box">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs>
+          <linearGradient id="b-bg1" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="b-hi1" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="80" height="80" rx="20" fill="url(#b-bg1)"/>
+        <rect width="80" height="40" rx="20" fill="url(#b-hi1)"/>
+        <!-- Tapered W: thick bottom, thin at peaks -->
+        <path d="M13 22 L26 56 L40 31 L54 56 L67 22" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="0"/>
+        <!-- Thick base reinforcement on outer arms -->
+        <path d="M13 22 L19 38" stroke="white" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M67 22 L61 38" stroke="white" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.88"/>
+      </svg>
+      <div class="logo-name">Weight Contrast</div>
+      <div class="logo-desc">Thick base, thin peaks</div>
+    </div>
+    <div class="logo-box logo-dark">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs><linearGradient id="b-bg2" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="b-hi2" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="80" height="80" rx="20" fill="url(#b-bg2)"/>
+        <rect width="80" height="40" rx="20" fill="url(#b-hi2)"/>
+        <path d="M13 22 L26 56 L40 31 L54 56 L67 22" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M13 22 L19 38" stroke="white" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M67 22 L61 38" stroke="white" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.88"/>
+      </svg>
+      <div class="logo-name" style="color:#4a6b55">On Dark</div>
+      <div class="logo-desc" style="color:#2a4a35">Dark mode</div>
+    </div>
+    <div class="logo-box logo-grad">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <rect width="80" height="80" rx="20" fill="rgba(255,255,255,0.13)" stroke="rgba(255,255,255,0.24)" stroke-width="1"/>
+        <rect width="80" height="36" rx="20" fill="rgba(255,255,255,0.07)"/>
+        <path d="M13 22 L26 56 L40 31 L54 56 L67 22" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M13 22 L19 38" stroke="white" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M67 22 L61 38" stroke="white" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.88"/>
+      </svg>
+      <div class="logo-name" style="color:rgba(255,255,255,0.65)">On Gradient</div>
+      <div class="logo-desc" style="color:rgba(255,255,255,0.4)">Banners</div>
+    </div>
+    <div class="logo-box" style="background:#f0f9f4">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs><linearGradient id="b-bg4" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="b-hi4" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="80" height="80" rx="20" fill="url(#b-bg4)"/>
+        <rect width="80" height="40" rx="20" fill="url(#b-hi4)"/>
+        <path d="M13 22 L26 56 L40 31 L54 56 L67 22" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M13 22 L19 38" stroke="white" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <path d="M67 22 L61 38" stroke="white" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+        <circle cx="40" cy="64" r="3.5" fill="white" opacity="0.88"/>
+      </svg>
+      <div class="logo-name">On Surface</div>
+      <div class="logo-desc">Card backgrounds</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ -->
+<!-- OPTION C — MINIMAL W -->
+<!-- ══════════════════════════════ -->
+<div class="logo-section">
+  <div class="section-lbl">Option C — Ultra Minimal · Maximum Restraint</div>
+  <p class="section-desc">Hairline-thin W (3px) inside a larger, more prominent rounded-square container. The extra negative space makes the mark breathe — closer to Linear, Notion, or Stripe's logo philosophy. Pure geometry, maximum elegance.</p>
+  <div class="logo-row">
+    <div class="logo-box">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs>
+          <linearGradient id="c-bg1" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="0.5" stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient>
+          <linearGradient id="c-hi1" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.2)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient>
+        </defs>
+        <rect width="80" height="80" rx="22" fill="url(#c-bg1)"/>
+        <rect width="80" height="42" rx="22" fill="url(#c-hi1)"/>
+        <!-- Ultra-thin W, more inset -->
+        <path d="M18 24 L28 54 L40 32 L52 54 L62 24" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- Hairline dot -->
+        <circle cx="40" cy="63" r="2.8" fill="white" opacity="0.85"/>
+      </svg>
+      <div class="logo-name">Ultra Minimal</div>
+      <div class="logo-desc">More breathing room</div>
+    </div>
+    <div class="logo-box logo-dark">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs><linearGradient id="c-bg2" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="c-hi2" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.2)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="80" height="80" rx="22" fill="url(#c-bg2)"/>
+        <rect width="80" height="42" rx="22" fill="url(#c-hi2)"/>
+        <path d="M18 24 L28 54 L40 32 L52 54 L62 24" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="40" cy="63" r="2.8" fill="white" opacity="0.85"/>
+      </svg>
+      <div class="logo-name" style="color:#4a6b55">On Dark</div>
+      <div class="logo-desc" style="color:#2a4a35">Dark mode</div>
+    </div>
+    <div class="logo-box logo-grad">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <rect width="80" height="80" rx="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+        <rect width="80" height="38" rx="22" fill="rgba(255,255,255,0.07)"/>
+        <path d="M18 24 L28 54 L40 32 L52 54 L62 24" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="40" cy="63" r="2.8" fill="white" opacity="0.85"/>
+      </svg>
+      <div class="logo-name" style="color:rgba(255,255,255,0.65)">On Gradient</div>
+      <div class="logo-desc" style="color:rgba(255,255,255,0.4)">Banners</div>
+    </div>
+    <div class="logo-box" style="background:#f0f9f4">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <defs><linearGradient id="c-bg4" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="c-hi4" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.2)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs>
+        <rect width="80" height="80" rx="22" fill="url(#c-bg4)"/>
+        <rect width="80" height="42" rx="22" fill="url(#c-hi4)"/>
+        <path d="M18 24 L28 54 L40 32 L52 54 L62 24" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="40" cy="63" r="2.8" fill="white" opacity="0.85"/>
+      </svg>
+      <div class="logo-name">On Surface</div>
+      <div class="logo-desc">Pale backgrounds</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ -->
+<!-- MODE IDENTITY -->
+<!-- ══════════════════════════════ -->
+<div class="logo-section">
+  <div class="section-lbl">Mode Identity</div>
+  <p class="section-desc">The app leads as <strong>SplitWise on Solana</strong> by default. Fund Mode activates at group creation — same mark, same green gradient. Blue accent distinguishes Fund Mode in the UI.</p>
+  <div class="mode-grid">
+    <div class="mode-card" style="border-color:#9fd8b8;background:#f5fcf8">
+      <div class="mode-card-title">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="m1" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0a5530"/><stop offset="1" stop-color="#2db870"/></linearGradient><linearGradient id="m1h" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#m1)"/><rect width="80" height="40" rx="20" fill="url(#m1h)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/></svg>
+        <span style="font-size:22px">SplitWise</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-2);line-height:1.65;margin-bottom:14px">Default mode. Split expenses, settle on-chain. This is what users see first.</div>
+      <div class="mode-pill pill-split">⚡ Split Mode</div>
+    </div>
+    <div class="mode-card" style="border-color:#a8c0f0;background:#f5f8fd">
+      <div class="mode-card-title">
+        <svg width="32" height="32" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="m2" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#1e3a8a"/><stop offset="1" stop-color="#3b82f6"/></linearGradient><linearGradient id="m2h" x1="0" y1="0" x2="0" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="rgba(255,255,255,0.18)"/><stop offset="1" stop-color="rgba(255,255,255,0)"/></linearGradient></defs><rect width="80" height="80" rx="20" fill="url(#m2)"/><rect width="80" height="40" rx="20" fill="url(#m2h)"/><path d="M14 23 L25.5 55 L40 30 L54.5 55 L66 23" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="40" cy="64" r="3.5" fill="white" opacity="0.9"/></svg>
+        <span style="font-size:22px">FundMode</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-2);line-height:1.65;margin-bottom:14px">Pool a shared treasury, spend via proposals. Activated when creating a new group.</div>
+      <div class="mode-pill pill-fund">🏦 Fund Mode</div>
+    </div>
+  </div>
+</div>
+
+<div style="border-top:1px solid var(--border);padding-top:28px;text-align:center">
+  <p style="font-size:12px;color:var(--text-3);line-height:1.7">
+    All marks are SVG — infinitely scalable · Option A is recommended for all assets<br>
+    See <strong>Telegram Assets.html</strong> and <strong>Twitter Header.html</strong> for downloadable PNG exports
+  </p>
+</div>
+
+</body>
+</html>

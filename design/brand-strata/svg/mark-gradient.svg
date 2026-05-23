@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 96 96" fill="none" role="img" aria-label="FundWise">
+  <defs>
+    <linearGradient id="strata-d" x1="8" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A4D2C"></stop>
+      <stop offset="1" stop-color="#0D6B3A"></stop>
+    </linearGradient>
+    <linearGradient id="strata-m" x1="8" y1="32" x2="88" y2="72" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D6B3A"></stop>
+      <stop offset="1" stop-color="#1A9151"></stop>
+    </linearGradient>
+    <linearGradient id="strata-l" x1="8" y1="56" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A9151"></stop>
+      <stop offset="1" stop-color="#4EC98A"></stop>
+    </linearGradient>
+  </defs>
+  <rect x="14" y="22" width="68" height="14" rx="7" fill="url(#strata-d)" transform="rotate(-2 48 29)"></rect>
+  <rect x="11" y="41" width="74" height="14" rx="7" fill="url(#strata-m)"></rect>
+  <rect x="17" y="60" width="62" height="14" rx="7" fill="url(#strata-l)" transform="rotate(2 48 67)"></rect>
+</svg>

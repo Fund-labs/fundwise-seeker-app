@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Telegram Assets</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f7faf8;--surface:#fff;--border:#d5e8da;--text:#0d1f14;--text-2:#4a6b55;--text-3:#8dab97;
+  --fserif:'DM Serif Display',serif;--fsans:'Plus Jakarta Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fsans);-webkit-font-smoothing:antialiased;padding:60px 40px 100px;}
+@media(max-width:600px){body{padding:40px 20px 80px;}}
+
+.page-head{font-family:var(--fserif);font-size:36px;text-align:center;letter-spacing:-0.5px;margin-bottom:6px;}
+.page-sub{font-size:14px;color:var(--text-2);text-align:center;margin-bottom:60px;line-height:1.6;}
+
+.section-lbl{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.section-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.asset-block{margin-bottom:72px;}
+.asset-note{font-size:12px;color:var(--text-3);margin-top:10px;font-family:monospace;}
+
+/* ── DOWNLOAD BUTTON ── */
+.dl-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:11px 22px;
+  border-radius:9px;background:linear-gradient(135deg,#0d6b3a,#2db870);
+  color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;
+  font-family:var(--fsans);transition:all 0.15s;letter-spacing:-0.1px;
+  margin-top:16px;
+}
+.dl-btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 8px 24px rgba(13,107,58,0.3);}
+.dl-btn:active{transform:translateY(0);filter:brightness(1);}
+.dl-btn svg{flex-shrink:0;}
+
+.dl-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;}
+
+/* ── BANNER PREVIEW ── */
+.banner-wrap{
+  width:100%;max-width:1280px;
+  aspect-ratio:1280/512;
+  border-radius:14px;overflow:hidden;
+  border:1px solid var(--border);
+  box-shadow:0 8px 40px rgba(13,31,20,0.12);
+  position:relative;
+}
+
+/* ── PROFILE PREVIEW ── */
+.profile-preview-row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end;margin-top:8px;}
+.profile-item{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.profile-size-label{font-size:10px;color:var(--text-3);font-weight:600;text-align:center;letter-spacing:0.05em;}
+
+/* ── STATUS ── */
+.status-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+  border-radius:100px;font-size:12px;font-weight:600;
+  background:#e6f7ee;color:#0d6b3a;border:1px solid #9fd8b8;
+  margin-bottom:16px;
+}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#2db870;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+</style>
+</head>
+<body>
+
+<div class="page-head">Telegram Assets</div>
+<p class="page-sub">High-quality exports for Telegram channel banner (1280×512) and profile picture (512×512).<br>Click download to save as PNG.</p>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TELEGRAM BANNER -->
+<!-- ══════════════════════════════════════════ -->
+<div class="asset-block">
+  <div class="section-lbl">Telegram Channel Banner · 1280 × 512px</div>
+
+  <!-- Hidden full-size canvas for export -->
+  <canvas id="bannerCanvas" width="1280" height="512" style="display:none"></canvas>
+
+  <!-- SVG Preview (scales to container) -->
+  <div class="banner-wrap">
+    <svg id="bannerSVG" width="1280" height="512" viewBox="0 0 1280 512" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+      <!-- Background gradient -->
+      <rect width="1280" height="512" fill="url(#ban-bg)"/>
+
+      <!-- Subtle radial light top-left -->
+      <ellipse cx="200" cy="180" rx="340" ry="260" fill="rgba(255,255,255,0.07)"/>
+      <!-- Radial bottom-right -->
+      <ellipse cx="1100" cy="380" rx="280" ry="200" fill="rgba(13,107,58,0.25)"/>
+
+      <!-- Grid lines -->
+      <line x1="0" y1="128" x2="1280" y2="128" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <line x1="0" y1="256" x2="1280" y2="256" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <line x1="0" y1="384" x2="1280" y2="384" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <line x1="320" y1="0" x2="320" y2="512" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <line x1="640" y1="0" x2="640" y2="512" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <line x1="960" y1="0" x2="960" y2="512" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+      <!-- ── LEFT DECO CARD (Split Mode) ── -->
+      <rect x="60" y="164" width="210" height="110" rx="18" fill="rgba(255,255,255,0.10)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+      <text x="80" y="193" font-family="Plus Jakarta Sans,sans-serif" font-size="11" font-weight="700" fill="rgba(255,255,255,0.5)" letter-spacing="1">LISBON TRIP · SPLIT</text>
+      <text x="80" y="228" font-family="Plus Jakarta Sans,sans-serif" font-size="30" font-weight="800" fill="white">+$84.50</text>
+      <text x="80" y="250" font-family="Plus Jakarta Sans,sans-serif" font-size="12" fill="rgba(255,255,255,0.55)">you are owed · USDC</text>
+      <!-- Progress bar -->
+      <rect x="80" y="262" width="170" height="4" rx="2" fill="rgba(255,255,255,0.15)"/>
+      <rect x="80" y="262" width="110" height="4" rx="2" fill="rgba(255,255,255,0.65)"/>
+
+      <!-- ── RIGHT DECO CARD (Fund Mode) ── -->
+      <rect x="1010" y="164" width="210" height="110" rx="18" fill="rgba(255,255,255,0.10)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+      <text x="1030" y="193" font-family="Plus Jakarta Sans,sans-serif" font-size="11" font-weight="700" fill="rgba(255,255,255,0.5)" letter-spacing="1">PRIYA'S GIFT · FUND</text>
+      <text x="1030" y="228" font-family="Plus Jakarta Sans,sans-serif" font-size="30" font-weight="800" fill="white">$600</text>
+      <text x="1030" y="250" font-family="Plus Jakarta Sans,sans-serif" font-size="12" fill="rgba(255,255,255,0.55)">of $750 · 6 members</text>
+      <rect x="1030" y="262" width="170" height="4" rx="2" fill="rgba(255,255,255,0.15)"/>
+      <rect x="1030" y="262" width="136" height="4" rx="2" fill="rgba(255,255,255,0.65)"/>
+
+      <!-- ── CENTER CONTENT ── -->
+      <!-- Logo mark -->
+      <rect x="562" y="108" width="156" height="156" rx="38" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>
+      <path d="M590 148 L615 208 L640 166 L665 208 L690 148" stroke="white" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="640" cy="226" r="8" fill="white" opacity="0.85"/>
+
+      <!-- FundWise wordmark -->
+      <text x="640" y="310" font-family="DM Serif Display,serif" font-size="64" fill="white" text-anchor="middle" letter-spacing="-2">FundWise</text>
+
+      <!-- Tagline -->
+      <text x="640" y="352" font-family="DM Serif Display,serif" font-size="22" fill="rgba(255,255,255,0.65)" text-anchor="middle" font-style="italic">Shared expenses, settled simply.</text>
+
+      <!-- Pills -->
+      <rect x="472" y="372" width="116" height="34" rx="17" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+      <text x="530" y="394" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="700" fill="white" text-anchor="middle">⚡ Split Mode</text>
+
+      <rect x="598" y="372" width="116" height="34" rx="17" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+      <text x="656" y="394" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="700" fill="white" text-anchor="middle">🏦 Fund Mode</text>
+
+      <rect x="724" y="372" width="134" height="34" rx="17" fill="transparent" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+      <text x="791" y="394" font-family="Plus Jakarta Sans,sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,0.55)" text-anchor="middle">Solana · USDC</text>
+
+      <!-- ── BOTTOM BAR ── -->
+      <rect x="0" y="460" width="1280" height="52" fill="rgba(13,107,58,0.3)"/>
+      <line x1="0" y1="460" x2="1280" y2="460" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="60" y="491" font-family="monospace" font-size="14" font-weight="600" fill="rgba(255,255,255,0.45)">fundwise.app</text>
+      <text x="640" y="491" font-family="DM Serif Display,serif" font-size="15" fill="rgba(255,255,255,0.35)" text-anchor="middle" font-style="italic">No IOUs. No chasing. Just stablecoins.</text>
+      <text x="1220" y="491" font-family="Plus Jakarta Sans,sans-serif" font-size="13" fill="rgba(255,255,255,0.4)" text-anchor="end">Built on Solana</text>
+
+      <defs>
+        <linearGradient id="ban-bg" x1="0" y1="0" x2="1280" y2="512" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#0d6b3a"/>
+          <stop offset="45%" stop-color="#1a9151"/>
+          <stop offset="80%" stop-color="#2db870"/>
+          <stop offset="100%" stop-color="#4ec98a"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <div class="asset-note">Preview scaled to fit. Export is exactly 1280×512px.</div>
+
+  <div class="dl-row">
+    <button class="dl-btn" onclick="downloadBanner()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 12h12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Download Banner PNG (1280×512)
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- TELEGRAM PROFILE PICTURE -->
+<!-- ══════════════════════════════════════════ -->
+<div class="asset-block">
+  <div class="section-lbl">Telegram Profile Picture · 512 × 512px</div>
+
+  <canvas id="profileCanvas" width="512" height="512" style="display:none"></canvas>
+
+  <!-- Preview at multiple sizes -->
+  <div class="profile-preview-row">
+    <div class="profile-item">
+      <svg width="160" height="160" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="512" height="512" rx="256" fill="url(#pp-bg)"/>
+        <!-- Soft inner glow -->
+        <ellipse cx="256" cy="180" rx="200" ry="160" fill="rgba(255,255,255,0.06)"/>
+        <!-- W mark -->
+        <path d="M100 170 L178 352 L256 210 L334 352 L412 170" stroke="white" stroke-width="42" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- Settlement dot -->
+        <circle cx="256" cy="394" r="26" fill="white" opacity="0.88"/>
+        <defs>
+          <linearGradient id="pp-bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0d6b3a"/>
+            <stop offset="100%" stop-color="#2db870"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="profile-size-label">160px preview</div>
+    </div>
+
+    <div class="profile-item">
+      <svg width="80" height="80" viewBox="0 0 512 512" fill="none">
+        <rect width="512" height="512" rx="256" fill="url(#pp2-bg)"/>
+        <path d="M100 170 L178 352 L256 210 L334 352 L412 170" stroke="white" stroke-width="42" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="256" cy="394" r="26" fill="white" opacity="0.88"/>
+        <defs><linearGradient id="pp2-bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+      </svg>
+      <div class="profile-size-label">80px</div>
+    </div>
+
+    <div class="profile-item">
+      <svg width="48" height="48" viewBox="0 0 512 512" fill="none">
+        <rect width="512" height="512" rx="256" fill="url(#pp3-bg)"/>
+        <path d="M100 170 L178 352 L256 210 L334 352 L412 170" stroke="white" stroke-width="42" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="256" cy="394" r="26" fill="white" opacity="0.88"/>
+        <defs><linearGradient id="pp3-bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+      </svg>
+      <div class="profile-size-label">48px</div>
+    </div>
+
+    <div class="profile-item">
+      <svg width="32" height="32" viewBox="0 0 512 512" fill="none">
+        <rect width="512" height="512" rx="256" fill="url(#pp4-bg)"/>
+        <path d="M100 170 L178 352 L256 210 L334 352 L412 170" stroke="white" stroke-width="42" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="256" cy="394" r="26" fill="white" opacity="0.88"/>
+        <defs><linearGradient id="pp4-bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+      </svg>
+      <div class="profile-size-label">32px</div>
+    </div>
+
+    <!-- Square app icon variant -->
+    <div class="profile-item" style="margin-left:24px">
+      <svg width="80" height="80" viewBox="0 0 512 512" fill="none">
+        <rect width="512" height="512" rx="112" fill="url(#pp5-bg)"/>
+        <path d="M100 170 L178 352 L256 210 L334 352 L412 170" stroke="white" stroke-width="42" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="256" cy="394" r="26" fill="white" opacity="0.88"/>
+        <defs><linearGradient id="pp5-bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+      </svg>
+      <div class="profile-size-label">App icon</div>
+    </div>
+  </div>
+
+  <div class="dl-row">
+    <button class="dl-btn" onclick="downloadProfile()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 12h12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Download Profile PNG (512×512)
+    </button>
+    <button class="dl-btn" onclick="downloadProfileSquare()" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 12h12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Download App Icon PNG (512×512)
+    </button>
+  </div>
+  <div class="asset-note" style="margin-top:8px">Circular version for Telegram · Square rounded for iOS/Android app store</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- STICKER / AVATAR PACK PREVIEW -->
+<!-- ══════════════════════════════════════════ -->
+<div class="asset-block">
+  <div class="section-lbl">Telegram Sticker Avatars · Mode Chips</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+    <!-- Split badge sticker -->
+    <svg width="160" height="56" viewBox="0 0 320 112" fill="none">
+      <rect width="320" height="112" rx="56" fill="url(#st1-bg)"/>
+      <circle cx="50" cy="56" r="32" fill="rgba(255,255,255,0.15)"/>
+      <path d="M36 44 L44 64 L50 52 L56 64 L64 44" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <text x="96" y="66" font-family="DM Serif Display,serif" font-size="36" fill="white" letter-spacing="-1">SplitWise</text>
+      <defs><linearGradient id="st1-bg" x1="0" y1="0" x2="320" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+    </svg>
+    <!-- Fund badge sticker -->
+    <svg width="160" height="56" viewBox="0 0 320 112" fill="none">
+      <rect width="320" height="112" rx="56" fill="url(#st2-bg)"/>
+      <circle cx="50" cy="56" r="32" fill="rgba(255,255,255,0.15)"/>
+      <path d="M36 44 L44 64 L50 52 L56 64 L64 44" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <text x="96" y="66" font-family="DM Serif Display,serif" font-size="36" fill="white" letter-spacing="-1">FundWise</text>
+      <defs><linearGradient id="st2-bg" x1="0" y1="0" x2="320" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#1e3a8a"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
+    </svg>
+  </div>
+  <div style="font-size:12px;color:var(--text-3);margin-top:12px">Mode-specific badge pills for use in Telegram messages, posts &amp; announcements.</div>
+</div>
+
+<script>
+// ── BANNER DOWNLOAD ──
+async function downloadBanner() {
+  const svg = document.getElementById('bannerSVG');
+  const canvas = document.getElementById('bannerCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Serialize SVG
+  const svgData = new XMLSerializer().serializeToString(svg);
+  const svgBlob = new Blob([svgData], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0,0,1280,512);
+    ctx.drawImage(img, 0, 0, 1280, 512);
+    URL.revokeObjectURL(url);
+    const link = document.createElement('a');
+    link.download = 'FundWise-Telegram-Banner.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+  img.src = url;
+}
+
+// ── PROFILE DOWNLOAD (circular) ──
+function downloadProfile() {
+  const canvas = document.getElementById('profileCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 512; canvas.height = 512;
+
+  // Gradient background (circular clip)
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(256,256,256,0,Math.PI*2);
+  ctx.clip();
+
+  const grad = ctx.createLinearGradient(0,0,512,512);
+  grad.addColorStop(0,'#0d6b3a');
+  grad.addColorStop(1,'#2db870');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,512,512);
+
+  // Inner glow
+  const glow = ctx.createRadialGradient(256,180,0,256,180,220);
+  glow.addColorStop(0,'rgba(255,255,255,0.07)');
+  glow.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0,0,512,512);
+  ctx.restore();
+
+  // W mark
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+  ctx.lineWidth = 42;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(100,170);
+  ctx.lineTo(178,352);
+  ctx.lineTo(256,210);
+  ctx.lineTo(334,352);
+  ctx.lineTo(412,170);
+  ctx.stroke();
+
+  // Settlement dot
+  ctx.beginPath();
+  ctx.arc(256,394,26,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.88)';
+  ctx.fill();
+
+  const link = document.createElement('a');
+  link.download = 'FundWise-Telegram-Profile.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ── PROFILE DOWNLOAD (square / app icon) ──
+function downloadProfileSquare() {
+  const canvas = document.getElementById('profileCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 512; canvas.height = 512;
+
+  // Rounded square clip (iOS radius ~23%)
+  const r = 112;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(r,0); ctx.lineTo(512-r,0);
+  ctx.quadraticCurveTo(512,0,512,r);
+  ctx.lineTo(512,512-r);
+  ctx.quadraticCurveTo(512,512,512-r,512);
+  ctx.lineTo(r,512);
+  ctx.quadraticCurveTo(0,512,0,512-r);
+  ctx.lineTo(0,r);
+  ctx.quadraticCurveTo(0,0,r,0);
+  ctx.closePath();
+  ctx.clip();
+
+  const grad = ctx.createLinearGradient(0,0,512,512);
+  grad.addColorStop(0,'#0d6b3a');
+  grad.addColorStop(1,'#2db870');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,512,512);
+  ctx.restore();
+
+  // W mark
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+  ctx.lineWidth = 42;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(100,170); ctx.lineTo(178,352);
+  ctx.lineTo(256,210); ctx.lineTo(334,352); ctx.lineTo(412,170);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(256,394,26,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.88)';
+  ctx.fill();
+
+  const link = document.createElement('a');
+  link.download = 'FundWise-App-Icon.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+</script>
+</body>
+</html>

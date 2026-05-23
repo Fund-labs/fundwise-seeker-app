@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="280" viewBox="0 0 320 280" fill="none" role="img" aria-label="FundWise">
+  <defs>
+    <linearGradient id="ws-d" x1="100" y1="20" x2="220" y2="140" gradientUnits="userSpaceOnUse"><stop stop-color="#0A4D2C"></stop><stop offset="1" stop-color="#0D6B3A"></stop></linearGradient>
+    <linearGradient id="ws-m" x1="100" y1="60" x2="220" y2="120" gradientUnits="userSpaceOnUse"><stop stop-color="#0D6B3A"></stop><stop offset="1" stop-color="#1A9151"></stop></linearGradient>
+    <linearGradient id="ws-l" x1="100" y1="92" x2="220" y2="140" gradientUnits="userSpaceOnUse"><stop stop-color="#1A9151"></stop><stop offset="1" stop-color="#4EC98A"></stop></linearGradient>
+  </defs>
+  <g transform="translate(100 20) scale(1.25)">
+    <rect x="14" y="22" width="68" height="14" rx="7" fill="url(#ws-d)" transform="rotate(-2 48 29)"></rect>
+    <rect x="11" y="41" width="74" height="14" rx="7" fill="url(#ws-m)"></rect>
+    <rect x="17" y="60" width="62" height="14" rx="7" fill="url(#ws-l)" transform="rotate(2 48 67)"></rect>
+  </g>
+  <text x="160" y="230" text-anchor="middle" font-family="&#39;DM Serif Display&#39;, &#39;Times New Roman&#39;, serif" font-size="56" letter-spacing="-1" fill="#0D1F14">FundWise</text>
+</svg>

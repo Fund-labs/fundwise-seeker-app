@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise — Shared expenses, settled simply.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;
+  --surface:#f5faf6;
+  --surface-2:#eaf3ec;
+  --border:#d5e8da;
+  --border-2:#c0d9c7;
+  --text:#0d1f14;
+  --text-2:#4a6b55;
+  --text-3:#8dab97;
+  --g-deep:#0d6b3a;
+  --g-mid:#1a9151;
+  --g-fresh:#2db870;
+  --g-light:#72d4a0;
+  --g-pale:#e6f7ee;
+  --grad:linear-gradient(135deg,#0d6b3a 0%,#2db870 100%);
+  --red:oklch(60% 0.20 25);
+  --amber:oklch(72% 0.16 75);
+  --fserif:'DM Serif Display',Georgia,serif;
+  --fsans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --radius:14px;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--fsans);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 max(24px,calc(50% - 660px));
+  height:64px;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo-text{font-family:var(--fserif);font-size:20px;color:var(--text);letter-spacing:-0.3px;}
+.nav-links{display:flex;align-items:center;gap:28px;list-style:none;}
+.nav-links a{color:var(--text-2);text-decoration:none;font-size:14px;font-weight:500;transition:color 0.15s;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{display:flex;align-items:center;gap:10px;}
+.btn-ghost{padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;color:var(--text-2);cursor:pointer;border:1px solid var(--border);background:transparent;font-family:var(--fsans);transition:all 0.15s;}
+.btn-ghost:hover{background:var(--surface);color:var(--text);}
+.btn-primary{padding:9px 20px;border-radius:8px;font-size:14px;font-weight:700;background:var(--grad);color:#fff;cursor:pointer;border:none;font-family:var(--fsans);transition:all 0.15s;letter-spacing:-0.1px;}
+.btn-primary:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 8px 24px rgba(13,107,58,0.25);}
+@media(max-width:640px){.nav-links,.btn-ghost{display:none;}}
+
+/* ── HERO ── */
+.hero{
+  padding:100px max(24px,calc(50% - 660px)) 80px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%, rgba(45,184,112,0.1) 0%, transparent 70%);
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;border-radius:100px;
+  background:var(--g-pale);border:1px solid var(--border-2);
+  font-size:12px;color:var(--g-deep);margin-bottom:32px;font-weight:600;
+}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--g-fresh);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+h1{
+  font-family:var(--fserif);font-size:clamp(40px,7vw,80px);
+  line-height:1.05;letter-spacing:-1.5px;color:var(--text);
+  margin-bottom:22px;text-wrap:balance;
+}
+h1 em{
+  font-style:italic;
+  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{font-size:clamp(15px,2vw,19px);color:var(--text-2);max-width:520px;margin:0 auto 44px;line-height:1.7;font-weight:400;}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+.btn-lg{padding:14px 28px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;font-family:var(--fsans);letter-spacing:-0.2px;transition:all 0.2s;display:flex;align-items:center;gap:8px;}
+.btn-grad{background:var(--grad);color:#fff;}
+.btn-grad:hover{filter:brightness(1.06);transform:translateY(-2px);box-shadow:0 12px 36px rgba(13,107,58,0.28);}
+.btn-outline-lg{background:var(--bg);color:var(--text);border:1.5px solid var(--border-2);}
+.btn-outline-lg:hover{background:var(--surface);transform:translateY(-2px);}
+
+/* ── DEMO CARD ── */
+.hero-demo{position:relative;z-index:1;margin:72px auto 0;max-width:880px;padding:0 max(24px,calc(50% - 660px));}
+.demo-card{
+  background:var(--bg);border:1px solid var(--border);border-radius:22px;overflow:hidden;
+  box-shadow:0 0 0 1px var(--border),0 40px 80px rgba(13,31,20,0.1),0 12px 24px rgba(13,31,20,0.06);
+}
+.demo-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;gap:7px;}
+.demo-dot{width:11px;height:11px;border-radius:50%;}
+.demo-inner{display:grid;grid-template-columns:220px 1fr;min-height:320px;}
+@media(max-width:600px){.demo-inner{grid-template-columns:1fr;}}
+.demo-sidebar{border-right:1px solid var(--border);padding:18px 0;background:var(--surface);}
+.demo-sidebar-head{padding:0 14px 12px;font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--text-3);text-transform:uppercase;}
+.demo-group-item{padding:9px 14px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:background 0.1s;}
+.demo-group-item.active{background:var(--surface-2);}
+.demo-group-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.demo-group-label{font-size:13px;font-weight:600;color:var(--text);}
+.demo-group-sub{font-size:10px;color:var(--text-3);}
+.demo-main{padding:22px;}
+.demo-title{font-family:var(--fserif);font-size:18px;letter-spacing:-0.2px;}
+.demo-subtitle{font-size:11px;color:var(--text-2);margin-top:2px;}
+.demo-balances{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;}
+.demo-bal-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.demo-bal-name{font-size:10px;color:var(--text-2);margin-bottom:4px;}
+.demo-bal-amt{font-family:var(--fsans);font-size:17px;font-weight:800;}
+.demo-exp-head{font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;}
+.demo-exp-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
+.demo-exp-row:last-child{border-bottom:none;}
+.demo-exp-left{display:flex;align-items:center;gap:9px;}
+.demo-exp-icon{width:30px;height:30px;border-radius:7px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.demo-exp-name{font-size:13px;font-weight:500;}
+.demo-exp-who{font-size:10px;color:var(--text-2);}
+.demo-exp-amt{font-size:13px;font-weight:700;}
+.demo-chip{font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px;text-transform:uppercase;letter-spacing:0.04em;}
+.chip-split{background:var(--g-pale);color:var(--g-deep);border:1px solid var(--border-2);}
+.chip-fund{background:#e8f0fb;color:#2a4fa8;border:1px solid #a8c0f0;}
+
+/* ── SECTION LAYOUT ── */
+.section-inner{padding:100px max(24px,calc(50% - 660px));}
+.s-eyebrow{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--g-mid);margin-bottom:12px;}
+.s-title{font-family:var(--fserif);font-size:clamp(28px,4vw,46px);letter-spacing:-0.8px;line-height:1.1;margin-bottom:14px;text-wrap:balance;}
+.s-desc{font-size:16px;color:var(--text-2);max-width:480px;line-height:1.75;margin-bottom:56px;}
+.divider{height:1px;background:var(--border);}
+
+/* ── MODES ── */
+.modes-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:680px){.modes-grid{grid-template-columns:1fr;}}
+.mode-card{border-radius:22px;padding:40px;border:1.5px solid var(--border);background:var(--surface);position:relative;overflow:hidden;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;}
+.mode-card:hover{transform:translateY(-4px);}
+.split-card:hover{border-color:var(--border-2);box-shadow:0 16px 48px rgba(13,107,58,0.1);}
+.fund-card:hover{border-color:#a8c0f0;box-shadow:0 16px 48px rgba(42,79,168,0.1);}
+.mode-card-glow{position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;pointer-events:none;}
+.split-card .mode-card-glow{background:radial-gradient(circle,rgba(45,184,112,0.12) 0%,transparent 70%);}
+.fund-card .mode-card-glow{background:radial-gradient(circle,rgba(42,79,168,0.08) 0%,transparent 70%);}
+.mode-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;margin-bottom:20px;letter-spacing:0.04em;text-transform:uppercase;}
+.split-badge{background:var(--g-pale);color:var(--g-deep);border:1px solid var(--border-2);}
+.fund-badge{background:#e8f0fb;color:#2a4fa8;border:1px solid #a8c0f0;}
+.mode-title{font-family:var(--fserif);font-size:26px;letter-spacing:-0.3px;margin-bottom:12px;line-height:1.2;}
+.mode-desc{color:var(--text-2);line-height:1.75;margin-bottom:28px;font-size:14px;}
+.mode-features{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.mode-features li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);}
+.check-icon{width:18px;height:18px;flex-shrink:0;}
+
+/* ── HOW IT WORKS ── */
+.hiw-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;}
+@media(max-width:680px){.hiw-steps{grid-template-columns:1fr;}}
+.hiw-step{}
+.hiw-num{
+  font-family:var(--fserif);font-size:56px;line-height:1;margin-bottom:18px;
+  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0.3;
+}
+.hiw-title{font-family:var(--fserif);font-size:20px;letter-spacing:-0.2px;margin-bottom:9px;}
+.hiw-desc{color:var(--text-2);font-size:14px;line-height:1.7;}
+
+/* ── FEATURES ── */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:800px){.features-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:500px){.features-grid{grid-template-columns:1fr;}}
+.feat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;transition:all 0.2s;}
+.feat-card:hover{border-color:var(--border-2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(13,107,58,0.08);}
+.feat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:18px;background:var(--surface-2);border:1px solid var(--border);}
+.feat-title{font-family:var(--fserif);font-size:17px;letter-spacing:-0.2px;margin-bottom:7px;}
+.feat-desc{font-size:13px;color:var(--text-2);line-height:1.65;}
+
+/* ── TECH STRIP ── */
+.tech-strip{
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:var(--surface);padding:24px max(24px,calc(50% - 660px));
+  display:flex;align-items:center;gap:40px;flex-wrap:wrap;
+}
+.tech-label{font-size:11px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;}
+.tech-items{display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
+.tech-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text-2);font-weight:500;}
+.tech-dot{width:7px;height:7px;border-radius:50%;}
+
+/* ── CTA ── */
+.cta-section{
+  text-align:center;padding:110px max(24px,calc(50% - 660px));
+  position:relative;overflow:hidden;
+}
+.cta-section::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 70% at 50% 100%, rgba(45,184,112,0.08) 0%, transparent 70%);
+}
+.cta-section h2{font-family:var(--fserif);font-size:clamp(30px,5vw,54px);letter-spacing:-1px;margin-bottom:16px;}
+.cta-section p{color:var(--text-2);font-size:17px;margin-bottom:44px;}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:44px max(24px,calc(50% - 660px));display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+.footer-logo{display:flex;align-items:center;gap:8px;}
+.footer-logo-text{font-family:var(--fserif);font-size:17px;color:var(--text-2);}
+.footer-links{display:flex;gap:22px;}
+.footer-links a{font-size:13px;color:var(--text-3);text-decoration:none;transition:color 0.15s;}
+.footer-links a:hover{color:var(--text-2);}
+.footer-copy{font-size:12px;color:var(--text-3);}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg width="26" height="26" viewBox="0 0 80 80" fill="none">
+      <rect width="80" height="80" rx="22" fill="url(#nav-g)"/>
+      <path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="40" cy="61" r="4.5" fill="white" opacity="0.8"/>
+      <defs><linearGradient id="nav-g" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+    </svg>
+    <span class="nav-logo-text">FundWise</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#modes">Modes</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+  </ul>
+  <div class="nav-cta">
+    <button class="btn-ghost">Sign in</button>
+    <button class="btn-primary">Launch app →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Live on Solana Devnet · Colosseum Frontier
+  </div>
+  <h1>Shared expenses,<br><em>settled simply.</em></h1>
+  <p class="hero-sub">No IOUs. No Venmo chasing. Split costs with friends and settle instantly in stablecoins — or pool a shared treasury and spend by vote.</p>
+  <div class="hero-actions">
+    <button class="btn-lg btn-grad">Start splitting →</button>
+    <button class="btn-lg btn-outline-lg">Pool a fund</button>
+  </div>
+</div>
+
+<!-- DEMO CARD -->
+<div class="hero-demo">
+  <div class="demo-card">
+    <div class="demo-topbar">
+      <div class="demo-dot" style="background:#ff5f57"></div>
+      <div class="demo-dot" style="background:#febc2e"></div>
+      <div class="demo-dot" style="background:#28c840"></div>
+    </div>
+    <div class="demo-inner">
+      <div class="demo-sidebar">
+        <div class="demo-sidebar-head">Groups</div>
+        <div class="demo-group-item active">
+          <div class="demo-group-icon" style="background:var(--g-pale)">🏖️</div>
+          <div><div class="demo-group-label">Lisbon Trip</div><div class="demo-group-sub">Split · 4 members</div></div>
+        </div>
+        <div class="demo-group-item">
+          <div class="demo-group-icon" style="background:#e8f0fb">🎁</div>
+          <div><div class="demo-group-label">Priya's Gift</div><div class="demo-group-sub">Fund · 6 members</div></div>
+        </div>
+        <div class="demo-group-item">
+          <div class="demo-group-icon" style="background:var(--g-pale)">🏠</div>
+          <div><div class="demo-group-label">Flatmates</div><div class="demo-group-sub">Split · 3 members</div></div>
+        </div>
+        <div class="demo-group-item">
+          <div class="demo-group-icon" style="background:#e8f0fb">🧳</div>
+          <div><div class="demo-group-label">Berlin Conf</div><div class="demo-group-sub">Fund · 8 members</div></div>
+        </div>
+      </div>
+      <div class="demo-main">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:4px">
+          <div>
+            <div class="demo-title">Lisbon Trip 🏖️</div>
+            <div class="demo-subtitle">4 members · USDC · Split Mode</div>
+          </div>
+          <span class="demo-chip chip-split">Split</span>
+        </div>
+        <div class="demo-balances">
+          <div class="demo-bal-card"><div class="demo-bal-name">You are owed</div><div class="demo-bal-amt" style="color:var(--g-mid)">+$84.50</div></div>
+          <div class="demo-bal-card"><div class="demo-bal-name">Total expenses</div><div class="demo-bal-amt" style="color:var(--text)">$640.00</div></div>
+          <div class="demo-bal-card"><div class="demo-bal-name">Settled</div><div class="demo-bal-amt" style="color:var(--g-mid)">2 of 5</div></div>
+        </div>
+        <div class="demo-exp-head">Recent expenses</div>
+        <div class="demo-exp-row">
+          <div class="demo-exp-left"><div class="demo-exp-icon">🍷</div><div><div class="demo-exp-name">Wine dinner</div><div class="demo-exp-who">Paid by Asha</div></div></div>
+          <div style="text-align:right"><div class="demo-exp-amt">$120.00</div><div style="font-size:10px;color:var(--red)">you owe $30</div></div>
+        </div>
+        <div class="demo-exp-row">
+          <div class="demo-exp-left"><div class="demo-exp-icon">🚕</div><div><div class="demo-exp-name">Airport taxi</div><div class="demo-exp-who">Paid by you</div></div></div>
+          <div style="text-align:right"><div class="demo-exp-amt">$48.00</div><div style="font-size:10px;color:var(--g-mid)">you get $36</div></div>
+        </div>
+        <div class="demo-exp-row">
+          <div class="demo-exp-left"><div class="demo-exp-icon">🏨</div><div><div class="demo-exp-name">Hotel (2 nights)</div><div class="demo-exp-who">Paid by Kiran</div></div></div>
+          <div style="text-align:right"><div class="demo-exp-amt">$320.00</div><div style="font-size:10px;color:var(--red)">you owe $80</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODES -->
+<div id="modes" class="section-inner" style="padding-top:110px">
+  <div class="s-eyebrow">Two modes, one app</div>
+  <h2 class="s-title">Pick your flow</h2>
+  <p class="s-desc">Whether you're splitting the restaurant bill or pooling funds for a group trip, FundWise has the right primitive.</p>
+  <div class="modes-grid">
+    <div class="mode-card split-card">
+      <div class="mode-card-glow"></div>
+      <div class="mode-badge split-badge">⚡ Split Mode</div>
+      <div class="mode-title">Splitwise,<br>on Solana.</div>
+      <p class="mode-desc">Log shared expenses, see who owes what, and settle up with a single on-chain transfer. Every settlement is permanent, auditable, and costs less than a cent.</p>
+      <ul class="mode-features">
+        <li><svg class="check-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#e6f7ee"/><path d="M5.5 9l2.5 2.5 5-5" stroke="#1a9151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Equal, percentage, or custom splits</li>
+        <li><svg class="check-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#e6f7ee"/><path d="M5.5 9l2.5 2.5 5-5" stroke="#1a9151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Debt simplification graph</li>
+        <li><svg class="check-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#e6f7ee"/><path d="M5.5 9l2.5 2.5 5-5" stroke="#1a9151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>One-click SPL stablecoin settlement</li>
+        <li><svg class="check-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#e6f7ee"/><path d="M5.5 9l2.5 2.5 5-5" stroke="#1a9151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>On-chain tx signature as proof</li>
+      </ul>
+    </div>
+    <div class="mode-card fund-card">
+      <div class="mode-card-glow"></div>
+      <div class="mode-badge fund-badge">🏦 Fund Mode</div>
+      <div class="mode-title">Reverse Splitwise —<br>pool first, spend after.</div>
+      <p class="mode-desc">Everyone contributes upfront to a shared treasury. Spending requires a proposal and threshold approval — great for group trips, shared gifts, or recurring costs.</p>
+      <ul class="mode-features">
+        <li><svg class="check-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#e8f0fb"/><path d="M5.5 9l2.5 2.5 5-5" stroke="#2a4fa8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Squads multisig treasury</li>
+        <li><svg class="check-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#e8f0fb"/><path d="M5.5 9l2.5 2.5 5-5" stroke="#2a4fa8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Proposal + threshold vote</li>
+        <li><svg class="check-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#e8f0fb"/><path d="M5.5 9l2.5 2.5 5-5" stroke="#2a4fa8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Cross-chain contributions via LI.FI</li>
+        <li><svg class="check-icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#e8f0fb"/><path d="M5.5 9l2.5 2.5 5-5" stroke="#2a4fa8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Proportional refunds on close</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<div id="how" class="section-inner">
+  <div class="s-eyebrow">How it works</div>
+  <h2 class="s-title">Three steps to settled</h2>
+  <p class="s-desc">Designed for people who want financial clarity without the friction.</p>
+  <div class="hiw-steps">
+    <div class="hiw-step">
+      <div class="hiw-num">01</div>
+      <div class="hiw-title">Connect your wallet</div>
+      <p class="hiw-desc">Sign in with Phantom, Solflare, or Backpack. No email, no password — your wallet is your identity.</p>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-num">02</div>
+      <div class="hiw-title">Create a group &amp; log expenses</div>
+      <p class="hiw-desc">Invite friends by wallet address. Log who paid what. FundWise computes the fewest transfers to zero out all debts.</p>
+    </div>
+    <div class="hiw-step">
+      <div class="hiw-num">03</div>
+      <div class="hiw-title">Settle with one click</div>
+      <p class="hiw-desc">Pay in USDC. Confirms on Solana in under 3 seconds. Permanently recorded on-chain — no disputes, no reversals.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<div id="features" class="section-inner">
+  <div class="s-eyebrow">Why FundWise</div>
+  <h2 class="s-title">Built different</h2>
+  <p class="s-desc">The familiar UX of Splitwise, the finality of blockchain.</p>
+  <div class="features-grid">
+    <div class="feat-card"><div class="feat-icon">⚡</div><div class="feat-title">Instant settlement</div><p class="feat-desc">SPL transfers confirm in &lt;3s on Solana. No waiting, no pending, no reversals.</p></div>
+    <div class="feat-card"><div class="feat-icon">🔒</div><div class="feat-title">Non-custodial</div><p class="feat-desc">Your keys, your funds. FundWise never holds money — all transfers go wallet-to-wallet.</p></div>
+    <div class="feat-card"><div class="feat-icon">💵</div><div class="feat-title">Stablecoins only</div><p class="feat-desc">USDC, USDT, PYUSD — any SPL stablecoin. No volatility. Always $1 = $1.</p></div>
+    <div class="feat-card"><div class="feat-icon">🌐</div><div class="feat-title">Cross-chain contributions</div><p class="feat-desc">Fund Mode accepts contributions from any chain via LI.FI bridge.</p></div>
+    <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Debt simplification</div><p class="feat-desc">Minimum transfers to settle a whole group — Splitwise-style, but on-chain.</p></div>
+    <div class="feat-card"><div class="feat-icon">🧾</div><div class="feat-title">On-chain proof</div><p class="feat-desc">Every settlement stores a Solana tx signature. Dispute-free, forever.</p></div>
+  </div>
+</div>
+
+<!-- TECH STRIP -->
+<div class="tech-strip">
+  <div class="tech-label">Built on</div>
+  <div class="tech-items">
+    <div class="tech-item"><div class="tech-dot" style="background:#9945FF"></div>Solana</div>
+    <div class="tech-item"><div class="tech-dot" style="background:#2775CA"></div>USDC · USDT · PYUSD</div>
+    <div class="tech-item"><div class="tech-dot" style="background:var(--g-fresh)"></div>Squads Protocol</div>
+    <div class="tech-item"><div class="tech-dot" style="background:#E84142"></div>LI.FI SDK</div>
+    <div class="tech-item"><div class="tech-dot" style="background:#000"></div>Next.js 15</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Ready to ditch the IOUs?</h2>
+  <p>Create your first group in under a minute.</p>
+  <div class="hero-actions">
+    <button class="btn-lg btn-grad">Connect Wallet →</button>
+    <button class="btn-lg btn-outline-lg">Read the docs</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <svg width="22" height="22" viewBox="0 0 80 80" fill="none">
+      <rect width="80" height="80" rx="22" fill="url(#ft-nav)"/>
+      <path d="M18 28 L28 52 L40 34 L52 52 L62 28" stroke="white" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="40" cy="61" r="4.5" fill="white" opacity="0.8"/>
+      <defs><linearGradient id="ft-nav" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#0d6b3a"/><stop offset="1" stop-color="#2db870"/></linearGradient></defs>
+    </svg>
+    <span class="footer-logo-text">FundWise</span>
+  </div>
+  <div class="footer-links">
+    <a href="#">Docs</a>
+    <a href="#">GitHub</a>
+    <a href="#">Twitter</a>
+    <a href="#">Colosseum</a>
+  </div>
+  <div class="footer-copy">© 2026 FundWise · Colosseum Frontier</div>
+</footer>
+
+</body>
+</html>
