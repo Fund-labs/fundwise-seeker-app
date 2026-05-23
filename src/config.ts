@@ -9,7 +9,7 @@ export const FUNDWISE_API_URL =
 export const SOLANA_CLUSTER =
   process.env.EXPO_PUBLIC_SOLANA_CLUSTER ||
   process.env.EXPO_PUBLIC_SOLANA_CHAIN?.replace("solana:", "") ||
-  "mainnet";
+  "devnet";
 
 export const SOLANA_CHAIN = `solana:${SOLANA_CLUSTER}` as Chain;
 
@@ -19,5 +19,5 @@ export const SOLANA_RPC_ENDPOINT =
 export const FUNDWISE_IDENTITY = {
   name: "FundWise",
   uri: FUNDWISE_WEB_URL,
-  icon: "fundwise-logo.png",
+  icon: "favicon.ico",
 };

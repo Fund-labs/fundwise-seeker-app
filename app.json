@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "FundWise Seeker",
+    "name": "FundWise",
     "slug": "fundwise-seeker",
     "scheme": "fundwiseseeker",
     "version": "0.1.0",
@@ -29,6 +29,7 @@
       ]
     },
     "plugins": [
+      "./plugins/withWalletQueries",
       [
         "expo-build-properties",
         {
