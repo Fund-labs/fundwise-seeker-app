@@ -15,12 +15,13 @@ It follows the local Seeker skill guidance from `/Users/sarthiborkar/Build/seeke
 
 - React Native / Expo custom development build
 - Solana Mobile Wallet Adapter via `@wallet-ui/react-native-web3js`
-- canonical `react-native-get-random-values` polyfill as the first import
+- canonical `react-native-quick-crypto` polyfill as the first import
 - FundWise API health check
 - Public invite-code lookup
 - FundWise deep-link handling for `/groups`
 - First-run Seeker onboarding with link recovery, MWA wallet handoff, phone-to-PC continuation, and reduced-motion support
 - Android-first launch flow: connect wallet, recover Group state, continue on FundWise web / PC
+- Lightweight Seeker device signal from React Native platform constants for UI treatment only
 - Native share sheet for sending the current Group, Settlement, or Receipt URL to desktop
 - Network and app-background state handling for wallet round trips
 - FundWise mobile prototype styling from `FundWise/design/app/mobile.jsx`
@@ -33,6 +34,7 @@ Money-moving actions still open the FundWise web app until native transaction co
 The onboarding is shown on first launch and persisted with AsyncStorage. Use **Replay Intro** in the Wallet Boundary panel to review the flow again. The visual direction matches the reviewed HTML prototype in `FundWise/design/seeker-onboarding-review.html`.
 
 Progress log: [docs/progress.md](./docs/progress.md)
+Solana Mobile docs cross-check: [docs/solana-mobile-crosscheck.md](./docs/solana-mobile-crosscheck.md)
 
 ## Run
 
@@ -105,6 +107,50 @@ Do not store private keys in this app.
 ## Seeker / dApp Store Notes
 
 - Expo Go will fail for MWA; use a custom development build.
+- Native MWA is an Android flow. The current phone app does not target iOS because MWA is not supported there.
 - Android `minSdkVersion` is pinned to `26` through `expo-build-properties`.
 - dApp Store shipping expects an APK, not an AAB.
 - Use a different signing key from Google Play if this is also shipped there.
+- The Platform constants Seeker check is spoofable. Use SIWS plus Seeker Genesis Token verification on the backend for guaranteed Seeker ownership.
+
+## dApp Store APK
+
+EAS can build the required APK format with the checked-in `dapp-store` profile:
+
+```bash
+eas build --platform android --profile dapp-store
+```
+
+For a local native Android release, generate a dApp Store-specific keystore and pass it to Gradle through environment variables:
+
+```bash
+keytool -genkey -v -keystore android/app/keystores/fundwise-seeker-dapp-store.keystore \
+  -alias fundwise-seeker-dapp-store \
+  -keyalg RSA \
+  -keysize 2048 \
+  -validity 10000
+
+export FUNDWISE_DAPP_STORE_KEYSTORE=keystores/fundwise-seeker-dapp-store.keystore
+export FUNDWISE_DAPP_STORE_KEY_ALIAS=fundwise-seeker-dapp-store
+export FUNDWISE_DAPP_STORE_STORE_PASSWORD=...
+export FUNDWISE_DAPP_STORE_KEY_PASSWORD=...
+
+cd android
+./gradlew assembleRelease
+```
+
+The signed APK path is:
+
+```text
+android/app/build/outputs/apk/release/app-release.apk
+```
+
+Verify the release APK before dApp Store submission:
+
+```bash
+$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner verify \
+  --print-certs \
+  app/build/outputs/apk/release/app-release.apk
+```
+
+If release packaging fails with `No space left on device`, clear local Gradle/Android build caches or free disk before retrying. Release builds compile native libraries for multiple ABIs and need substantially more space than the debug APK build.

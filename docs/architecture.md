@@ -12,9 +12,10 @@ The web app is already a deployable Next.js product with Cloudflare, Supabase, w
 
 - React Native + Expo custom dev build
 - `@wallet-ui/react-native-web3js` for Mobile Wallet Adapter
-- `react-native-get-random-values` polyfill loaded before Solana libraries
+- `react-native-quick-crypto` polyfill loaded before Solana libraries
 - Existing FundWise HTTP API for shared state
 - `expo-build-properties` pins Android `minSdkVersion` to 26 for Seeker/MWA compatibility
+- React Native `Platform.constants.Model === "Seeker"` as a lightweight, spoofable device signal for UI treatment
 
 ## First Milestone
 
@@ -49,9 +50,25 @@ The first-run onboarding owns the initial mental model:
 
 Motion is limited to short opacity and transform transitions using React Native `Animated`. It respects Android reduced-motion settings through `AccessibilityInfo` and never blocks entry to the app.
 
+## MWA Platform Boundary
+
+FundWise Seeker targets Android for native wallet interactions. Mobile Wallet Adapter gives full native support on Android and can support mobile web in Chrome for Android, but it does not support native iOS inter-app wallet sessions. Any future iOS surface should be treated as a separate wallet strategy, not a direct port of this MWA flow.
+
+## Wallet Integration Mode
+
+The root app still uses `MobileWalletProvider` for shared chain, endpoint, and identity configuration. The FundWise onboarding approval screen now uses direct Mobile Wallet Adapter sessions through `transact` from `@solana-mobile/mobile-wallet-adapter-protocol-web3js` so it can request a fresh wallet authorization and message signature without cached auth-token reuse.
+
+Future wallet-submitted transaction flows should use the same web3js wrapper rather than importing `transact` from the base protocol package directly. Keep `polyfill.js` as the first app import before any Solana code.
+
 ## Native Android Project
 
 Expo prebuild generates `android/` for Android Studio. The folder is local generated output and remains ignored by git unless the project intentionally moves to a bare/native-owned workflow.
+
+Release signing follows the Solana dApp Store APK requirement. The tracked `eas.json` profile requests an APK build, and the local generated Android project reads dApp Store keystore values from `FUNDWISE_DAPP_STORE_*` environment variables when building `assembleRelease`.
+
+## Seeker Ownership
+
+The app only uses Platform constants for non-critical UI treatment. Guaranteed Seeker-owner checks require a backend flow: SIWS proves wallet ownership, then the server verifies Seeker Genesis Token ownership and unique mint usage.
 
 ## Testing Rule
 

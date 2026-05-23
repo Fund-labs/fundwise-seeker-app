@@ -21,6 +21,11 @@ Update:
 - Added a FundWise link parser for Group links, invite links, Settlement request links, and Settlement receipt links.
 - Persisted the latest incoming app link with AsyncStorage so device testers can recover the last FundWise handoff after restart.
 - The Seeker home screen now previews the latest link, pre-fills invite codes from links, and provides Open / Clear actions.
+- Added lightweight Seeker device detection from React Native Platform constants for UI treatment only.
+- Added a dApp Store APK build profile and local Android release signing path that reads keystore settings from environment variables.
+- Recorded the MWA platform boundary: Android native is supported; iOS is not a target for this MWA flow.
+- Cross-checked the current wallet integration against the React Native install/setup docs: `react-native-quick-crypto` loads first through `index.js`, `MobileWalletProvider` wraps the app, and the onboarding approval path uses direct MWA `transact` from `@solana-mobile/mobile-wallet-adapter-protocol-web3js`.
+- Added recommended wallet choices for Seeker-native Solana Mobile Wallet, Solflare, and other MWA-compatible wallets.
 
 ## Product Decision
 
@@ -79,6 +84,7 @@ Docs:
 - `README.md`
 - `docs/architecture.md`
 - `docs/progress.md`
+- `docs/solana-mobile-crosscheck.md`
 
 Source:
 
@@ -104,7 +110,7 @@ Shared handoff:
 - `@wallet-ui/react-native-web3js`
 - `@solana/web3.js`
 - `@solana-mobile/mobile-wallet-adapter-protocol`
-- `react-native-get-random-values`
+- `react-native-quick-crypto`
 - `@react-native-community/netinfo`
 - `expo-haptics`
 - `expo-build-properties`
@@ -114,6 +120,8 @@ Shared handoff:
 Implemented:
 
 - MWA provider in `App.tsx`
+- direct MWA `authorize` plus `signMessages` proof in the FundWise onboarding approval flow
+- Wallet UI `useMobileWallet` hook for legacy connect/disconnect in `SeekerHomeScreen`
 - Solana chain/RPC config via Expo public env vars
 - FundWise API base URL config
 - first-run animated onboarding
@@ -129,6 +137,7 @@ Implemented:
 - FundWise `/api/health` check
 - public invite-code lookup through `GET /api/groups?code=...`
 - latest incoming FundWise link persistence and parsing
+- lightweight Seeker device signal from `Platform.constants.Model`
 - FundWise link previews for Groups, invite links, Settlement requests, and Settlement receipts
 - Android app link intent filter for `https://fundwise.fun/groups`
 - open FundWise Groups in browser/web app
@@ -148,7 +157,7 @@ Intentionally not implemented yet:
 - protected Group dashboard reads in native app
 - receipt persistence from native tx
 - dApp Store publishing assets
-- SGT / Seeker-owner gating
+- secure SGT / Seeker-owner gating
 - `.skr` address resolution
 
 Reason: FundWise web app remains money-moving source of truth until native flow is tested end to end on Android with MWA wallet.
@@ -158,7 +167,7 @@ Reason: FundWise web app remains money-moving source of truth until native flow 
 From Seeker skills:
 
 - MWA dev client required; Expo Go not enough.
-- crypto RNG polyfill must be first import.
+- `react-native-quick-crypto` polyfill must be first import.
 - use `@wallet-ui/react-native-web3js`.
 - Android `minSdkVersion` must be 26.
 - dApp Store expects APK, not AAB.
@@ -167,11 +176,13 @@ From Seeker skills:
 
 Applied:
 
-- `polyfill.js` imports `react-native-get-random-values` first through `index.js`.
+- `polyfill.js` installs `react-native-quick-crypto` first through `index.js`.
 - `app.json` uses `expo-build-properties` with `android.minSdkVersion = 26`.
 - `src/theme/colors.ts` defines the FundWise mobile prototype palette.
 - `ActionButton` uses 56 px height and tap haptics.
 - `README.md` documents APK / dApp Store constraints.
+- `eas.json` includes a `dapp-store` profile that builds Android APKs.
+- local `android/app/build.gradle` release signing reads `FUNDWISE_DAPP_STORE_*` keystore settings when present.
 
 ## Validation Run
 
@@ -192,7 +203,7 @@ cd /Users/sarthiborkar/Build/fundlabs/FundWiseSeeker
 npm run typecheck
 npm exec expo -- install --check
 npx expo prebuild --platform android --no-install
-./android/gradlew tasks
+./android/gradlew assembleDebug
 ```
 
 Result:
@@ -200,7 +211,9 @@ Result:
 - `npm run typecheck`: pass.
 - `npm exec expo -- install --check`: pass using local Expo dependency map because command context is offline.
 - `npx expo prebuild --platform android --no-install`: pass, `android/` generated.
-- `./android/gradlew tasks`: blocked locally because Java runtime is missing.
+- `./android/gradlew assembleDebug`: pass with JDK 17 and Android SDK configured.
+- Debug APK generated at `android/app/build/outputs/apk/debug/app-debug.apk`.
+- `./android/gradlew assembleRelease`: blocked by `No space left on device` while compiling release native libraries; no release APK produced.
 
 Notes:
 
@@ -223,32 +236,14 @@ Result:
 
 ## Local Blockers
 
-Android run blocked on this machine:
+Android toolchain is now present enough for native debug APK builds.
 
-- Java runtime missing.
-- `ANDROID_HOME` missing.
-- Android SDK / emulator not configured.
+Remaining runtime blocker:
 
-Observed:
-
-```bash
-java -version
-```
-
-returned:
-
-```text
-Unable to locate a Java Runtime.
-```
-
-Required before device/emulator run:
-
-- install JDK 17
-- install Android Studio / Android SDK
-- configure `ANDROID_HOME`
-- install platform tools / `adb`
-- connect Android device or start emulator
-- install Mock MWA Wallet or real MWA-compatible wallet
+- No Android device or emulator was connected during the latest validation.
+- MWA wallet connection still needs physical-device or emulator testing with Mock MWA Wallet or a real MWA-compatible wallet.
+- dApp Store release signing still needs a real keystore and `FUNDWISE_DAPP_STORE_*` secret values.
+- Local disk had only 133 MiB free after the release attempt, which is not enough for native release packaging.
 
 ## Next Steps
 
