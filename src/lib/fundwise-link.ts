@@ -30,7 +30,12 @@ function getPathParts(url: URL) {
   return parts;
 }
 
-export function parseFundWiseLink(value: string, baseUrl: string, receiptsUrl?: string): FundWiseLinkIntent | null {
+export function parseFundWiseLink(
+  value: string,
+  baseUrl: string,
+  receiptsUrl?: string,
+  allowedHosts: string[] = [],
+): FundWiseLinkIntent | null {
   const trimmed = value.trim();
 
   if (!trimmed) {
@@ -41,8 +46,9 @@ export function parseFundWiseLink(value: string, baseUrl: string, receiptsUrl?: 
     const url = new URL(trimmed, baseUrl);
     const base = new URL(baseUrl);
     const receiptsBase = receiptsUrl ? new URL(receiptsUrl) : null;
+    const allowedHostSet = new Set([base.host, receiptsBase?.host, ...allowedHosts].filter((host): host is string => Boolean(host)));
     const isWebUrl = url.protocol === "https:" || url.protocol === "http:";
-    const isFundWiseHost = url.host === base.host;
+    const isFundWiseHost = allowedHostSet.has(url.host);
     const isReceiptsHost = Boolean(receiptsBase && url.host === receiptsBase.host);
 
     if (isWebUrl && !isFundWiseHost && !isReceiptsHost) {
@@ -89,6 +95,15 @@ export function parseFundWiseLink(value: string, baseUrl: string, receiptsUrl?: 
         receiptId: parts[3],
         txSignature: parts[3],
         url: url.toString(),
+      };
+    }
+
+    if (parts[0] === "join") {
+      return {
+        kind: "invite",
+        url: url.toString(),
+        groupId: parts[1],
+        inviteCode: inviteCode?.toUpperCase(),
       };
     }
 

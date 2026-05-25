@@ -23,7 +23,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
-import { FUNDWISE_IDENTITY, FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
+import { FUNDWISE_ALLOWED_HOSTS, FUNDWISE_IDENTITY, FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
 import {
   ACTIVITY,
   GROUPS,
@@ -2356,7 +2356,7 @@ export function FundWiseSeekerAppScreen() {
   const walletAddress = walletAddressToString(account?.address) || authorizedWalletAddress;
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) || groups[0];
   const incomingIntent = useMemo(
-    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL) : null),
+    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL, FUNDWISE_ALLOWED_HOSTS) : null),
     [incomingLink.url],
   );
   const incomingSettlementRequestId =

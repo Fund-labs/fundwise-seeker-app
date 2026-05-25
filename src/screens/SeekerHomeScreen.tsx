@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { ActionButton } from "../components/ActionButton";
 import { StatusPill } from "../components/StatusPill";
-import { FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
+import { FUNDWISE_ALLOWED_HOSTS, FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
 import { useIncomingFundWiseLink } from "../hooks/useIncomingFundWiseLink";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { getHealth, lookupInvite, type InviteLookup } from "../lib/fundwise-api";
@@ -126,9 +126,9 @@ export function SeekerHomeScreen() {
 
   const walletAddress = account?.address.toBase58() ?? null;
   const normalizedInviteCode = useMemo(() => extractInviteCode(linkInput), [linkInput]);
-  const pastedIntent = useMemo(() => parseFundWiseLink(linkInput, FUNDWISE_WEB_URL, RECEIPTS_URL), [linkInput]);
+  const pastedIntent = useMemo(() => parseFundWiseLink(linkInput, FUNDWISE_WEB_URL, RECEIPTS_URL, FUNDWISE_ALLOWED_HOSTS), [linkInput]);
   const latestIntent = useMemo(
-    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL) : null),
+    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL, FUNDWISE_ALLOWED_HOSTS) : null),
     [incomingLink.url],
   );
   const activeIntent = pastedIntent || latestIntent;

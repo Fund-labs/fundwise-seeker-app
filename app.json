@@ -26,11 +26,36 @@
             {
               "scheme": "https",
               "host": "fundwise.fun",
+              "pathPrefix": "/join"
+            },
+            {
+              "scheme": "https",
+              "host": "fundwise.fun",
               "pathPrefix": "/settle/r"
             },
             {
               "scheme": "https",
               "host": "fundwise.fun",
+              "pathPrefix": "/receipts"
+            },
+            {
+              "scheme": "https",
+              "host": "beta.fundwise.fun",
+              "pathPrefix": "/groups"
+            },
+            {
+              "scheme": "https",
+              "host": "beta.fundwise.fun",
+              "pathPrefix": "/join"
+            },
+            {
+              "scheme": "https",
+              "host": "beta.fundwise.fun",
+              "pathPrefix": "/settle/r"
+            },
+            {
+              "scheme": "https",
+              "host": "beta.fundwise.fun",
               "pathPrefix": "/receipts"
             }
           ],

@@ -1,13 +1,45 @@
 import type { Chain } from "@solana-mobile/mobile-wallet-adapter-protocol";
 
+function stripTrailingSlash(value: string) {
+  return value.replace(/\/$/, "");
+}
+
+function hostOf(value: string) {
+  try {
+    return new URL(value).host;
+  } catch {
+    return null;
+  }
+}
+
+function splitHosts(value: string | undefined) {
+  return (value || "")
+    .split(",")
+    .map((host) => host.trim())
+    .filter(Boolean);
+}
+
 export const FUNDWISE_WEB_URL =
-  process.env.EXPO_PUBLIC_FUNDWISE_WEB_URL?.replace(/\/$/, "") || "https://fundwise.fun";
+  stripTrailingSlash(process.env.EXPO_PUBLIC_FUNDWISE_WEB_URL || "https://fundwise.fun");
 
 export const FUNDWISE_API_URL =
-  process.env.EXPO_PUBLIC_FUNDWISE_API_URL?.replace(/\/$/, "") || FUNDWISE_WEB_URL;
+  stripTrailingSlash(process.env.EXPO_PUBLIC_FUNDWISE_API_URL || FUNDWISE_WEB_URL);
 
 export const RECEIPTS_URL =
-  process.env.EXPO_PUBLIC_RECEIPTS_URL?.replace(/\/$/, "") || FUNDWISE_WEB_URL;
+  stripTrailingSlash(process.env.EXPO_PUBLIC_RECEIPTS_URL || FUNDWISE_WEB_URL);
+
+export const FUNDWISE_ALLOWED_HOSTS = Array.from(
+  new Set(
+    [
+      "fundwise.fun",
+      "beta.fundwise.fun",
+      hostOf(FUNDWISE_WEB_URL),
+      hostOf(FUNDWISE_API_URL),
+      hostOf(RECEIPTS_URL),
+      ...splitHosts(process.env.EXPO_PUBLIC_FUNDWISE_ALLOWED_HOSTS),
+    ].filter((host): host is string => Boolean(host)),
+  ),
+);
 
 export const SOLANA_CLUSTER =
   process.env.EXPO_PUBLIC_SOLANA_CLUSTER ||
