@@ -93,13 +93,13 @@ export const GROUPS: FundWiseGroup[] = [
       { v: -30, who: "dev" },
     ],
     currency: "USDC",
-    emoji: "Trip",
+    emoji: "🏖️",
     expenses: [
-      { date: "Today", day: "Today", icon: "Wine", id: "e1", myShare: -30, name: "Wine dinner", payer: "asha", total: 120 },
-      { date: "Today", day: "Today", icon: "Taxi", id: "e2", myShare: 36, name: "Airport taxi", payer: "you", total: 48 },
-      { date: "Yesterday", day: "Yesterday", icon: "Hotel", id: "e3", myShare: -80, name: "Hotel (2 nights)", payer: "kiran", total: 320 },
-      { date: "Yesterday", day: "Yesterday", icon: "Lunch", id: "e4", myShare: 54, name: "Lunch · LX Market", payer: "you", total: 72 },
-      { date: "Apr 22", day: "Apr 22", icon: "Art", id: "e5", myShare: -20, name: "Museum tickets", payer: "dev", total: 80 },
+      { date: "Today", day: "Today", icon: "🍷", id: "e1", myShare: -30, name: "Wine dinner", payer: "asha", total: 120 },
+      { date: "Today", day: "Today", icon: "🚕", id: "e2", myShare: 36, name: "Airport taxi", payer: "you", total: 48 },
+      { date: "Yesterday", day: "Yesterday", icon: "🏨", id: "e3", myShare: -80, name: "Hotel (2 nights)", payer: "kiran", total: 320 },
+      { date: "Yesterday", day: "Yesterday", icon: "🥗", id: "e4", myShare: 54, name: "Lunch · LX Market", payer: "you", total: 72 },
+      { date: "Apr 22", day: "Apr 22", icon: "🎨", id: "e5", myShare: -20, name: "Museum tickets", payer: "dev", total: 80 },
     ],
     id: "lisbon",
     members: ["you", "kiran", "asha", "dev"],
@@ -114,7 +114,7 @@ export const GROUPS: FundWiseGroup[] = [
   },
   {
     currency: "USDC",
-    emoji: "Gift",
+    emoji: "🎁",
     goal: 750,
     id: "priya",
     members: ["you", "asha", "kiran", "dev", "mia", "raj"],
@@ -135,11 +135,11 @@ export const GROUPS: FundWiseGroup[] = [
       { v: 15, who: "asha" },
     ],
     currency: "USDC",
-    emoji: "Home",
+    emoji: "🏠",
     expenses: [
-      { date: "Apr 21", day: "This week", icon: "Net", id: "e6", myShare: -20, name: "Internet bill", payer: "kiran", total: 60 },
-      { date: "Apr 19", day: "This week", icon: "Cart", id: "e7", myShare: 60, name: "Groceries", payer: "you", total: 90 },
-      { date: "Apr 18", day: "This week", icon: "Clean", id: "e8", myShare: -15, name: "Cleaning", payer: "asha", total: 45 },
+      { date: "Apr 21", day: "This week", icon: "📡", id: "e6", myShare: -20, name: "Internet bill", payer: "kiran", total: 60 },
+      { date: "Apr 19", day: "This week", icon: "🛒", id: "e7", myShare: 60, name: "Groceries", payer: "you", total: 90 },
+      { date: "Apr 18", day: "This week", icon: "🧹", id: "e8", myShare: -15, name: "Cleaning", payer: "asha", total: 45 },
     ],
     id: "flat",
     members: ["you", "kiran", "asha"],
@@ -154,11 +154,11 @@ export const GROUPS: FundWiseGroup[] = [
 ];
 
 export const ACTIVITY: ActivityItem[] = [
-  { icon: "Wine", id: "a1", kind: "pos", sub: "You paid · 4 ways · Today", title: "Wine dinner · Lisbon", value: "+$138" },
-  { icon: "Taxi", id: "a2", kind: "neg", sub: "Asha paid · 3 ways · Today", title: "Airport taxi", value: "-$16" },
-  { icon: "Done", id: "a3", kind: "pos", sub: "USDC · 0.4s · 2 hrs ago", title: "Kiran settled $30", value: "+$30" },
-  { icon: "Bank", id: "a4", kind: "neutral", sub: "$100 USDC · yesterday", title: "Deposited to Priya's Gift", value: "-$100" },
-  { icon: "Vote", id: "a5", kind: "neutral", sub: "Priya's Gift · 2 days ago", title: "Voted yes · Gift card", value: "" },
+  { icon: "🍷", id: "a1", kind: "pos", sub: "You paid · 4 ways · Today", title: "Wine dinner · Lisbon", value: "+$138" },
+  { icon: "🚕", id: "a2", kind: "neg", sub: "Asha paid · 3 ways · Today", title: "Airport taxi", value: "-$16" },
+  { icon: "✓", id: "a3", kind: "pos", sub: "USDC · 0.4s · 2 hrs ago", title: "Kiran settled $30", value: "+$30" },
+  { icon: "🏦", id: "a4", kind: "neutral", sub: "$100 USDC · yesterday", title: "Deposited to Priya's Gift", value: "-$100" },
+  { icon: "🗳️", id: "a5", kind: "neutral", sub: "Priya's Gift · 2 days ago", title: "Voted yes · Gift card", value: "" },
 ];
 
 export function personOf(id: PersonId) {

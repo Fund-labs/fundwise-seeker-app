@@ -1,9 +1,10 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { PublicKey } from "@solana/web3.js";
 import { useMobileWallet } from "@wallet-ui/react-native-web3js";
 import { transact } from "@solana-mobile/mobile-wallet-adapter-protocol-web3js";
 import * as Haptics from "expo-haptics";
 import { atob } from "js-base64";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import {
   Animated,
   Easing,
@@ -48,6 +49,8 @@ import { colors } from "../theme/colors";
 
 type ScreenId = "boot" | "welcome" | "tour" | "auth" | "success" | "home" | "groups" | "activity" | "wallet" | "split" | "fund";
 type HapticKind = "tap" | "selection" | "success" | "warning";
+type IconTone = "blue" | "gold" | "green" | "ink" | "telegram";
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 type WalletPreference = "seeker" | "solflare" | "any";
 type SheetState =
   | { kind: "fab" }
@@ -87,6 +90,70 @@ type SuccessState = {
 };
 
 const BOOT_MS = 2500;
+
+const MARK_ICONS: Record<string, IoniconName> = {
+  copy: "copy-outline",
+  deposit: "arrow-down-outline",
+  fw: "shield-checkmark-outline",
+  in: "arrow-down-outline",
+  more: "ellipsis-horizontal",
+  new: "add-circle-outline",
+  out: "arrow-up-outline",
+  pay: "checkmark-circle-outline",
+  qr: "qr-code-outline",
+  rec: "receipt-outline",
+  receive: "arrow-down-outline",
+  send: "arrow-up-outline",
+  settle: "checkmark-circle-outline",
+  sms: "chatbubble-outline",
+  split: "reorder-three-outline",
+  telegram: "paper-plane-outline",
+  tg: "paper-plane-outline",
+  vault: "wallet-outline",
+  vote: "checkbox-outline",
+};
+
+const SHEET_ROW_ICONS: Record<string, IoniconName> = {
+  "connected dapps": "apps-outline",
+  "default token": "pricetag-outline",
+  "help & support": "help-circle-outline",
+  network: "globe-outline",
+  notifications: "notifications-outline",
+  security: "shield-checkmark-outline",
+};
+
+const NAV_ICONS: Record<"activity" | "groups" | "home" | "wallet", { active: IoniconName; inactive: IoniconName }> = {
+  activity: { active: "time", inactive: "time-outline" },
+  groups: { active: "people", inactive: "people-outline" },
+  home: { active: "home", inactive: "home-outline" },
+  wallet: { active: "wallet", inactive: "wallet-outline" },
+};
+
+function normalizeMark(mark: string) {
+  return mark.trim().toLowerCase();
+}
+
+function iconForMark(mark: string): IoniconName {
+  const key = normalizeMark(mark);
+  return SHEET_ROW_ICONS[key] || MARK_ICONS[key] || "sparkles-outline";
+}
+
+function toneForMark(mark: string): IconTone {
+  const key = normalizeMark(mark);
+  if (key === "tg" || key === "telegram") return "telegram";
+  if (key === "vault" || key === "deposit" || key === "in" || key === "receive") return "blue";
+  if (key === "pay" || key === "out" || key === "send" || key === "settle") return "gold";
+  if (key === "fw" || SHEET_ROW_ICONS[key]) return "ink";
+  return "green";
+}
+
+function iconColorForTone(tone: IconTone) {
+  if (tone === "blue") return colors.fundBlue;
+  if (tone === "gold") return colors.gold;
+  if (tone === "telegram") return "#229ED9";
+  if (tone === "ink") return colors.textSoft;
+  return colors.primaryMid;
+}
 
 function bytesFromString(value: string) {
   return new Uint8Array(value.split("").map((char) => char.charCodeAt(0)));
@@ -948,11 +1015,11 @@ function TopHeader({
     <View style={styles.dashboardTop}>
       <View>
         <Text style={styles.greeting}>Good morning</Text>
-        <Text style={styles.userName}>{ME.name}</Text>
+        <Text style={styles.userName}>{ME.name} 👋</Text>
       </View>
       <View style={styles.headerActions}>
         <Pressable accessibilityRole="button" onPress={() => triggerHaptic("tap")} style={styles.iconButton}>
-          <Text style={styles.iconButtonText}>!</Text>
+          <Ionicons color={colors.text} name="notifications-outline" size={18} />
           <View style={styles.badge} />
         </Pressable>
         <Pressable accessibilityRole="button" onPress={onProfile} style={styles.profileButton}>
@@ -960,6 +1027,40 @@ function TopHeader({
         </Pressable>
       </View>
     </View>
+  );
+}
+
+function IconTile({
+  mark,
+  size = 20,
+  style,
+  tone,
+}: {
+  mark: string;
+  size?: number;
+  style: StyleProp<ViewStyle>;
+  tone?: IconTone;
+}) {
+  const resolvedTone = tone || toneForMark(mark);
+
+  return (
+    <View
+      style={[
+        style,
+        resolvedTone === "blue" ? styles.iconToneBlue : resolvedTone === "gold" ? styles.iconToneGold : resolvedTone === "telegram" ? styles.iconToneTelegram : resolvedTone === "ink" ? styles.iconToneInk : styles.iconToneGreen,
+      ]}
+    >
+      <Ionicons color={iconColorForTone(resolvedTone)} name={iconForMark(mark)} size={size} />
+    </View>
+  );
+}
+
+function HeroChrome({ fund = false }: { fund?: boolean }) {
+  return (
+    <>
+      <View pointerEvents="none" style={[styles.heroGlow, fund ? styles.heroGlowFund : null]} />
+      <View pointerEvents="none" style={styles.heroSheen} />
+    </>
   );
 }
 
@@ -989,9 +1090,7 @@ function LinkRecoveryCard({
   if (loading) {
     return (
       <View style={styles.linkRecoveryCard}>
-        <View style={styles.linkRecoveryIcon}>
-          <Text style={styles.linkRecoveryIconText}>FW</Text>
-        </View>
+        <IconTile mark="FW" size={20} style={styles.linkRecoveryIcon} />
         <View style={styles.flexOne}>
           <Text style={styles.linkRecoveryTitle}>Checking saved link</Text>
           <Text style={styles.linkRecoverySub}>Recovering the latest FundWise handoff on this phone.</Text>
@@ -1009,9 +1108,7 @@ function LinkRecoveryCard({
 
   return (
     <View style={styles.linkRecoveryCard}>
-      <View style={styles.linkRecoveryIcon}>
-        <Text style={styles.linkRecoveryIconText}>{getLinkRecoveryMark(intent)}</Text>
-      </View>
+      <IconTile mark={getLinkRecoveryMark(intent)} size={20} style={styles.linkRecoveryIcon} />
       <View style={styles.flexOne}>
         <Text style={styles.linkRecoveryEyebrow}>Recovered link</Text>
         <Text numberOfLines={1} style={styles.linkRecoveryTitle}>{getFundWiseLinkLabel(intent)}</Text>
@@ -1108,6 +1205,7 @@ function HomeScreen({
 function BalanceHero() {
   return (
     <View style={styles.balanceHero}>
+      <HeroChrome />
       <Text style={styles.heroLabel}>Net balance · all groups</Text>
       <Text style={styles.heroAmount}>+$39.50</Text>
       <Text style={styles.heroSub}>USDC owed to you across 2 groups</Text>
@@ -1139,9 +1237,7 @@ function QuickAction({ label, mark, onPress }: { label: string; mark: string; on
       }}
       style={({ pressed }) => [styles.quickAction, pressed ? styles.pressed : null]}
     >
-      <View style={styles.quickIcon}>
-        <Text style={styles.quickIconText}>{mark}</Text>
-      </View>
+      <IconTile mark={mark} size={20} style={styles.quickIcon} />
       <Text style={styles.quickLabel}>{label}</Text>
     </Pressable>
   );
@@ -1160,6 +1256,8 @@ function ActionAlert({
   title: string;
   tone: "vote" | "settle" | "telegram";
 }) {
+  const alertTone: IconTone = tone === "settle" ? "gold" : tone === "telegram" ? "telegram" : "green";
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -1173,12 +1271,12 @@ function ActionAlert({
         pressed ? styles.pressed : null,
       ]}
     >
-      <View style={styles.alertMark}><Text style={styles.alertMarkText}>{mark}</Text></View>
+      <IconTile mark={mark} size={18} style={styles.alertMark} tone={alertTone} />
       <View style={styles.alertBody}>
         <Text style={styles.alertTitle}>{title}</Text>
         <Text style={styles.alertSub}>{body}</Text>
       </View>
-      <Text style={styles.chevron}>›</Text>
+      <Ionicons color={colors.textSubtle} name="chevron-forward" size={18} />
     </Pressable>
   );
 }
@@ -1250,6 +1348,7 @@ function SplitGroupScreen({
       <HeaderNav onBack={onBack} onRight={onInvite} rightLabel="Invite" title={group.name} />
       <ScrollView contentContainerStyle={[styles.scrollContent, styles.detailScroll]} showsVerticalScrollIndicator={false}>
         <View style={styles.splitHero}>
+          <HeroChrome />
           <View style={styles.heroRow}>
             <Text style={styles.bigEmoji}>{group.emoji}</Text>
             <View style={styles.alignRight}>
@@ -1323,6 +1422,7 @@ function FundGroupScreen({
       <HeaderNav onBack={onBack} onRight={onInvite} rightLabel="Invite" title={group.name} />
       <ScrollView contentContainerStyle={[styles.scrollContent, styles.detailScroll]} showsVerticalScrollIndicator={false}>
         <View style={[styles.splitHero, styles.fundHero]}>
+          <HeroChrome fund />
           <View style={styles.heroRow}>
             <Text style={styles.bigEmoji}>{group.emoji}</Text>
             <View style={styles.alignRight}>
@@ -1371,7 +1471,7 @@ function FundGroupScreen({
           <Pressable accessibilityRole="button" onPress={() => setExpanded(true)} style={styles.membersCollapsed}>
             <AvatarStack ids={group.members} />
             <Text style={styles.membersText}>{group.members.length} members in this pool</Text>
-            <Text style={styles.chevron}>›</Text>
+            <Ionicons color={colors.textSubtle} name="chevron-forward" size={18} />
           </Pressable>
         )}
       </ScrollView>
@@ -1386,7 +1486,9 @@ function FundGroupScreen({
 function HeaderNav({ onBack, onRight, rightLabel, title }: { onBack: () => void; onRight?: () => void; rightLabel?: string; title: string }) {
   return (
     <View style={styles.headerNav}>
-      <Pressable accessibilityRole="button" onPress={onBack} style={styles.navButton}><Text style={styles.navButtonText}>‹</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={onBack} style={styles.navButton}>
+        <Ionicons color={colors.text} name="chevron-back" size={22} />
+      </Pressable>
       <Text numberOfLines={1} style={styles.navTitle}>{title}</Text>
       {onRight ? (
         <Pressable accessibilityRole="button" onPress={onRight} style={styles.navRight}><Text style={styles.navRightText}>{rightLabel}</Text></Pressable>
@@ -1435,7 +1537,9 @@ function GroupsScreen({ groups, onCreate, onFab, onOpenGroup, onTab }: { groups:
     <AppShell activeTab="groups" onFab={onFab} onTab={onTab}>
       <View style={styles.pageHeader}>
         <Text style={styles.pageTitle}>Groups</Text>
-        <Pressable accessibilityRole="button" onPress={onCreate} style={styles.addButton}><Text style={styles.addButtonText}>+</Text></Pressable>
+        <Pressable accessibilityRole="button" onPress={onCreate} style={styles.addButton}>
+          <Ionicons color={colors.white} name="add" size={23} />
+        </Pressable>
       </View>
       <SegmentedTabs active={filter} labels={[["all", "All"], ["split", "Split"], ["fund", "Fund"]]} onChange={setFilter} />
       <View style={styles.stack}>
@@ -1483,6 +1587,7 @@ function WalletScreen({
         <Pressable accessibilityRole="button" onPress={onProfile} style={styles.profileButton}><Text style={styles.profileInitial}>{ME.initial}</Text></Pressable>
       </View>
       <View style={styles.balanceHero}>
+        <HeroChrome />
         <Text style={styles.heroLabel}>Wallet balance</Text>
         <Text style={styles.heroAmount}>$248.30</Text>
         <Text style={styles.heroSub}>USDC · {SOLANA_CHAIN.replace("solana:", "")}</Text>
@@ -1557,26 +1662,30 @@ function SegmentedTabs<T extends string>({ active, labels, onChange }: { active:
 
 function BottomNav({ active, onFab, onTab }: { active: "home" | "groups" | "activity" | "wallet"; onFab: () => void; onTab: (tab: "home" | "groups" | "activity" | "wallet") => void }) {
   const tabs = [
-    ["home", "Home", "Home"],
-    ["groups", "Groups", "Team"],
-    ["activity", "Activity", "Done"],
-    ["wallet", "Wallet", "Wallet"],
+    ["home", "Home"],
+    ["groups", "Groups"],
+    ["activity", "Activity"],
+    ["wallet", "Wallet"],
   ] as const;
 
   return (
     <View style={styles.bottomNav}>
-      {tabs.slice(0, 2).map(([id, label, mark]) => (
-        <NavButton active={active === id} id={id} key={id} label={label} mark={mark} onTab={onTab} />
+      {tabs.slice(0, 2).map(([id, label]) => (
+        <NavButton active={active === id} id={id} key={id} label={label} onTab={onTab} />
       ))}
-      <Pressable accessibilityRole="button" onPress={onFab} style={styles.fab}><Text style={styles.fabText}>+</Text></Pressable>
-      {tabs.slice(2).map(([id, label, mark]) => (
-        <NavButton active={active === id} id={id} key={id} label={label} mark={mark} onTab={onTab} />
+      <Pressable accessibilityRole="button" onPress={onFab} style={styles.fab}>
+        <Ionicons color={colors.white} name="add" size={26} />
+      </Pressable>
+      {tabs.slice(2).map(([id, label]) => (
+        <NavButton active={active === id} id={id} key={id} label={label} onTab={onTab} />
       ))}
     </View>
   );
 }
 
-function NavButton({ active, id, label, mark, onTab }: { active: boolean; id: "home" | "groups" | "activity" | "wallet"; label: string; mark: string; onTab: (tab: "home" | "groups" | "activity" | "wallet") => void }) {
+function NavButton({ active, id, label, onTab }: { active: boolean; id: "home" | "groups" | "activity" | "wallet"; label: string; onTab: (tab: "home" | "groups" | "activity" | "wallet") => void }) {
+  const icon = active ? NAV_ICONS[id].active : NAV_ICONS[id].inactive;
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -1586,7 +1695,7 @@ function NavButton({ active, id, label, mark, onTab }: { active: boolean; id: "h
       }}
       style={styles.navItem}
     >
-      <Text style={[styles.navMark, active ? styles.navActive : null]}>{mark}</Text>
+      <Ionicons color={active ? colors.primaryMid : colors.textSubtle} name={icon} size={20} />
       <Text style={[styles.navLabel, active ? styles.navActive : null]}>{label}</Text>
     </Pressable>
   );
@@ -1600,7 +1709,9 @@ function BottomSheet({ children, onClose, title }: { children: React.ReactNode; 
         <View style={styles.sheetHandle} />
         <View style={styles.sheetHead}>
           <Text style={styles.sheetTitle}>{title}</Text>
-          <Pressable accessibilityRole="button" onPress={onClose} style={styles.sheetClose}><Text style={styles.sheetCloseText}>×</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={onClose} style={styles.sheetClose}>
+            <Ionicons color={colors.textSoft} name="close" size={18} />
+          </Pressable>
         </View>
         {children}
       </View>
@@ -1722,7 +1833,9 @@ function ActiveSheet({
     return (
       <BottomSheet onClose={onClose} title="Open in Telegram">
         <View style={styles.telegramHero}>
-          <View style={styles.telegramMark}><Text style={styles.telegramMarkText}>TG</Text></View>
+          <View style={styles.telegramMark}>
+            <Ionicons color={colors.white} name="paper-plane-outline" size={24} />
+          </View>
           <View style={styles.flexOne}>
             <Text style={styles.telegramTitle}>FundWise · Mini-app</Text>
             <Text style={styles.telegramSub}>{sheet.group ? `Share ${sheet.group.name}` : "Split anywhere · in any chat"}</Text>
@@ -1782,12 +1895,12 @@ function SheetAction({ body, mark, onPress, right, title }: { body: string; mark
       }}
       style={({ pressed }) => [styles.sheetAction, pressed ? styles.pressed : null]}
     >
-      <View style={styles.sheetActionIcon}><Text style={styles.sheetActionIconText}>{mark}</Text></View>
+      <IconTile mark={mark} size={20} style={styles.sheetActionIcon} />
       <View style={styles.flexOne}>
         <Text style={styles.sheetActionTitle}>{title}</Text>
         <Text style={styles.sheetActionBody}>{body}</Text>
       </View>
-      <Text style={styles.sheetActionRight}>{right || "›"}</Text>
+      {right ? <Text style={styles.sheetActionRight}>{right}</Text> : <Ionicons color={colors.textSubtle} name="chevron-forward" size={18} />}
     </Pressable>
   );
 }
@@ -1899,7 +2012,7 @@ function ProfileSheet({ onClose }: { onClose: () => void }) {
         </View>
       </View>
       {["Security", "Notifications", "Default token", "Network", "Connected dApps", "Help & support"].map((row) => (
-        <SheetAction body={row === "Network" ? SOLANA_CHAIN.replace("solana:", "") : "FundWise setting"} key={row} mark="FW" onPress={() => undefined} title={row} />
+        <SheetAction body={row === "Network" ? SOLANA_CHAIN.replace("solana:", "") : "FundWise setting"} key={row} mark={row} onPress={() => undefined} title={row} />
       ))}
     </BottomSheet>
   );
@@ -2212,12 +2325,13 @@ const mono = "monospace";
 const styles = StyleSheet.create({
   actionAlert: {
     alignItems: "center",
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
-    minHeight: 74,
-    padding: 14,
+    minHeight: 64,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   actionBar: {
     backgroundColor: colors.surface,
@@ -2235,22 +2349,24 @@ const styles = StyleSheet.create({
   },
   activityIcon: {
     alignItems: "center",
-    backgroundColor: colors.surfaceInset,
-    borderRadius: 14,
-    height: 42,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 10,
+    borderWidth: 1,
+    height: 36,
     justifyContent: "center",
-    width: 42,
+    width: 36,
   },
   activityIconText: {
     color: colors.text,
-    fontSize: 10,
-    fontWeight: "900",
+    fontSize: 16,
+    lineHeight: 20,
   },
   activityRow: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
@@ -2310,11 +2426,11 @@ const styles = StyleSheet.create({
   },
   alertMark: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.7)",
-    borderRadius: 12,
-    height: 38,
+    backgroundColor: colors.primaryPale,
+    borderRadius: 10,
+    height: 36,
     justifyContent: "center",
-    width: 42,
+    width: 36,
   },
   alertMarkText: {
     color: colors.text,
@@ -2322,8 +2438,8 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   alertSettle: {
-    backgroundColor: colors.goldPale,
-    borderColor: "#E9D6A0",
+    backgroundColor: "rgba(160,120,22,0.06)",
+    borderColor: "rgba(160,120,22,0.25)",
   },
   alertStack: {
     gap: 10,
@@ -2338,8 +2454,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   alertTelegram: {
-    backgroundColor: "#E8F4FC",
-    borderColor: "#B9DDF2",
+    backgroundColor: "rgba(34,158,217,0.06)",
+    borderColor: "rgba(34,158,217,0.25)",
   },
   alertTitle: {
     color: colors.text,
@@ -2347,8 +2463,8 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   alertVote: {
-    backgroundColor: colors.primaryPale,
-    borderColor: colors.borderStrong,
+    backgroundColor: "rgba(78,201,138,0.08)",
+    borderColor: "rgba(78,201,138,0.28)",
   },
   alignRight: {
     alignItems: "flex-end",
@@ -2558,17 +2674,23 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   balanceHero: {
-    backgroundColor: colors.primary,
-    borderRadius: 24,
+    backgroundColor: colors.primaryDeep,
+    borderRadius: 22,
+    elevation: 4,
     marginHorizontal: 20,
     marginTop: 12,
     overflow: "hidden",
     padding: 22,
+    position: "relative",
+    shadowColor: colors.primaryDeep,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
   },
   bigEmoji: {
     color: colors.white,
-    fontSize: 34,
-    fontWeight: "900",
+    fontSize: 30,
+    lineHeight: 38,
   },
   bootBottom: {
     backgroundColor: colors.mint,
@@ -2642,17 +2764,24 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.96)",
+    backgroundColor: "rgba(244,241,234,0.94)",
     borderColor: colors.border,
     borderTopWidth: 1,
     bottom: 0,
+    elevation: 8,
     flexDirection: "row",
-    height: 78,
+    height: 84,
     justifyContent: "space-around",
     left: 0,
-    paddingBottom: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 12,
+    paddingTop: 10,
     position: "absolute",
     right: 0,
+    shadowColor: colors.text,
+    shadowOffset: { height: -8, width: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
   },
   button: {
     alignItems: "center",
@@ -2676,7 +2805,7 @@ const styles = StyleSheet.create({
     color: colors.textSoft,
   },
   buttonPrimary: {
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.primaryDeep,
   },
   buttonText: {
     color: colors.white,
@@ -2768,7 +2897,7 @@ const styles = StyleSheet.create({
   dayHeader: {
     color: colors.textSubtle,
     fontFamily: mono,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "900",
     letterSpacing: 1.2,
     marginBottom: 8,
@@ -2779,7 +2908,7 @@ const styles = StyleSheet.create({
   detailAmount: {
     color: colors.white,
     fontFamily: serif,
-    fontSize: 38,
+    fontSize: 34,
     fontWeight: "700",
   },
   detailScroll: {
@@ -2814,16 +2943,18 @@ const styles = StyleSheet.create({
   },
   expenseIcon: {
     alignItems: "center",
-    backgroundColor: colors.surfaceInset,
-    borderRadius: 14,
-    height: 42,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 11,
+    borderWidth: 1,
+    height: 38,
     justifyContent: "center",
-    width: 42,
+    width: 38,
   },
   expenseIconText: {
     color: colors.text,
-    fontSize: 10,
-    fontWeight: "900",
+    fontSize: 17,
+    lineHeight: 21,
   },
   expenseMeta: {
     color: colors.textSubtle,
@@ -2835,7 +2966,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
@@ -2849,7 +2980,7 @@ const styles = StyleSheet.create({
   expenseTitle: {
     color: colors.text,
     fontSize: 13,
-    fontWeight: "900",
+    fontWeight: "700",
   },
   expenseTotal: {
     color: colors.text,
@@ -2860,17 +2991,18 @@ const styles = StyleSheet.create({
   fab: {
     alignItems: "center",
     backgroundColor: colors.primaryMid,
-    borderRadius: 25,
-    height: 50,
+    borderColor: "rgba(255,255,255,0.18)",
+    borderRadius: 18,
+    borderWidth: 1,
+    elevation: 8,
+    height: 54,
     justifyContent: "center",
-    marginTop: -26,
-    width: 50,
-  },
-  fabText: {
-    color: colors.white,
-    fontSize: 30,
-    fontWeight: "500",
-    marginTop: -3,
+    marginTop: -24,
+    shadowColor: colors.primaryMid,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    width: 54,
   },
   field: {
     gap: 7,
@@ -2986,15 +3118,15 @@ const styles = StyleSheet.create({
   },
   groupAmount: {
     color: colors.text,
-    fontFamily: mono,
-    fontSize: 14,
-    fontWeight: "900",
+    fontFamily: serif,
+    fontSize: 16,
+    fontWeight: "700",
   },
   groupCard: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
@@ -3006,16 +3138,16 @@ const styles = StyleSheet.create({
   },
   groupIcon: {
     alignItems: "center",
-    backgroundColor: colors.surfaceInset,
-    borderRadius: 15,
-    height: 46,
+    backgroundColor: colors.bg,
+    borderRadius: 12,
+    height: 42,
     justifyContent: "center",
-    width: 46,
+    width: 42,
   },
   groupIconText: {
     color: colors.text,
-    fontSize: 10,
-    fontWeight: "900",
+    fontSize: 19,
+    lineHeight: 23,
   },
   groupMeta: {
     color: colors.textSubtle,
@@ -3032,16 +3164,18 @@ const styles = StyleSheet.create({
   groupName: {
     color: colors.text,
     fontSize: 14,
-    fontWeight: "900",
+    fontWeight: "700",
   },
   groupRight: {
     alignItems: "flex-end",
   },
   groupRightLabel: {
     color: colors.textSubtle,
-    fontSize: 10,
-    fontWeight: "700",
+    fontFamily: mono,
+    fontSize: 9,
+    fontWeight: "800",
     marginTop: 3,
+    textTransform: "uppercase",
   },
   haloBlur: {
     backgroundColor: colors.mint,
@@ -3068,9 +3202,23 @@ const styles = StyleSheet.create({
   heroAmount: {
     color: colors.white,
     fontFamily: serif,
-    fontSize: 42,
+    fontSize: 40,
     fontWeight: "700",
     marginTop: 6,
+  },
+  heroGlow: {
+    backgroundColor: colors.mint,
+    borderRadius: 110,
+    height: 170,
+    opacity: 0.34,
+    position: "absolute",
+    right: -54,
+    top: -56,
+    width: 220,
+  },
+  heroGlowFund: {
+    backgroundColor: colors.fundBlueBorder,
+    opacity: 0.26,
   },
   heroLabel: {
     color: "rgba(255,255,255,0.75)",
@@ -3095,10 +3243,20 @@ const styles = StyleSheet.create({
   },
   heroStatValue: {
     color: colors.white,
-    fontFamily: mono,
-    fontSize: 13,
-    fontWeight: "900",
+    fontFamily: serif,
+    fontSize: 18,
+    fontWeight: "700",
     marginTop: 3,
+  },
+  heroSheen: {
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderRadius: 80,
+    height: 86,
+    position: "absolute",
+    right: -78,
+    top: 34,
+    transform: [{ rotate: "-16deg" }],
+    width: 230,
   },
   heroStrip: {
     borderColor: "rgba(255,255,255,0.18)",
@@ -3118,16 +3276,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    height: 40,
+    height: 38,
     justifyContent: "center",
-    width: 40,
+    width: 38,
   },
   iconButtonText: {
     color: colors.text,
     fontSize: 15,
     fontWeight: "900",
+  },
+  iconToneBlue: {
+    backgroundColor: colors.fundBluePale,
+  },
+  iconToneGold: {
+    backgroundColor: "rgba(160,120,22,0.16)",
+  },
+  iconToneGreen: {
+    backgroundColor: "rgba(13,107,58,0.08)",
+  },
+  iconToneInk: {
+    backgroundColor: colors.surfaceInset,
+  },
+  iconToneTelegram: {
+    backgroundColor: "rgba(34,158,217,0.13)",
   },
   input: {
     backgroundColor: colors.bg,
@@ -3147,7 +3320,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
@@ -3166,10 +3339,10 @@ const styles = StyleSheet.create({
   linkRecoveryIcon: {
     alignItems: "center",
     backgroundColor: colors.primaryPale,
-    borderRadius: 14,
-    height: 46,
+    borderRadius: 12,
+    height: 42,
     justifyContent: "center",
-    width: 46,
+    width: 42,
   },
   linkRecoveryIconText: {
     color: colors.primaryMid,
@@ -3212,7 +3385,7 @@ const styles = StyleSheet.create({
   linkRecoveryTitle: {
     color: colors.text,
     fontSize: 15,
-    fontWeight: "900",
+    fontWeight: "800",
     marginTop: 2,
   },
   jar: {
@@ -3316,7 +3489,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
     gap: 12,
@@ -3363,13 +3536,13 @@ const styles = StyleSheet.create({
     color: colors.primaryMid,
   },
   modeTag: {
-    borderRadius: 7,
+    borderRadius: 5,
     fontFamily: mono,
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "900",
     overflow: "hidden",
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
     textTransform: "uppercase",
   },
   monoTiny: {
@@ -3387,11 +3560,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: 999,
     borderWidth: 1,
-    height: 40,
+    height: 36,
     justifyContent: "center",
-    width: 40,
+    width: 36,
   },
   navButtonText: {
     color: colors.text,
@@ -3402,13 +3575,13 @@ const styles = StyleSheet.create({
   navItem: {
     alignItems: "center",
     flex: 1,
-    gap: 3,
+    gap: 2,
     justifyContent: "center",
     minHeight: 52,
   },
   navLabel: {
     color: colors.textSubtle,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "800",
   },
   navMark: {
@@ -3591,7 +3764,7 @@ const styles = StyleSheet.create({
   proposalCard: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 14,
   },
@@ -3619,7 +3792,7 @@ const styles = StyleSheet.create({
   proposalTitle: {
     color: colors.text,
     fontSize: 14,
-    fontWeight: "900",
+    fontWeight: "700",
   },
   proposalTrack: {
     backgroundColor: colors.surfaceInset,
@@ -3644,21 +3817,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     flex: 1,
     gap: 7,
-    minHeight: 84,
-    paddingHorizontal: 6,
-    paddingVertical: 11,
+    minHeight: 82,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
   },
   quickIcon: {
     alignItems: "center",
     backgroundColor: colors.primaryPale,
-    borderRadius: 13,
-    height: 40,
+    borderRadius: 12,
+    height: 38,
     justifyContent: "center",
-    width: 40,
+    width: 38,
   },
   quickIconText: {
     color: colors.primaryMid,
@@ -3668,7 +3841,7 @@ const styles = StyleSheet.create({
   quickLabel: {
     color: colors.text,
     fontSize: 11,
-    fontWeight: "900",
+    fontWeight: "700",
     textAlign: "center",
   },
   receipt: {
@@ -3740,8 +3913,10 @@ const styles = StyleSheet.create({
   },
   sectionAction: {
     color: colors.primaryMid,
-    fontSize: 12,
+    fontFamily: mono,
+    fontSize: 10,
     fontWeight: "900",
+    textTransform: "uppercase",
   },
   sectionActionButton: {
     minHeight: 40,
@@ -3756,9 +3931,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: colors.text,
-    fontFamily: serif,
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 14,
+    fontWeight: "800",
   },
   segment: {
     alignItems: "center",
@@ -3803,12 +3977,15 @@ const styles = StyleSheet.create({
   },
   sheetAction: {
     alignItems: "center",
+    backgroundColor: colors.bg,
     borderColor: colors.border,
-    borderBottomWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1,
     flexDirection: "row",
-    gap: 12,
-    minHeight: 68,
-    paddingVertical: 11,
+    gap: 14,
+    marginBottom: 8,
+    minHeight: 70,
+    padding: 14,
   },
   sheetActionBody: {
     color: colors.textSubtle,
@@ -3819,7 +3996,7 @@ const styles = StyleSheet.create({
   sheetActionIcon: {
     alignItems: "center",
     backgroundColor: colors.primaryPale,
-    borderRadius: 13,
+    borderRadius: 12,
     height: 42,
     justifyContent: "center",
     width: 42,
@@ -3838,15 +4015,15 @@ const styles = StyleSheet.create({
   sheetActionTitle: {
     color: colors.text,
     fontSize: 14,
-    fontWeight: "900",
+    fontWeight: "700",
   },
   sheetClose: {
     alignItems: "center",
     backgroundColor: colors.bg,
-    borderRadius: 14,
-    height: 34,
+    borderRadius: 999,
+    height: 32,
     justifyContent: "center",
-    width: 34,
+    width: 32,
   },
   sheetCloseText: {
     color: colors.text,
@@ -3856,11 +4033,11 @@ const styles = StyleSheet.create({
   },
   sheetHandle: {
     alignSelf: "center",
-    backgroundColor: colors.borderStrong,
+    backgroundColor: "rgba(13,31,20,0.12)",
     borderRadius: 2,
     height: 4,
     marginBottom: 12,
-    width: 42,
+    width: 36,
   },
   sheetHead: {
     alignItems: "center",
@@ -3942,10 +4119,12 @@ const styles = StyleSheet.create({
     left: "18%",
   },
   splitHero: {
-    backgroundColor: colors.primary,
-    borderRadius: 24,
+    backgroundColor: colors.primaryDeep,
+    borderRadius: 22,
     marginHorizontal: 20,
+    overflow: "hidden",
     padding: 20,
+    position: "relative",
   },
   stack: {
     gap: 10,
@@ -4031,7 +4210,7 @@ const styles = StyleSheet.create({
   telegramHero: {
     alignItems: "center",
     backgroundColor: "#229ED9",
-    borderRadius: 18,
+    borderRadius: 16,
     flexDirection: "row",
     gap: 12,
     marginBottom: 14,
@@ -4039,8 +4218,8 @@ const styles = StyleSheet.create({
   },
   telegramMark: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderRadius: 14,
     height: 48,
     justifyContent: "center",
     width: 48,
