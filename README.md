@@ -35,6 +35,7 @@ The onboarding is shown on first launch and persisted with AsyncStorage. Use **R
 
 Progress log: [docs/progress.md](./docs/progress.md)
 Solana Mobile docs cross-check: [docs/solana-mobile-crosscheck.md](./docs/solana-mobile-crosscheck.md)
+Planning SADRs: [plans/SADR/README.md](./plans/SADR/README.md)
 
 ## Run
 
