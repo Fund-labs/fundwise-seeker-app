@@ -6,7 +6,9 @@
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:production": "node scripts/verify-production-readiness.js",
+    "verify:production:strict": "node scripts/verify-production-readiness.js --strict"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
