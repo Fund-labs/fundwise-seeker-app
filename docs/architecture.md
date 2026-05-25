@@ -22,7 +22,7 @@ The web app is already a deployable Next.js product with Cloudflare, Supabase, w
 ## First Milestone
 
 1. Connect wallet with MWA.
-2. Resolve incoming FundWise `/groups`, `/settle/r`, and `/receipts` links.
+2. Resolve incoming FundWise `/groups`, `/join`, `/settle/r`, and `/receipts` links from beta and production hosts.
 3. Preview mobile Settlement Request Links through the FundWise redacted preview API after wallet authorization.
 4. Open Group and Settlement flows in the web app.
 5. Read public API state such as health and invite lookup.
@@ -65,7 +65,7 @@ FundWise Seeker targets Android for native wallet interactions. Mobile Wallet Ad
 
 ## Android App Links Boundary
 
-The Seeker app declares Android App Links for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`. Production verification still depends on the FundWise/Split Mode host serving a valid `/.well-known/assetlinks.json` for package `fun.fundwise.seeker` and the release signing certificate fingerprint.
+The Seeker app declares Android App Links for `https://fundwise.fun` and `https://beta.fundwise.fun` on `/groups`, `/join`, `/settle/r`, and `/receipts`. Production verification still depends on the FundWise/Split Mode hosts serving valid `/.well-known/assetlinks.json` files for package `fun.fundwise.seeker` and the release signing certificate fingerprint.
 
 ## Wallet Integration Mode
 

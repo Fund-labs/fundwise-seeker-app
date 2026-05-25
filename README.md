@@ -21,6 +21,7 @@ It follows the local Seeker skill guidance from `/Users/sarthiborkar/Build/seeke
 - FundWise API health check
 - Public invite-code lookup
 - FundWise deep-link handling for `/groups`, `/settle/r`, and `/receipts`
+- beta/prod handoff handling for `fundwise.fun` and `beta.fundwise.fun`, including `/join`
 - live mobile Settlement Request preview for `/settle/r/{requestId}` once a wallet is authorized
 - First-run Seeker onboarding with link recovery, MWA wallet handoff, phone-to-PC continuation, and reduced-motion support
 - Android-first launch flow: connect wallet, recover Group state, continue on FundWise web / PC
@@ -38,6 +39,7 @@ The onboarding is shown on first launch and persisted with AsyncStorage. Use **R
 
 Progress log: [docs/progress.md](./docs/progress.md)
 Solana Mobile docs cross-check: [docs/solana-mobile-crosscheck.md](./docs/solana-mobile-crosscheck.md)
+Production launch gate: [docs/production-launch-gate.md](./docs/production-launch-gate.md)
 Planning SADRs: [plans/SADR/README.md](./plans/SADR/README.md)
 
 ## Run
@@ -89,10 +91,23 @@ npm start -- --port 8099
 | `EXPO_PUBLIC_FUNDWISE_WEB_URL` | `https://fundwise.fun` | Web app URL opened for Groups, invites, and settlement links. |
 | `EXPO_PUBLIC_FUNDWISE_API_URL` | same as web URL | FundWise HTTP API base URL. |
 | `EXPO_PUBLIC_RECEIPTS_URL` | same as web URL | Receipt service URL accepted by mobile link recovery. |
+| `EXPO_PUBLIC_FUNDWISE_ALLOWED_HOSTS` | `fundwise.fun,beta.fundwise.fun` | Extra FundWise hosts accepted by link recovery. |
 | `EXPO_PUBLIC_SOLANA_CLUSTER` | `mainnet` | Cluster suffix used to build the MWA CAIP-2 chain string. |
-| `EXPO_PUBLIC_SOLANA_RPC_ENDPOINT` | Solana public mainnet endpoint | RPC endpoint passed to `MobileWalletProvider`. |
+| `EXPO_PUBLIC_SOLANA_RPC_ENDPOINT` | Helius/public mainnet endpoint | RPC endpoint passed to `MobileWalletProvider`; production should use Helius or another paid RPC. |
 
 Compatibility aliases are also supported: `EXPO_PUBLIC_SOLANA_CHAIN` and `EXPO_PUBLIC_SOLANA_RPC_URL`.
+
+Production config smoke check:
+
+```bash
+npm run verify:production
+```
+
+Strict release check with production env loaded:
+
+```bash
+npm run verify:production:strict
+```
 
 ## Build Boundary
 
@@ -117,7 +132,7 @@ Do not store private keys in this app.
 - Expo Go will fail for MWA; use a custom development build.
 - Native MWA is an Android flow. The current phone app does not target iOS because MWA is not supported there.
 - Android `minSdkVersion` is pinned to `26` through `expo-build-properties`.
-- Production Android App Links require `https://fundwise.fun/.well-known/assetlinks.json` to include `fun.fundwise.seeker` and the release signing certificate fingerprint.
+- Production Android App Links require `https://fundwise.fun/.well-known/assetlinks.json` and `https://beta.fundwise.fun/.well-known/assetlinks.json` to include `fun.fundwise.seeker` and the release signing certificate fingerprint.
 - dApp Store shipping expects an APK, not an AAB.
 - Use a different signing key from Google Play if this is also shipped there.
 - The Platform constants Seeker check is spoofable. Use SIWS plus Seeker Genesis Token verification on the backend for guaranteed Seeker ownership.

@@ -54,11 +54,11 @@ Current app:
 
 Current app:
 
-- `app.json` declares verified links for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`
+- `app.json` declares verified links for `https://fundwise.fun` and `https://beta.fundwise.fun` on `/groups`, `/join`, `/settle/r`, and `/receipts`
 - `useIncomingFundWiseLink` persists the latest incoming link with AsyncStorage
 - `FundWiseSeekerAppScreen` surfaces the recovered link in the mounted home screen
 - incoming `/settle/r/{requestId}` links call the FundWise mobile preview API after wallet authorization and render redacted role/amount/status copy before opening the web fallback
-- FundWise now has a `/.well-known/assetlinks.json` route; production verification still requires the real release signing cert SHA-256 fingerprint in `FUNDWISE_SEEKER_ANDROID_CERT_SHA256_FINGERPRINTS`
+- FundWise now has a `/.well-known/assetlinks.json` route; production and beta verification still require the real release signing cert SHA-256 fingerprint in `FUNDWISE_SEEKER_ANDROID_CERT_SHA256_FINGERPRINTS`
 
 ## FundWise Mobile Roadmap Boundary
 

@@ -10,6 +10,11 @@ Roadmap alignment: FundWise ADR-0046 moved the immediate June launch path to mob
 
 Update:
 
+- Synced the Seeker repo with the latest FundWise ADR-0046/ADR-0047 launch order: mobile web/PWA/TWA first, Split Mode mainnet beta, then narrow LI.FI/CCTP route-then-settle funding.
+- Added [production-launch-gate.md](./production-launch-gate.md) to link the HITL env, Supabase migration, mobile QA, tiny mainnet rehearsal, and Seeker/TWA APK steps back to FundWise source docs and migrations.
+- Added Android App Link coverage for `beta.fundwise.fun` and `/join` alongside existing `fundwise.fun`, `/groups`, `/settle/r`, and `/receipts`.
+- Added `EXPO_PUBLIC_FUNDWISE_ALLOWED_HOSTS` so native link recovery can accept both beta and production FundWise hosts without accepting arbitrary external hosts.
+- Added `npm run verify:production` and `npm run verify:production:strict` to smoke-check app-link host/path coverage and mainnet RPC posture before APK/TWA release work.
 - Generated the native Expo Android project in `android/` for Android Studio inspection.
 - Reworked the UI against the FundWise mobile prototypes from `FundWise/design/app/mobile.jsx`: Strata-style mark, light FundWise green surfaces, compact link cards, hero handoff panel, and bottom navigation.
 - Reworked first-run onboarding to match the approved Seeker Android HTML review direction: link recovery inbox, MWA wallet trust boundary, and phone-to-PC continuation.
@@ -30,7 +35,7 @@ Update:
 - Added recommended wallet choices for Seeker-native Solana Mobile Wallet, Solflare, and other MWA-compatible wallets.
 - Wired persisted incoming-link recovery into the currently mounted `FundWiseSeekerAppScreen`, not only the legacy `SeekerHomeScreen`.
 - Expanded FundWise link parsing to cover `/settle/r/{requestId}`, `/receipts/{receiptId_or_tx_signature}`, and configurable Receipt service `/v1/receipts` and `/v1/graph/receipts` links.
-- Expanded Android intent filters for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`.
+- Expanded Android intent filters for `https://fundwise.fun/groups`, `/join`, `/settle/r`, and `/receipts`.
 - Changed native settlement and deposit sheets back to web continuation instead of presenting message signing as payment.
 - Aligned default mobile cluster/RPC config with mainnet defaults.
 - Matched the mounted RN UI to the `design/` Seeker App spec with Ionicons controls, compact card hierarchy, green hero treatment, and prototype-style group/activity glyphs.
@@ -154,7 +159,8 @@ Implemented:
 - lightweight Seeker device signal from `Platform.constants.Model`
 - FundWise link previews for Groups, invite links, Settlement requests, Settlement links, Settlement receipts, and Receipt Graph links
 - redacted live Settlement Request previews from `/api/mobile/settlement-requests/{requestId}/preview?wallet=...`
-- Android app link intent filters for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`
+- Android app link intent filters for `https://fundwise.fun/groups`, `/join`, `/settle/r`, and `/receipts`
+- Android app link intent filters for `https://beta.fundwise.fun/groups`, `/join`, `/settle/r`, and `/receipts`
 - open FundWise Groups in browser/web app
 - open incoming FundWise link
 - open or share the current FundWise continuation link for phone -> web / desktop handoff
@@ -238,7 +244,7 @@ Notes:
 
 - Expo dependency check used local SDK map because network unavailable in command context.
 - Public config shows Android package `fun.fundwise.seeker`.
-- Public config shows app link filters for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`.
+- Public config shows app link filters for `https://fundwise.fun` and `https://beta.fundwise.fun` on `/groups`, `/join`, `/settle/r`, and `/receipts`.
 - Public config shows `minSdkVersion: 26`.
 
 Audit:
@@ -277,7 +283,7 @@ npm run android
 ```
 
 3. Test wallet connect with Mock MWA Wallet.
-4. Test app link open from `https://fundwise.fun/groups?...`, `https://fundwise.fun/settle/r/...`, and `https://fundwise.fun/receipts/...`.
+4. Test app link open from `https://fundwise.fun/groups?...`, `https://fundwise.fun/join/...`, `https://fundwise.fun/settle/r/...`, and `https://fundwise.fun/receipts/...`, then repeat on `https://beta.fundwise.fun`.
 5. Test invite lookup against prod FundWise.
 6. Add native FundWise auth strategy or keep web handoff for protected reads.
 7. Confirm the shipped Split Mode mobile preview API against a deployed FundWise host and a real wallet on Android, then wait for FW-094/FW-095 before enabling native settlement.

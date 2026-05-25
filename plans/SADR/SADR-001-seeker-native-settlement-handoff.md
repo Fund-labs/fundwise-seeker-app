@@ -40,13 +40,13 @@ Current FundWiseSeeker capabilities:
 - Incoming link persistence through `AsyncStorage`.
 - FundWise link parser for Group links, invite links, Settlement Request links, and Settlement receipt links.
 - Native share sheet for continuation links.
-- Android intent filter for `https://fundwise.fun/groups`.
+- Android intent filters for `https://fundwise.fun` and `https://beta.fundwise.fun` on `/groups`, `/join`, `/settle/r`, and `/receipts`.
 - No native settlement transaction construction yet.
 
 Current gap:
 
-- Android app links do not yet cover `/settle/r/...`.
-- Receipt Endpoint / Receipt Graph links are not first-class mobile intents.
+- Android App Links still require real-device verification against `assetlinks.json`.
+- Receipt Graph private context remains a FundWise/Receipts responsibility.
 - Native transaction construction is intentionally not wired.
 - Receipt persistence after a native wallet-submitted transaction is not defined.
 - Seeker Genesis Token ownership is not verified server-side.
@@ -129,8 +129,13 @@ https://fundwise.fun/groups/{groupId}
 https://fundwise.fun/groups/{groupId}?code={inviteCode}
 https://fundwise.fun/groups/{groupId}?settleFrom={debtorWallet}&settleTo={creditorWallet}
 https://fundwise.fun/groups/{groupId}/settlements/{settlementId}
+https://fundwise.fun/join/{groupId_or_invite}
 https://fundwise.fun/settle/r/{requestId}
 https://fundwise.fun/receipts/{receiptId_or_tx_signature}
+https://beta.fundwise.fun/groups
+https://beta.fundwise.fun/join/{groupId_or_invite}
+https://beta.fundwise.fun/settle/r/{requestId}
+https://beta.fundwise.fun/receipts/{receiptId_or_tx_signature}
 ```
 
 Receipt service links should remain configurable because the Receipts service may deploy on a separate host:
@@ -144,7 +149,9 @@ Suggested intent-filter expansion:
 
 ```text
 host: fundwise.fun
+host: beta.fundwise.fun
 pathPrefix: /groups
+pathPrefix: /join
 pathPrefix: /settle/r
 pathPrefix: /receipts
 ```
@@ -274,8 +281,8 @@ tx_signature -> FundWise verifies Settlement -> Receipts indexes graph edge -> S
 
 ### Phase 2 - Android App Links
 
-- Expand `app.json` intent filters for `/settle/r` and `/receipts`.
-- Add/verify `assetlinks.json` for `fundwise.fun`.
+- Expand `app.json` intent filters for `/groups`, `/join`, `/settle/r`, and `/receipts` on beta and production hosts.
+- Add/verify `assetlinks.json` for `fundwise.fun` and `beta.fundwise.fun`.
 - Document `adb shell pm get-app-links fun.fundwise.seeker` verification.
 
 ### Phase 3 - Mobile preflight
