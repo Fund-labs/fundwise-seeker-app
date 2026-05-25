@@ -4,6 +4,8 @@
 
 Build `FundWiseSeeker` as a separate sibling app under `fundlabs`, using the existing `FundWise` web/API app as the source of truth.
 
+Per FundWise ADR-0046, the immediate Split Mode launch path is mobile web, Add to Home Screen PWA, then Trusted Web Activity. This React Native app is the native Seeker companion and follow-on path, not the only mobile launch surface.
+
 ## Why Not Inside `FundWise`
 
 The web app is already a deployable Next.js product with Cloudflare, Supabase, wallet-session cookies, and server-side settlement verification. A React Native Android app has different build tooling, native dependencies, app-link config, device testing, and release packaging. Keeping it separate avoids mixing Next.js and native mobile concerns.
@@ -26,6 +28,8 @@ The web app is already a deployable Next.js product with Cloudflare, Supabase, w
 5. Share the same FundWise continuation URL to desktop/PC through the native Android share sheet.
 6. Add native transaction construction only after the web mainnet flow is stable and testable on a physical Android device.
 
+For the June 13 Split Mode beta, the RN milestone is contract compatibility with FundWise mobile handoff routes and Android App Links. Native money movement waits for FundWise FW-094/FW-095.
+
 ## Design Source
 
 The Android screen should follow the FundWise mobile prototypes in `FundWise/design/app/mobile.jsx`: Strata-style mark, light FundWise green surfaces, compact cards, grouped status chips, and bottom mobile navigation.
@@ -39,6 +43,8 @@ The first screen should make the phone role explicit:
 - continue the same FundWise state in the web app on phone, desktop, or PC
 
 This is intentionally not a separate ledger. It is a Seeker-native entry and recovery surface for the existing FundWise product.
+
+The production mobile UX should still be judged first on the FundWise web/PWA/TWA flow: wallet browser access, Add to Home Screen behavior, `/settle/r/{requestId}`, `/receipts/{id}`, and mobile preview APIs. The native app should mirror that contract and improve device-native recovery, not fork the product model.
 
 ## Onboarding Motion
 

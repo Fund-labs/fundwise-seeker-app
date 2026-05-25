@@ -4,7 +4,9 @@
 
 Date: 2026-05-25
 
-Status: Seeker-side link recovery fixes landed, local typecheck and prebuild passing, current debug APK rebuild blocked by missing Java runtime in this shell, runtime validation still blocked by no connected Android device/emulator.
+Status: Seeker-side link recovery and design pass landed, local typecheck passing, current debug APK rebuild blocked by missing Java runtime in this shell, runtime validation still blocked by no connected Android device/emulator.
+
+Roadmap alignment: FundWise ADR-0046 moved the immediate June launch path to mobile web -> Add to Home Screen PWA -> TWA/APK. This React Native Seeker app is now the native companion/follow-on surface for Android App Links, mobile previews, dApp Store packaging, and later native transaction intents. It should not block the web/PWA beta unless a shared handoff contract breaks.
 
 Update:
 
@@ -31,6 +33,8 @@ Update:
 - Expanded Android intent filters for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`.
 - Changed native settlement and deposit sheets back to web continuation instead of presenting message signing as payment.
 - Aligned default mobile cluster/RPC config with mainnet defaults.
+- Matched the mounted RN UI to the `design/` Seeker App spec with Ionicons controls, compact card hierarchy, green hero treatment, and prototype-style group/activity glyphs.
+- Cross-checked the updated FundWise roadmap: FW-091 remains blocked on the release signing certificate SHA-256 fingerprint; FW-092 and FW-093 are shipped on the FundWise side; FW-094/FW-095/FW-096 are native-money-movement follow-ups, not web/PWA beta blockers.
 
 ## Product Decision
 
@@ -167,7 +171,7 @@ Intentionally not implemented yet:
 - secure SGT / Seeker-owner gating
 - `.skr` address resolution
 
-Reason: FundWise web app remains money-moving source of truth until native flow is tested end to end on Android with MWA wallet.
+Reason: FundWise web/PWA/TWA remains the launch and money-moving source of truth until native intents, confirm/recovery APIs, and receipt status are tested end to end on Android with an MWA wallet.
 
 ## Seeker Skill Fixes Applied
 
@@ -252,7 +256,7 @@ Remaining runtime blocker:
 - Install or expose a JDK, then rerun `./android/gradlew assembleDebug`.
 - No Android device or emulator was connected during the latest validation.
 - MWA wallet connection still needs physical-device or emulator testing with Mock MWA Wallet or a real MWA-compatible wallet.
-- `https://fundwise.fun/.well-known/assetlinks.json` is still required on the FundWise/Split Mode host before Android App Links can verify.
+- `https://fundwise.fun/.well-known/assetlinks.json` now has a FundWise route, but production verification still requires the real Seeker release signing cert SHA-256 fingerprint in `FUNDWISE_SEEKER_ANDROID_CERT_SHA256_FINGERPRINTS`.
 - dApp Store release signing still needs a real keystore and `FUNDWISE_DAPP_STORE_*` secret values.
 - Local disk had 5.3 GiB free during this pass; release packaging may still need more free disk plus signing secrets.
 
@@ -270,7 +274,7 @@ npm run android
 4. Test app link open from `https://fundwise.fun/groups?...`, `https://fundwise.fun/settle/r/...`, and `https://fundwise.fun/receipts/...`.
 5. Test invite lookup against prod FundWise.
 6. Add native FundWise auth strategy or keep web handoff for protected reads.
-7. Add Split Mode mobile preview / transaction intent / confirmation APIs before enabling native settlement.
+7. Confirm the shipped Split Mode mobile preview API against the RN app, then wait for FW-094/FW-095 before enabling native settlement.
 8. Add dApp Store publishing checklist.
 
 ## Current Safety Boundary

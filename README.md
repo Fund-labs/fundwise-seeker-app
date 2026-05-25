@@ -1,8 +1,10 @@
 # FundWise Seeker
 
-Android-first FundWise client for Solana Mobile Seeker and other Android devices.
+Android-first native companion for FundWise on Solana Mobile Seeker and other Android devices.
 
 This app is a sibling client to `FundWise`, not a replacement for it. The Next.js app remains the product/API source of truth; this client focuses on the mobile wallet handoff, invite/settlement link handling, and the smallest useful Seeker-native surface.
+
+Roadmap alignment: ADR-0046 in `FundWise` makes the June Split Mode launch path mobile web -> Add to Home Screen PWA -> Trusted Web Activity. This React Native app is no longer the blocking launch surface for the web/PWA beta. It remains the native Seeker track for Android App Links, mobile previews, dApp Store packaging, and future native transaction intents once FW-094/FW-095 exist.
 
 It follows the local Seeker skill guidance from `/Users/sarthiborkar/Build/seeker-skills`:
 
@@ -94,6 +96,8 @@ Compatibility aliases are also supported: `EXPO_PUBLIC_SOLANA_CHAIN` and `EXPO_P
 ## Build Boundary
 
 Keep all ledger writes, protected reads, settlement receipt verification, and treasury state owned by `FundWise`.
+
+For the June 13 Split Mode beta, the production-critical mobile work is in the FundWise web/PWA/TWA path. This native app should not block that launch unless Android App Links, `/settle/r`, `/receipts`, or Seeker preview contract changes break.
 
 The mobile app can own:
 

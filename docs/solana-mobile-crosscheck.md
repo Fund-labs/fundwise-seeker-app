@@ -56,7 +56,11 @@ Current app:
 - `app.json` declares verified links for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`
 - `useIncomingFundWiseLink` persists the latest incoming link with AsyncStorage
 - `FundWiseSeekerAppScreen` surfaces the recovered link in the mounted home screen
-- production verification still requires `fundwise.fun/.well-known/assetlinks.json` from the FundWise/Split Mode host
+- FundWise now has a `/.well-known/assetlinks.json` route; production verification still requires the real release signing cert SHA-256 fingerprint in `FUNDWISE_SEEKER_ANDROID_CERT_SHA256_FINGERPRINTS`
+
+## FundWise Mobile Roadmap Boundary
+
+FundWise ADR-0046 makes mobile web, Add to Home Screen PWA, and TWA/APK the launch-critical mobile path for Split Mode. This React Native app remains useful for Solana Mobile / Seeker-specific behavior, Android App Link recovery, dApp Store packaging, and future native transaction intents, but it should not be treated as a replacement for the FundWise web/PWA surface.
 
 ## Mobile Wallet Adapter Platform Boundary
 
@@ -70,7 +74,7 @@ Current app:
 
 - Android is the only native target for this wallet flow
 - no iOS target is implied for the MWA-based app
-- PWA/TWA publishing is documented as a separate route, not the current app path
+- PWA/TWA publishing is now the primary June beta path in FundWise; the RN app is the native companion path
 
 ## Detecting Seeker Users
 
