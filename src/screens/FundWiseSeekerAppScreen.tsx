@@ -38,6 +38,10 @@ import {
 import { useIncomingFundWiseLink } from "../hooks/useIncomingFundWiseLink";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import {
+  getMobileSettlementRequestPreview,
+  type MobileSettlementRequestPreview,
+} from "../lib/fundwise-api";
+import {
   getFundWiseLinkDetail,
   getFundWiseLinkLabel,
   parseFundWiseLink,
@@ -153,6 +157,31 @@ function iconColorForTone(tone: IconTone) {
   if (tone === "telegram") return "#229ED9";
   if (tone === "ink") return colors.textSoft;
   return colors.primaryMid;
+}
+
+function getSettlementPreviewCopy(preview: MobileSettlementRequestPreview) {
+  if (preview.status === "ready" && preview.amount) {
+    const roleCopy = preview.role === "payer" ? "you pay" : preview.role === "payee" ? "you receive" : "ready";
+    return `${preview.amount.display} ${preview.amount.token} · ${roleCopy}`;
+  }
+
+  if (preview.status === "expired") {
+    return "Expired · open FundWise to recover context";
+  }
+
+  if (preview.status === "wrong_wallet") {
+    return "Different wallet required for this request";
+  }
+
+  if (preview.status === "not_member") {
+    return "Wallet is not a verified Group member";
+  }
+
+  if (preview.status === "not_settleable") {
+    return "Balance changed · open FundWise to refresh";
+  }
+
+  return "Preview available";
 }
 
 function bytesFromString(value: string) {
@@ -1079,13 +1108,23 @@ function getLinkRecoveryMark(intent: FundWiseLinkIntent) {
 function LinkRecoveryCard({
   intent,
   loading,
+  onConnectWallet,
   onClear,
   onOpen,
+  settlementPreview,
+  settlementPreviewError,
+  settlementPreviewLoading,
+  walletAddress,
 }: {
   intent: FundWiseLinkIntent | null;
   loading: boolean;
+  onConnectWallet: () => void;
   onClear: () => void;
   onOpen: () => void;
+  settlementPreview: MobileSettlementRequestPreview | null;
+  settlementPreviewError: string | null;
+  settlementPreviewLoading: boolean;
+  walletAddress: string | null;
 }) {
   if (loading) {
     return (
@@ -1104,19 +1143,39 @@ function LinkRecoveryCard({
   }
 
   const detail = getFundWiseLinkDetail(intent);
-  const compactDetail = detail.length > 24 ? shortAddress(detail, 6) : detail;
+  const isSettlementLink = intent.kind === "settlement-blink";
+  const previewDetail =
+    isSettlementLink && settlementPreviewLoading
+      ? "Checking live Settlement amount..."
+      : isSettlementLink && settlementPreview
+        ? getSettlementPreviewCopy(settlementPreview)
+        : isSettlementLink && settlementPreviewError
+          ? `Preview unavailable · ${settlementPreviewError}`
+          : isSettlementLink && !walletAddress
+            ? "Connect wallet to preview amount"
+            : null;
+  const compactDetail = previewDetail || (detail.length > 24 ? shortAddress(detail, 6) : detail);
+  const primaryAction = isSettlementLink && !walletAddress ? "Connect" : "Open";
 
   return (
     <View style={styles.linkRecoveryCard}>
       <IconTile mark={getLinkRecoveryMark(intent)} size={20} style={styles.linkRecoveryIcon} />
       <View style={styles.flexOne}>
         <Text style={styles.linkRecoveryEyebrow}>Recovered link</Text>
-        <Text numberOfLines={1} style={styles.linkRecoveryTitle}>{getFundWiseLinkLabel(intent)}</Text>
-        <Text numberOfLines={1} style={styles.linkRecoverySub}>{compactDetail}</Text>
+        <Text numberOfLines={1} style={styles.linkRecoveryTitle}>
+          {getFundWiseLinkLabel(intent)}
+        </Text>
+        <Text numberOfLines={1} style={styles.linkRecoverySub}>
+          {compactDetail}
+        </Text>
       </View>
       <View style={styles.linkRecoveryActions}>
-        <Pressable accessibilityRole="button" onPress={onOpen} style={styles.linkRecoveryPrimary}>
-          <Text style={styles.linkRecoveryPrimaryText}>Open</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={isSettlementLink && !walletAddress ? onConnectWallet : onOpen}
+          style={styles.linkRecoveryPrimary}
+        >
+          <Text style={styles.linkRecoveryPrimaryText}>{primaryAction}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={onClear} style={styles.linkRecoverySecondary}>
           <Text style={styles.linkRecoverySecondaryText}>Clear</Text>
@@ -1132,11 +1191,15 @@ function HomeScreen({
   incomingLoading,
   onAction,
   onClearIncomingLink,
+  onConnectWallet,
   onFab,
   onOpenIncomingLink,
   onOpenGroup,
   onProfile,
   onTab,
+  settlementPreview,
+  settlementPreviewError,
+  settlementPreviewLoading,
   walletAddress,
 }: {
   groups: FundWiseGroup[];
@@ -1144,11 +1207,15 @@ function HomeScreen({
   incomingLoading: boolean;
   onAction: (kind: SheetState) => void;
   onClearIncomingLink: () => void;
+  onConnectWallet: () => void;
   onFab: () => void;
   onOpenIncomingLink: () => void;
   onOpenGroup: (group: FundWiseGroup) => void;
   onProfile: () => void;
   onTab: (tab: "home" | "groups" | "activity" | "wallet") => void;
+  settlementPreview: MobileSettlementRequestPreview | null;
+  settlementPreviewError: string | null;
+  settlementPreviewLoading: boolean;
   walletAddress: string | null;
 }) {
   return (
@@ -1158,8 +1225,13 @@ function HomeScreen({
       <LinkRecoveryCard
         intent={incomingIntent}
         loading={incomingLoading}
+        onConnectWallet={onConnectWallet}
         onClear={onClearIncomingLink}
         onOpen={onOpenIncomingLink}
+        settlementPreview={settlementPreview}
+        settlementPreviewError={settlementPreviewError}
+        settlementPreviewLoading={settlementPreviewLoading}
+        walletAddress={walletAddress}
       />
       <View style={styles.quickGrid}>
         <QuickAction label="Split" mark="Split" onPress={() => onAction({ kind: "add-expense" })} />
@@ -2049,15 +2121,21 @@ export function FundWiseSeekerAppScreen() {
   const [authProgress, setAuthProgress] = useState(0);
   const [authError, setAuthError] = useState<string | null>(null);
   const [walletPreference, setWalletPreference] = useState<WalletPreference>("seeker");
+  const [authorizedWalletAddress, setAuthorizedWalletAddress] = useState<string | null>(null);
+  const [settlementPreview, setSettlementPreview] = useState<MobileSettlementRequestPreview | null>(null);
+  const [settlementPreviewError, setSettlementPreviewError] = useState<string | null>(null);
+  const [settlementPreviewLoading, setSettlementPreviewLoading] = useState(false);
   const startedIntentRef = useRef(false);
   const isOnline = useNetworkStatus();
   const incomingLink = useIncomingFundWiseLink();
-  const walletAddress = walletAddressToString(account?.address);
+  const walletAddress = walletAddressToString(account?.address) || authorizedWalletAddress;
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) || groups[0];
   const incomingIntent = useMemo(
     () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL) : null),
     [incomingLink.url],
   );
+  const incomingSettlementRequestId =
+    incomingIntent?.kind === "settlement-blink" ? incomingIntent.requestId || null : null;
 
   useEffect(() => {
     if (screen === "boot") {
@@ -2066,6 +2144,55 @@ export function FundWiseSeekerAppScreen() {
     }
     return undefined;
   }, [screen]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSettlementPreview(requestId: string, viewerWallet: string) {
+      setSettlementPreview(null);
+      setSettlementPreviewError(null);
+      setSettlementPreviewLoading(true);
+
+      const result = await getMobileSettlementRequestPreview(requestId, viewerWallet);
+
+      if (cancelled) {
+        return;
+      }
+
+      setSettlementPreviewLoading(false);
+
+      if (!result.ok) {
+        setSettlementPreviewError(result.error);
+        return;
+      }
+
+      setSettlementPreview(result.data);
+    }
+
+    if (!incomingSettlementRequestId) {
+      setSettlementPreview(null);
+      setSettlementPreviewError(null);
+      setSettlementPreviewLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (!walletAddress) {
+      setSettlementPreview(null);
+      setSettlementPreviewError(null);
+      setSettlementPreviewLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void loadSettlementPreview(incomingSettlementRequestId, walletAddress);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [incomingSettlementRequestId, walletAddress]);
 
   const openGroup = useCallback((group: FundWiseGroup) => {
     setSelectedGroupId(group.id);
@@ -2143,8 +2270,10 @@ export function FundWiseSeekerAppScreen() {
         };
       });
 
+      const authorizedAddress = new PublicKey(base64ToBytes(authorization.address)).toBase58();
+      setAuthorizedWalletAddress(authorizedAddress);
       console.log("[FundWise] MWA approval completed", {
-        address: new PublicKey(base64ToBytes(authorization.address)).toBase58(),
+        address: authorizedAddress,
         signedMessageBytes: authorization.signedMessage.length,
       });
       if (progressTimer) clearInterval(progressTimer);
@@ -2275,11 +2404,15 @@ export function FundWiseSeekerAppScreen() {
         incomingLoading={incomingLink.loading}
         onAction={setSheet}
         onClearIncomingLink={clearIncomingLink}
+        onConnectWallet={() => startSignature(connectIntent)}
         onFab={() => setSheet({ kind: "fab" })}
         onOpenGroup={openGroup}
         onOpenIncomingLink={openIncomingLink}
         onProfile={() => setSheet({ kind: "profile" })}
         onTab={goTab}
+        settlementPreview={settlementPreview}
+        settlementPreviewError={settlementPreviewError}
+        settlementPreviewLoading={settlementPreviewLoading}
         walletAddress={walletAddress}
       />
     );

@@ -23,10 +23,11 @@ The web app is already a deployable Next.js product with Cloudflare, Supabase, w
 
 1. Connect wallet with MWA.
 2. Resolve incoming FundWise `/groups`, `/settle/r`, and `/receipts` links.
-3. Open Group and Settlement flows in the web app.
-4. Read public API state such as health and invite lookup.
-5. Share the same FundWise continuation URL to desktop/PC through the native Android share sheet.
-6. Add native transaction construction only after the web mainnet flow is stable and testable on a physical Android device.
+3. Preview mobile Settlement Request Links through the FundWise redacted preview API after wallet authorization.
+4. Open Group and Settlement flows in the web app.
+5. Read public API state such as health and invite lookup.
+6. Share the same FundWise continuation URL to desktop/PC through the native Android share sheet.
+7. Add native transaction construction only after the web mainnet flow is stable and testable on a physical Android device.
 
 For the June 13 Split Mode beta, the RN milestone is contract compatibility with FundWise mobile handoff routes and Android App Links. Native money movement waits for FundWise FW-094/FW-095.
 
@@ -45,6 +46,8 @@ The first screen should make the phone role explicit:
 This is intentionally not a separate ledger. It is a Seeker-native entry and recovery surface for the existing FundWise product.
 
 The production mobile UX should still be judged first on the FundWise web/PWA/TWA flow: wallet browser access, Add to Home Screen behavior, `/settle/r/{requestId}`, `/receipts/{id}`, and mobile preview APIs. The native app should mirror that contract and improve device-native recovery, not fork the product model.
+
+The native preview path stores the last authorized MWA wallet address in memory so `/api/mobile/settlement-requests/{requestId}/preview?wallet=...` can return role, amount, status, expiry, and fallback URL without exposing private Group context.
 
 ## Onboarding Motion
 

@@ -35,6 +35,8 @@ Update:
 - Aligned default mobile cluster/RPC config with mainnet defaults.
 - Matched the mounted RN UI to the `design/` Seeker App spec with Ionicons controls, compact card hierarchy, green hero treatment, and prototype-style group/activity glyphs.
 - Cross-checked the updated FundWise roadmap: FW-091 remains blocked on the release signing certificate SHA-256 fingerprint; FW-092 and FW-093 are shipped on the FundWise side; FW-094/FW-095/FW-096 are native-money-movement follow-ups, not web/PWA beta blockers.
+- Added Seeker-native support for the FundWise mobile Settlement Request preview API. Incoming `/settle/r/{requestId}` links now show a redacted live preview after wallet authorization, including amount/role when ready and clear expired/wrong-wallet/not-member/not-settleable states.
+- Persisted the latest MWA-authorized wallet address in component state so direct `transact` approvals can drive native preview requests even when the Wallet UI provider has not populated `account`.
 
 ## Product Decision
 
@@ -149,6 +151,7 @@ Implemented:
 - latest incoming FundWise link persistence and parsing
 - lightweight Seeker device signal from `Platform.constants.Model`
 - FundWise link previews for Groups, invite links, Settlement requests, Settlement links, Settlement receipts, and Receipt Graph links
+- redacted live Settlement Request previews from `/api/mobile/settlement-requests/{requestId}/preview?wallet=...`
 - Android app link intent filters for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`
 - open FundWise Groups in browser/web app
 - open incoming FundWise link
@@ -221,6 +224,7 @@ npx expo prebuild --platform android --no-install
 Result:
 
 - `npm run typecheck`: pass.
+- Native preview API client compile check: pass.
 - Parser smoke check for `/groups`, `/settle/r`, `/receipts`, and `/v1/graph/receipts`: pass.
 - `npm exec expo -- install --check`: pass using local Expo dependency map because command context is offline.
 - `npx expo prebuild --platform android --no-install`: pass, `android/` generated.
@@ -274,7 +278,7 @@ npm run android
 4. Test app link open from `https://fundwise.fun/groups?...`, `https://fundwise.fun/settle/r/...`, and `https://fundwise.fun/receipts/...`.
 5. Test invite lookup against prod FundWise.
 6. Add native FundWise auth strategy or keep web handoff for protected reads.
-7. Confirm the shipped Split Mode mobile preview API against the RN app, then wait for FW-094/FW-095 before enabling native settlement.
+7. Confirm the shipped Split Mode mobile preview API against a deployed FundWise host and a real wallet on Android, then wait for FW-094/FW-095 before enabling native settlement.
 8. Add dApp Store publishing checklist.
 
 ## Current Safety Boundary

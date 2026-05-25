@@ -46,6 +46,7 @@ Current app:
 
 - `FundWiseSeekerAppScreen` uses direct `transact` for wallet authorization plus a message-signing proof
 - the approval path avoids SIWS-first and cached auth-token reuse while testing Seeker wallet compatibility
+- the last MWA-authorized wallet address is retained in memory so native preview APIs can query with the verified viewer wallet
 - protected reads and money movement still hand off to FundWise web
 - future secure Seeker verification should use SIWS plus backend SGT checks
 
@@ -56,6 +57,7 @@ Current app:
 - `app.json` declares verified links for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`
 - `useIncomingFundWiseLink` persists the latest incoming link with AsyncStorage
 - `FundWiseSeekerAppScreen` surfaces the recovered link in the mounted home screen
+- incoming `/settle/r/{requestId}` links call the FundWise mobile preview API after wallet authorization and render redacted role/amount/status copy before opening the web fallback
 - FundWise now has a `/.well-known/assetlinks.json` route; production verification still requires the real release signing cert SHA-256 fingerprint in `FUNDWISE_SEEKER_ANDROID_CERT_SHA256_FINGERPRINTS`
 
 ## FundWise Mobile Roadmap Boundary

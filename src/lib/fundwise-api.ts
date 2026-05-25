@@ -24,6 +24,28 @@ export type InviteLookup = {
   error?: string;
 };
 
+export type MobileSettlementRequestPreview = {
+  requestId: string;
+  status: "ready" | "not_settleable" | "expired" | "not_member" | "wrong_wallet";
+  role: "payer" | "payee" | "member" | "not_member" | "wrong_wallet";
+  amount: {
+    baseUnits: number;
+    display: string;
+    token: string;
+  } | null;
+  payer: {
+    wallet: string;
+    isViewer: boolean;
+  };
+  payee: {
+    wallet: string;
+    isViewer: boolean;
+  };
+  mint: string | null;
+  expiresAt: string;
+  fallbackUrl: string;
+};
+
 async function readJson<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
   try {
     const response = await fetch(`${FUNDWISE_API_URL}${path}`, {
@@ -81,4 +103,13 @@ export async function lookupInvite(code: string): Promise<ApiResult<InviteLookup
       group: result.data,
     },
   };
+}
+
+export function getMobileSettlementRequestPreview(requestId: string, wallet: string) {
+  const encodedRequestId = encodeURIComponent(requestId.trim());
+  const encodedWallet = encodeURIComponent(wallet.trim());
+
+  return readJson<MobileSettlementRequestPreview>(
+    `/api/mobile/settlement-requests/${encodedRequestId}/preview?wallet=${encodedWallet}`,
+  );
 }

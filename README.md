@@ -21,6 +21,7 @@ It follows the local Seeker skill guidance from `/Users/sarthiborkar/Build/seeke
 - FundWise API health check
 - Public invite-code lookup
 - FundWise deep-link handling for `/groups`, `/settle/r`, and `/receipts`
+- live mobile Settlement Request preview for `/settle/r/{requestId}` once a wallet is authorized
 - First-run Seeker onboarding with link recovery, MWA wallet handoff, phone-to-PC continuation, and reduced-motion support
 - Android-first launch flow: connect wallet, recover Group state, continue on FundWise web / PC
 - Lightweight Seeker device signal from React Native platform constants for UI treatment only
@@ -104,6 +105,7 @@ The mobile app can own:
 - Seeker-native wallet connection
 - Android app links
 - invite and settlement link recovery
+- redacted Settlement Request previews from the FundWise mobile preview API
 - phone-to-web / phone-to-PC continuation links
 - native preflight UX
 - later: native Settlement / Contribution transaction construction once tested with a real wallet
