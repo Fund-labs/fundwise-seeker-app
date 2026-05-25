@@ -92,6 +92,7 @@ npm start -- --port 8099
 | `EXPO_PUBLIC_FUNDWISE_API_URL` | same as web URL | FundWise HTTP API base URL. |
 | `EXPO_PUBLIC_RECEIPTS_URL` | same as web URL | Receipt service URL accepted by mobile link recovery. |
 | `EXPO_PUBLIC_FUNDWISE_ALLOWED_HOSTS` | `fundwise.fun,beta.fundwise.fun` | Extra FundWise hosts accepted by link recovery. |
+| `EXPO_PUBLIC_FUNDY_TELEGRAM_URL` | `https://t.me/fundyonSol_bot` | Fundy Telegram bot URL used for DM and group `start` / `startgroup` redirects. |
 | `EXPO_PUBLIC_SOLANA_CLUSTER` | `mainnet` | Cluster suffix used to build the MWA CAIP-2 chain string. |
 | `EXPO_PUBLIC_SOLANA_RPC_ENDPOINT` | Helius/public mainnet endpoint | RPC endpoint passed to `MobileWalletProvider`; production should use Helius or another paid RPC. |
 

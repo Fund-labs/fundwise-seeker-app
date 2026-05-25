@@ -42,6 +42,7 @@ import {
   getMobileSettlementRequestPreview,
   type MobileSettlementRequestPreview,
 } from "../lib/fundwise-api";
+import { buildFundyTelegramUrl } from "../lib/fundy-telegram";
 import {
   getFundWiseLinkDetail,
   getFundWiseLinkLabel,
@@ -56,7 +57,15 @@ type ScreenId = "boot" | "welcome" | "tour" | "auth" | "success" | "home" | "gro
 type HapticKind = "tap" | "selection" | "success" | "warning";
 type IconTone = "blue" | "gold" | "green" | "ink" | "telegram";
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
+type NotificationTone = "success" | "info" | "warning";
 type WalletPreference = "seeker" | "solflare" | "any";
+type AppNotification = {
+  body: string;
+  id: number;
+  title: string;
+  tone: NotificationTone;
+};
+type NotifyInput = Omit<AppNotification, "id">;
 type SheetState =
   | { kind: "fab" }
   | { kind: "add-expense" }
@@ -90,6 +99,7 @@ type SignatureIntent = {
 
 type SuccessState = {
   body: string;
+  pill?: string;
   returnScreen: ScreenId;
   title: string;
 };
@@ -1096,7 +1106,7 @@ function SuccessScreen({ onDone, state, walletAddress }: { onDone: () => void; s
         <Text style={styles.successCopy}>{state.body}</Text>
         <View style={styles.successPill}>
           <View style={styles.successDot} />
-          <Text style={styles.successPillText}>{walletAddress ? shortAddress(walletAddress, 8) : "Wallet authorized"}</Text>
+          <Text style={styles.successPillText}>{state.pill || (walletAddress ? shortAddress(walletAddress, 8) : "Wallet authorized")}</Text>
         </View>
       </View>
       <View pointerEvents="none" style={[styles.gesturePill, styles.gesturePillDark]} />
@@ -1105,9 +1115,11 @@ function SuccessScreen({ onDone, state, walletAddress }: { onDone: () => void; s
 }
 
 function TopHeader({
+  onNotifications,
   onProfile,
   walletAddress,
 }: {
+  onNotifications: () => void;
   onProfile: () => void;
   walletAddress: string | null;
 }) {
@@ -1118,7 +1130,7 @@ function TopHeader({
         <Text style={styles.userName}>{ME.name} 👋</Text>
       </View>
       <View style={styles.headerActions}>
-        <Pressable accessibilityRole="button" onPress={() => triggerHaptic("tap")} style={styles.iconButton}>
+        <Pressable accessibilityRole="button" onPress={onNotifications} style={styles.iconButton}>
           <Ionicons color={colors.text} name="notifications-outline" size={18} />
           <View style={styles.badge} />
         </Pressable>
@@ -1127,6 +1139,42 @@ function TopHeader({
         </Pressable>
       </View>
     </View>
+  );
+}
+
+function NotificationToast({ notification }: { notification: AppNotification }) {
+  const motion = useRef(new Animated.Value(0)).current;
+  const icon: IoniconName =
+    notification.tone === "success"
+      ? "checkmark-circle-outline"
+      : notification.tone === "warning"
+        ? "alert-circle-outline"
+        : "notifications-outline";
+
+  useEffect(() => {
+    motion.setValue(0);
+    Animated.spring(motion, { damping: 15, mass: 0.8, stiffness: 180, toValue: 1, useNativeDriver: true }).start();
+  }, [motion, notification.id]);
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        styles.notificationToast,
+        {
+          opacity: motion,
+          transform: [{ translateY: motion.interpolate({ inputRange: [0, 1], outputRange: [-18, 0] }) }],
+        },
+      ]}
+    >
+      <View style={[styles.notificationIcon, notification.tone === "success" ? styles.notificationSuccess : notification.tone === "warning" ? styles.notificationWarning : styles.notificationInfo]}>
+        <Ionicons color={notification.tone === "warning" ? "#8A5A00" : notification.tone === "success" ? colors.primaryMid : "#229ED9"} name={icon} size={18} />
+      </View>
+      <View style={styles.flexOne}>
+        <Text style={styles.notificationTitle}>{notification.title}</Text>
+        <Text style={styles.notificationBody}>{notification.body}</Text>
+      </View>
+    </Animated.View>
   );
 }
 
@@ -1366,6 +1414,7 @@ function HomeScreen({
   onClearIncomingLink,
   onConnectWallet,
   onFab,
+  onNotify,
   onOpenIncomingLink,
   onOpenGroup,
   onProfile,
@@ -1383,6 +1432,7 @@ function HomeScreen({
   onClearIncomingLink: () => void;
   onConnectWallet: () => void;
   onFab: () => void;
+  onNotify: (notification: NotifyInput) => void;
   onOpenIncomingLink: () => void;
   onOpenGroup: (group: FundWiseGroup) => void;
   onProfile: () => void;
@@ -1395,7 +1445,17 @@ function HomeScreen({
 }) {
   return (
     <AppShell activeTab="home" onFab={onFab} onTab={onTab}>
-      <TopHeader onProfile={onProfile} walletAddress={walletAddress} />
+      <TopHeader
+        onNotifications={() =>
+          onNotify({
+            body: "Vote, settlement, receipt, and Fundy Telegram alerts are enabled for this device.",
+            title: "Notifications ready",
+            tone: "info",
+          })
+        }
+        onProfile={onProfile}
+        walletAddress={walletAddress}
+      />
       <BalanceHero />
       <LinkRecoveryCard
         intent={incomingIntent}
@@ -1969,7 +2029,9 @@ function BottomSheet({ children, onClose, title }: { children: React.ReactNode; 
 
 function ActiveSheet({
   onClose,
+  onComplete,
   onDepositSigned,
+  onNotify,
   onOpenSheet,
   onReplayIntro,
   onSignature,
@@ -1977,13 +2039,23 @@ function ActiveSheet({
   sheet,
 }: {
   onClose: () => void;
+  onComplete: (success: SuccessState, notification?: NotifyInput) => void;
   onDepositSigned: (group: FundGroup, amount: number) => void;
+  onNotify: (notification: NotifyInput) => void;
   onOpenSheet: (sheet: SheetState) => void;
   onReplayIntro: () => void;
   onSignature: (intent: SignatureIntent) => void;
   onSettlementSigned: (settlement: SettlementOption) => void;
   sheet: SheetState;
 }) {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const markShared = useCallback((key: string, notification: NotifyInput) => {
+    setCopiedKey(key);
+    onNotify(notification);
+    setTimeout(() => setCopiedKey((current) => (current === key ? null : current)), 1500);
+  }, [onNotify]);
+
   if (sheet.kind === "fab") {
     const fund = GROUPS.find((group): group is FundGroup => group.mode === "fund")!;
     return (
@@ -2119,7 +2191,10 @@ function ActiveSheet({
   }
 
   if (sheet.kind === "telegram") {
-    const link = sheet.group ? `t.me/fundwise_bot?group=${sheet.group.id}` : "t.me/fundwise_bot";
+    const link = buildFundyTelegramUrl({ groupId: sheet.group?.id, mode: sheet.group ? "group" : "dm" });
+    const shareMessage = sheet.group
+      ? `Add Fundy to ${sheet.group.name} on Telegram: ${link}`
+      : `Open Fundy on Telegram: ${link}`;
     return (
       <BottomSheet onClose={onClose} title="Open in Telegram">
         <View style={styles.telegramHero}>
@@ -2127,16 +2202,42 @@ function ActiveSheet({
             <Ionicons color={colors.white} name="paper-plane-outline" size={24} />
           </View>
           <View style={styles.flexOne}>
-            <Text style={styles.telegramTitle}>FundWise · Mini-app</Text>
-            <Text style={styles.telegramSub}>{sheet.group ? `Share ${sheet.group.name}` : "Split anywhere · in any chat"}</Text>
+            <Text style={styles.telegramTitle}>Fundy · Agent</Text>
+            <Text style={styles.telegramSub}>{sheet.group ? `Add to ${sheet.group.name}` : "Split anywhere · in any chat"}</Text>
           </View>
         </View>
-        <Text style={styles.sheetHelp}>Open the FundWise bot inside Telegram to add expenses, vote on proposals, and settle balances without leaving the conversation.</Text>
+        <Text style={styles.sheetHelp}>Open Fundy inside Telegram to add expenses, vote on proposals, and settle balances without leaving the conversation.</Text>
         <View style={styles.addressBox}>
           <Text style={styles.addressText}>{link}</Text>
-          <Pressable accessibilityRole="button" onPress={() => void Share.share({ message: link })} style={styles.copyChip}><Text style={styles.copyChipText}>Copy</Text></Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              void Share.share({ message: shareMessage });
+              markShared("telegram", {
+                body: sheet.group ? "Group-aware Telegram invite is ready to send." : "Fundy Telegram redirect is ready to send.",
+                title: "Fundy link ready",
+                tone: "success",
+              });
+            }}
+            style={styles.copyChip}
+          >
+            <Text style={styles.copyChipText}>{copiedKey === "telegram" ? "Ready" : "Share"}</Text>
+          </Pressable>
         </View>
-        <AppButton onPress={() => void Linking.openURL("https://t.me/fundwise_bot")} style={styles.sheetPrimary} variant="blue">Open in Telegram</AppButton>
+        <AppButton
+          onPress={() => {
+            onNotify({
+              body: sheet.group ? `Opening Fundy with ${sheet.group.name} context.` : "Opening Fundy in Telegram.",
+              title: "Opening Telegram",
+              tone: "info",
+            });
+            void Linking.openURL(link);
+          }}
+          style={styles.sheetPrimary}
+          variant="blue"
+        >
+          {sheet.group ? "Add Fundy to Telegram" : "Open Fundy in Telegram"}
+        </AppButton>
       </BottomSheet>
     );
   }
@@ -2148,11 +2249,34 @@ function ActiveSheet({
         <Text style={styles.sheetHelp}>Share this link. Anyone with a Solana wallet can join in 2 taps.</Text>
         <View style={styles.addressBox}>
           <Text style={styles.addressText}>{link}</Text>
-          <Pressable accessibilityRole="button" onPress={() => void Share.share({ message: link })} style={styles.copyChip}><Text style={styles.copyChipText}>Copy</Text></Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              void Share.share({ message: link });
+              markShared("invite", {
+                body: `${sheet.group?.name || "Group"} invite is ready to send.`,
+                title: "Invite link ready",
+                tone: "success",
+              });
+            }}
+            style={styles.copyChip}
+          >
+            <Text style={styles.copyChipText}>{copiedKey === "invite" ? "Ready" : "Share"}</Text>
+          </Pressable>
         </View>
         <View style={styles.quickGrid}>
           <QuickAction label="Telegram" mark="TG" onPress={() => onOpenSheet({ group: sheet.group, kind: "telegram" })} />
-          <QuickAction label="QR" mark="QR" onPress={() => undefined} />
+          <QuickAction
+            label="QR"
+            mark="QR"
+            onPress={() =>
+              onNotify({
+                body: "QR invite handoff is queued for the native share sheet.",
+                title: "QR coming next",
+                tone: "info",
+              })
+            }
+          />
           <QuickAction label="SMS" mark="SMS" onPress={() => void Share.share({ message: link })} />
           <QuickAction label="More" mark="More" onPress={() => void Share.share({ message: link })} />
         </View>
@@ -2161,18 +2285,76 @@ function ActiveSheet({
   }
 
   if (sheet.kind === "add-expense") {
-    return <AddExpenseSheet onClose={onClose} />;
+    return (
+      <AddExpenseSheet
+        onClose={onClose}
+        onSave={(draft) =>
+          onComplete(
+            {
+              body: "Split calculated. Everyone is notified.",
+              pill: draft.groupName,
+              returnScreen: "home",
+              title: "Expense added",
+            },
+            {
+              body: `${draft.groupName} members were notified about ${draft.memo}.`,
+              title: "Expense notification sent",
+              tone: "success",
+            },
+          )
+        }
+      />
+    );
   }
 
   if (sheet.kind === "propose") {
-    return <ProposeSheet group={sheet.group} onClose={onClose} />;
+    return (
+      <ProposeSheet
+        group={sheet.group}
+        onClose={onClose}
+        onSubmit={(proposalTitle) =>
+          onComplete(
+            {
+              body: "Members can review and vote from FundWise or Telegram.",
+              pill: sheet.group.name,
+              returnScreen: "fund",
+              title: "Proposal opened",
+            },
+            {
+              body: `${sheet.group.name} members were notified about ${proposalTitle}.`,
+              title: "Vote notification sent",
+              tone: "success",
+            },
+          )
+        }
+      />
+    );
   }
 
   if (sheet.kind === "create-group") {
-    return <CreateGroupSheet onClose={onClose} />;
+    return (
+      <CreateGroupSheet
+        onClose={onClose}
+        onCreate={(groupName) =>
+          onComplete(
+            {
+              body: "Share the invite link to add members.",
+              pill: groupName,
+              returnScreen: "groups",
+              title: "Group created",
+            },
+            {
+              body: `${groupName} is ready for invites.`,
+              title: "Group notification ready",
+              tone: "success",
+            },
+          )
+        }
+      />
+    );
   }
 
-  return <ProfileSheet onClose={onClose} onReplayIntro={onReplayIntro} />;
+  return <ProfileSheet onClose={onClose} onNotify={onNotify} onReplayIntro={onReplayIntro} />;
 }
 
 function SheetAction({ body, mark, onPress, right, title }: { body: string; mark: string; onPress: () => void; right?: string; title: string }) {
@@ -2235,48 +2417,60 @@ function DepositSheet({ group, onClose, onSign }: { group: FundGroup; onClose: (
   );
 }
 
-function AddExpenseSheet({ onClose }: { onClose: () => void }) {
+function AddExpenseSheet({ onClose, onSave }: { onClose: () => void; onSave: (draft: { amount: number; groupName: string; memo: string }) => void }) {
+  const splitGroups = GROUPS.filter((group): group is SplitGroup => group.mode === "split");
+  const [amount, setAmount] = useState("48.00");
+  const [groupId, setGroupId] = useState(splitGroups[0]?.id || "lisbon");
+  const [memo, setMemo] = useState("Wine dinner");
+  const activeGroup = splitGroups.find((group) => group.id === groupId) || splitGroups[0];
+  const parsedAmount = Number(amount);
+  const validAmount = Number.isFinite(parsedAmount) && parsedAmount > 0;
+  const members = activeGroup?.members || (["you", "kiran", "asha", "dev"] as PersonId[]);
+  const share = validAmount ? parsedAmount / members.length : 0;
+
   return (
     <BottomSheet onClose={onClose} title="Add expense">
-      <LabeledInput label="Amount" value="$48.00" />
-      <LabeledInput label="What for?" placeholder="e.g. Wine dinner" value="" />
+      <LabeledInput label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} value={`$${amount}`} />
+      <LabeledInput label="What for?" onChangeText={setMemo} placeholder="e.g. Wine dinner" value={memo} />
       <Text style={styles.fieldLabel}>Group</Text>
       <View style={styles.pillRow}>
-        {GROUPS.filter((group) => group.mode === "split").map((group) => (
-          <Pressable accessibilityRole="button" key={group.id} style={[styles.pill, group.id === "lisbon" ? styles.pillActive : null]}>
-            <Text style={[styles.pillText, group.id === "lisbon" ? styles.pillTextActive : null]}>{group.emoji} {group.name}</Text>
+        {splitGroups.map((group) => (
+          <Pressable accessibilityRole="button" key={group.id} onPress={() => setGroupId(group.id)} style={[styles.pill, group.id === groupId ? styles.pillActive : null]}>
+            <Text style={[styles.pillText, group.id === groupId ? styles.pillTextActive : null]}>{group.emoji} {group.name}</Text>
           </Pressable>
         ))}
       </View>
       <Text style={styles.fieldLabel}>Live equal split</Text>
       <View style={styles.memberList}>
-        {(["you", "kiran", "asha", "dev"] as PersonId[]).map((id) => (
+        {members.map((id) => (
           <View key={id} style={styles.memberRow}>
             <Avatar id={id} size={30} />
             <Text style={styles.memberName}>{personOf(id).name}</Text>
-            <Text style={styles.memberContrib}>$12.00</Text>
+            <Text style={styles.memberContrib}>${share.toFixed(2)}</Text>
           </View>
         ))}
       </View>
-      <AppButton onPress={onClose} style={styles.sheetPrimary}>Save expense</AppButton>
+      <AppButton disabled={!validAmount || !memo.trim()} onPress={() => onSave({ amount: parsedAmount, groupName: activeGroup?.name || "Group", memo: memo.trim() || "Expense" })} style={styles.sheetPrimary}>Save expense</AppButton>
     </BottomSheet>
   );
 }
 
-function ProposeSheet({ group, onClose }: { group: FundGroup; onClose: () => void }) {
+function ProposeSheet({ group, onClose, onSubmit }: { group: FundGroup; onClose: () => void; onSubmit: (proposalTitle: string) => void }) {
+  const [title, setTitle] = useState("Gift card order");
   return (
     <BottomSheet onClose={onClose} title="New proposal">
       <LabeledInput label="Amount to spend" value="$200" />
-      <LabeledInput label="Title" placeholder="e.g. Gift card order" value="" />
+      <LabeledInput label="Title" onChangeText={setTitle} placeholder="e.g. Gift card order" value={title} />
       <LabeledInput label="Memo" placeholder="Amazon · $450" value="" />
       <Text style={styles.sheetHelp}>Needs 3 of {group.members.length} approvals before the vault can execute the payout.</Text>
-      <AppButton onPress={onClose} style={styles.sheetPrimary}>Open vote</AppButton>
+      <AppButton onPress={() => onSubmit(title.trim() || "Proposal")} style={styles.sheetPrimary}>Open vote</AppButton>
     </BottomSheet>
   );
 }
 
-function CreateGroupSheet({ onClose }: { onClose: () => void }) {
+function CreateGroupSheet({ onClose, onCreate }: { onClose: () => void; onCreate: (groupName: string) => void }) {
   const [mode, setMode] = useState<"split" | "fund">("split");
+  const [name, setName] = useState("New group");
   return (
     <BottomSheet onClose={onClose} title="New group">
       <Text style={styles.fieldLabel}>Pick a mode</Text>
@@ -2284,19 +2478,19 @@ function CreateGroupSheet({ onClose }: { onClose: () => void }) {
         <Pressable accessibilityRole="button" onPress={() => setMode("split")} style={[styles.pill, mode === "split" ? styles.pillActive : null]}><Text style={[styles.pillText, mode === "split" ? styles.pillTextActive : null]}>Split</Text></Pressable>
         <Pressable accessibilityRole="button" onPress={() => setMode("fund")} style={[styles.pill, mode === "fund" ? styles.pillActive : null]}><Text style={[styles.pillText, mode === "fund" ? styles.pillTextActive : null]}>Fund</Text></Pressable>
       </View>
-      <LabeledInput label="Group name" placeholder="e.g. Lisbon Trip" value="" />
+      <LabeledInput label="Group name" onChangeText={setName} placeholder="e.g. Lisbon Trip" value={name} />
       <Text style={styles.fieldLabel}>Stablecoin</Text>
       <View style={styles.pillRow}>
         {["USDC", "USDT", "PYUSD"].map((token) => (
           <Pressable accessibilityRole="button" key={token} style={[styles.pill, token === "USDC" ? styles.pillActive : null]}><Text style={[styles.pillText, token === "USDC" ? styles.pillTextActive : null]}>{token}</Text></Pressable>
         ))}
       </View>
-      <AppButton onPress={onClose} style={styles.sheetPrimary}>Create group</AppButton>
+      <AppButton onPress={() => onCreate(name.trim() || (mode === "split" ? "Split group" : "Fund group"))} style={styles.sheetPrimary}>Create group</AppButton>
     </BottomSheet>
   );
 }
 
-function ProfileSheet({ onClose, onReplayIntro }: { onClose: () => void; onReplayIntro: () => void }) {
+function ProfileSheet({ onClose, onNotify, onReplayIntro }: { onClose: () => void; onNotify: (notification: NotifyInput) => void; onReplayIntro: () => void }) {
   return (
     <BottomSheet onClose={onClose} title="Profile">
       <View style={styles.profileSheetTop}>
@@ -2308,7 +2502,21 @@ function ProfileSheet({ onClose, onReplayIntro }: { onClose: () => void; onRepla
       </View>
       <SheetAction body="Replay the Seeker intro and wallet explanation" mark="FW" onPress={onReplayIntro} title="Replay intro" />
       {["Security", "Notifications", "Default token", "Network", "Connected dApps", "Help & support"].map((row) => (
-        <SheetAction body={row === "Network" ? SOLANA_CHAIN.replace("solana:", "") : "FundWise setting"} key={row} mark={row} onPress={() => undefined} title={row} />
+        <SheetAction
+          body={row === "Network" ? SOLANA_CHAIN.replace("solana:", "") : "FundWise setting"}
+          key={row}
+          mark={row}
+          onPress={() => {
+            if (row === "Notifications") {
+              onNotify({
+                body: "Vote, settlement, receipt, and Telegram alerts use this in-app notification layer.",
+                title: "Notifications enabled",
+                tone: "info",
+              });
+            }
+          }}
+          title={row}
+        />
       ))}
     </BottomSheet>
   );
@@ -2341,6 +2549,7 @@ export function FundWiseSeekerAppScreen() {
   const [selectedGroupId, setSelectedGroupId] = useState<string>("lisbon");
   const [sheet, setSheet] = useState<SheetState | null>(null);
   const [intent, setIntent] = useState<SignatureIntent | null>(null);
+  const [notification, setNotification] = useState<AppNotification | null>(null);
   const [success, setSuccess] = useState<SuccessState>({ body: "Signature verified by Seed Vault.", returnScreen: "home", title: "Wallet connected" });
   const [runningAuth, setRunningAuth] = useState(false);
   const [authProgress, setAuthProgress] = useState(0);
@@ -2458,6 +2667,23 @@ export function FundWiseSeekerAppScreen() {
       setScreen("home");
     }
   }, [incomingLink.loading, incomingLink.url, screen]);
+
+  useEffect(() => {
+    if (!notification) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setNotification((current) => (current?.id === notification.id ? null : current));
+    }, 2600);
+
+    return () => clearTimeout(timer);
+  }, [notification]);
+
+  const notify = useCallback((nextNotification: NotifyInput) => {
+    setNotification({ ...nextNotification, id: Date.now() });
+    triggerHaptic(nextNotification.tone === "warning" ? "warning" : nextNotification.tone === "success" ? "success" : "tap");
+  }, []);
 
   const openGroup = useCallback((group: FundWiseGroup) => {
     setSelectedGroupId(group.id);
@@ -2621,6 +2847,15 @@ export function FundWiseSeekerAppScreen() {
     );
   }, []);
 
+  const completeWithSuccess = useCallback((nextSuccess: SuccessState, nextNotification?: NotifyInput) => {
+    setSheet(null);
+    setSuccess(nextSuccess);
+    if (nextNotification) {
+      notify(nextNotification);
+    }
+    setScreen("success");
+  }, [notify]);
+
   const openIncomingLink = useCallback(() => {
     if (settlementPreview?.fallbackUrl) {
       void Linking.openURL(normalizeFundWiseUrl(settlementPreview.fallbackUrl));
@@ -2709,6 +2944,7 @@ export function FundWiseSeekerAppScreen() {
         onClearIncomingLink={clearIncomingLink}
         onConnectWallet={() => startSignature(connectIntent)}
         onFab={() => setSheet({ kind: "fab" })}
+        onNotify={notify}
         onOpenGroup={openGroup}
         onOpenIncomingLink={openIncomingLink}
         onProfile={() => setSheet({ kind: "profile" })}
@@ -2728,7 +2964,9 @@ export function FundWiseSeekerAppScreen() {
       {sheet ? (
         <ActiveSheet
           onClose={() => setSheet(null)}
+          onComplete={completeWithSuccess}
           onDepositSigned={applyDeposit}
+          onNotify={notify}
           onOpenSheet={setSheet}
           onReplayIntro={replayIntro}
           onSignature={(nextIntent) => {
@@ -2755,6 +2993,7 @@ export function FundWiseSeekerAppScreen() {
           sheet={sheet}
         />
       ) : null}
+      {notification ? <NotificationToast notification={notification} /> : null}
     </View>
   );
 }
@@ -4191,6 +4430,53 @@ const styles = StyleSheet.create({
   },
   negative: {
     color: colors.danger,
+  },
+  notificationBody: {
+    color: colors.textSoft,
+    fontSize: 11,
+    fontWeight: "600",
+    lineHeight: 15,
+    marginTop: 1,
+  },
+  notificationIcon: {
+    alignItems: "center",
+    borderRadius: 12,
+    height: 38,
+    justifyContent: "center",
+    width: 38,
+  },
+  notificationInfo: {
+    backgroundColor: "rgba(34,158,217,0.12)",
+  },
+  notificationSuccess: {
+    backgroundColor: colors.primaryPale,
+  },
+  notificationTitle: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  notificationToast: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.97)",
+    borderColor: colors.border,
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    left: 16,
+    padding: 12,
+    position: "absolute",
+    right: 16,
+    shadowColor: "#0D1F14",
+    shadowOpacity: 0.14,
+    shadowRadius: 20,
+    shadowOffset: { height: 10, width: 0 },
+    top: 44,
+    zIndex: 90,
+  },
+  notificationWarning: {
+    backgroundColor: colors.warningPale,
   },
   onboardingBody: {
     alignItems: "center",

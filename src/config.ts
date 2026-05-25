@@ -4,6 +4,24 @@ function stripTrailingSlash(value: string) {
   return value.replace(/\/$/, "");
 }
 
+function normalizeTelegramUrl(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "https://t.me/fundyonSol_bot";
+  }
+
+  if (trimmed.startsWith("@")) {
+    return `https://t.me/${trimmed.slice(1)}`;
+  }
+
+  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+    return `https://t.me/${trimmed.replace(/^t\.me\//, "")}`;
+  }
+
+  return trimmed;
+}
+
 function hostOf(value: string) {
   try {
     return new URL(value).host;
@@ -27,6 +45,10 @@ export const FUNDWISE_API_URL =
 
 export const RECEIPTS_URL =
   stripTrailingSlash(process.env.EXPO_PUBLIC_RECEIPTS_URL || FUNDWISE_WEB_URL);
+
+export const FUNDY_TELEGRAM_URL = stripTrailingSlash(
+  normalizeTelegramUrl(process.env.EXPO_PUBLIC_FUNDY_TELEGRAM_URL || "https://t.me/fundyonSol_bot"),
+);
 
 export const FUNDWISE_ALLOWED_HOSTS = Array.from(
   new Set(

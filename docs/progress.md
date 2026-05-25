@@ -14,6 +14,8 @@ Update:
 - Added [production-launch-gate.md](./production-launch-gate.md) to link the HITL env, Supabase migration, mobile QA, tiny mainnet rehearsal, and Seeker/TWA APK steps back to FundWise source docs and migrations.
 - Added Android App Link coverage for `beta.fundwise.fun` and `/join` alongside existing `fundwise.fun`, `/groups`, `/settle/r`, and `/receipts`.
 - Added `EXPO_PUBLIC_FUNDWISE_ALLOWED_HOSTS` so native link recovery can accept both beta and production FundWise hosts without accepting arbitrary external hosts.
+- Wired the Telegram sheet to the Fundy agent bot redirect with configurable `EXPO_PUBLIC_FUNDY_TELEGRAM_URL` and group-aware Telegram `startgroup` links.
+- Added v5-style in-app notification popups for notification bell taps, invite/Fundy shares, and draft-safe sheet completions such as Expense added, Proposal opened, and Group created.
 - Added `npm run verify:production` and `npm run verify:production:strict` to smoke-check app-link host/path coverage and mainnet RPC posture before APK/TWA release work.
 - Generated the native Expo Android project in `android/` for Android Studio inspection.
 - Reworked the UI against the FundWise mobile prototypes from `FundWise/design/app/mobile.jsx`: Strata-style mark, light FundWise green surfaces, compact link cards, hero handoff panel, and bottom navigation.
