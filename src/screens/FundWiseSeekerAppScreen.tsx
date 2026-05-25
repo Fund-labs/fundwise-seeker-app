@@ -950,6 +950,7 @@ function AuthScreen({
   walletAddress: string | null;
 }) {
   const ring = useRef(new Animated.Value(0)).current;
+  const isConnect = intent.kind === "connect";
   const walletOptions: Array<{ body: string; id: WalletPreference; label: string; mark: string; tag: string }> = [
     { body: "Seeker-native approval with the side fingerprint sensor.", id: "seeker", label: "Solana Mobile Wallet", mark: "SM", tag: "Recommended" },
     { body: "Installed wallet. Works through Mobile Wallet Adapter.", id: "solflare", label: "Solflare", mark: "SF", tag: "Installed" },
@@ -963,50 +964,78 @@ function AuthScreen({
   }, [ring]);
 
   const selectedWallet = walletOptions.find((option) => option.id === walletPreference) || walletOptions[0];
-  const idleTitle = intent.kind === "connect" ? "Choose a wallet" : intent.title;
+  const idleTitle = isConnect ? "Choose a wallet" : intent.title;
   const idleBody =
-    intent.kind === "connect"
+    isConnect
       ? `${selectedWallet.label} is selected. Connecting only verifies your public wallet. FundWise cannot move funds from this step.`
       : intent.body;
-  const primaryCopy = running ? "Waiting for wallet" : canRetry ? "Try again" : intent.kind === "connect" ? "Connect wallet" : "Approve in wallet";
+  const primaryCopy = running ? "Waiting for wallet" : canRetry ? "Try again" : isConnect ? "Connect wallet" : "Approve in wallet";
+  const authEyebrow = isConnect
+    ? `Mobile Wallet Adapter · ${SOLANA_CHAIN.replace("solana:", "")}`
+    : intent.kind === "deposit"
+      ? "Seed Vault · Sign deposit"
+      : intent.kind === "settle"
+        ? "Seed Vault · Sign settlement"
+        : "Seed Vault · Sign vote";
+  const sensorHint = running ? "Hold finger on side sensor" : isConnect ? "Connect, then approve on the side sensor" : "Ready for side sensor approval";
 
   return (
     <View style={styles.onboardingScreen}>
       <StatusBar barStyle="dark-content" hidden={false} />
+      <View pointerEvents="none" style={[styles.sideSensorRail, running ? styles.sideSensorRailActive : null]}>
+        <View style={styles.sideSensorHalo} />
+        <View style={styles.sideSensorButton}>
+          <Ionicons color={colors.mint} name="finger-print-outline" size={22} />
+        </View>
+        <View style={styles.sideSensorArrow}>
+          <Ionicons color={colors.mint} name="arrow-forward" size={14} />
+        </View>
+        <Text style={styles.sideSensorLabel}>Side sensor</Text>
+      </View>
       <View style={styles.authBody}>
-        <Text style={styles.authEyebrow}>Mobile Wallet Adapter · {SOLANA_CHAIN.replace("solana:", "")}</Text>
+        <Text style={styles.authEyebrow}>{authEyebrow}</Text>
         <Text style={styles.authTitle}>{running ? "Approve in wallet" : idleTitle}</Text>
         <Text style={styles.authCopy}>
           {running ? `Approve in ${selectedWallet.label}, then use the side fingerprint sensor if the wallet asks.` : idleBody}
         </Text>
-        <View style={styles.walletOptions}>
-          {walletOptions.map((option) => {
-            const active = option.id === walletPreference;
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                key={option.id}
-                onPress={() => {
-                  triggerHaptic("selection");
-                  onSelectWallet(option.id);
-                }}
-                style={[styles.walletOption, active ? styles.walletOptionActive : null]}
-              >
-                <View style={styles.walletOptionMark}>
-                  <Text style={styles.walletOptionMarkText}>{option.mark}</Text>
-                </View>
-                <View style={styles.flexOne}>
-                  <View style={styles.walletOptionHead}>
-                    <Text style={styles.walletOptionTitle}>{option.label}</Text>
-                    <Text style={[styles.walletOptionTag, active ? styles.walletOptionTagActive : null]}>{option.tag}</Text>
+        {isConnect ? (
+          <View style={styles.walletOptions}>
+            {walletOptions.map((option) => {
+              const active = option.id === walletPreference;
+              return (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  key={option.id}
+                  onPress={() => {
+                    triggerHaptic("selection");
+                    onSelectWallet(option.id);
+                  }}
+                  style={[styles.walletOption, active ? styles.walletOptionActive : null]}
+                >
+                  <View style={styles.walletOptionMark}>
+                    <Text style={styles.walletOptionMarkText}>{option.mark}</Text>
                   </View>
-                  <Text style={styles.walletOptionBody}>{option.body}</Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <View style={styles.flexOne}>
+                    <View style={styles.walletOptionHead}>
+                      <Text style={styles.walletOptionTitle}>{option.label}</Text>
+                      <Text style={[styles.walletOptionTag, active ? styles.walletOptionTagActive : null]}>{option.tag}</Text>
+                    </View>
+                    <Text style={styles.walletOptionBody}>{option.body}</Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : (
+          <View style={styles.signatureIntentCard}>
+            <IconTile mark={intent.kind === "vote" ? "Vote" : intent.kind === "deposit" ? "Vault" : "Pay"} size={20} style={styles.signatureIntentIcon} />
+            <View style={styles.flexOne}>
+              <Text style={styles.signatureIntentTitle}>{intent.title}</Text>
+              <Text style={styles.signatureIntentBody}>{intent.body}</Text>
+            </View>
+          </View>
+        )}
         <View pointerEvents="none" style={styles.fpDiagram}>
           <Animated.View
             style={[
@@ -1029,7 +1058,7 @@ function AuthScreen({
         </View>
         <View style={styles.sideSensorHint}>
           <View style={styles.pulseDot} />
-          <Text style={styles.sideSensorHintText}>{running ? "Wallet approval is open" : "Tap below before the wallet opens"}</Text>
+          <Text style={styles.sideSensorHintText}>{sensorHint}</Text>
         </View>
         {error ? <Text style={styles.authError}>{error}</Text> : null}
       </View>
@@ -1940,15 +1969,19 @@ function BottomSheet({ children, onClose, title }: { children: React.ReactNode; 
 
 function ActiveSheet({
   onClose,
+  onDepositSigned,
   onOpenSheet,
   onReplayIntro,
   onSignature,
+  onSettlementSigned,
   sheet,
 }: {
   onClose: () => void;
+  onDepositSigned: (group: FundGroup, amount: number) => void;
   onOpenSheet: (sheet: SheetState) => void;
   onReplayIntro: () => void;
   onSignature: (intent: SignatureIntent) => void;
+  onSettlementSigned: (settlement: SettlementOption) => void;
   sheet: SheetState;
 }) {
   if (sheet.kind === "fab") {
@@ -1999,20 +2032,56 @@ function ActiveSheet({
         <MetaRow label={paying ? "To" : "From"} value={personOf(counterparty).name} />
         <MetaRow label="Group" value={`${settlement.group.emoji} ${settlement.group.name}`} />
         <MetaRow label="Token" value={`USDC · ${SOLANA_CHAIN.replace("solana:", "")}`} />
-        <MetaRow label="Confirmation" value="FundWise web" />
-        <Text style={styles.sheetHelp}>Native settlement is preflight-only until Split Mode exposes a verified mobile transaction intent.</Text>
+        <MetaRow label="Fee" value="~$0.00025 · <1s" />
+        <MetaRow label="Confirmation" value="Solana mainnet" />
+        <Text style={styles.sheetHelp}>
+          {paying ? "Review the transfer, then sign with your Seeker side sensor." : "Send a request so the payer can settle from their wallet."}
+        </Text>
         <AppButton
-          onPress={() => void Linking.openURL(`${FUNDWISE_WEB_URL}/groups/${settlement.group.id}`)}
+          onPress={() => {
+            if (!paying) {
+              void Share.share({ message: `${personOf(settlement.from).name}, please settle $${settlement.amt.toFixed(2)} for ${settlement.group.name}. ${FUNDWISE_WEB_URL}/groups/${settlement.group.id}` });
+              return;
+            }
+
+            onSignature({
+              apply: () => onSettlementSigned(settlement),
+              body: `Pay ${personOf(settlement.to).name} $${settlement.amt.toFixed(2)} USDC for ${settlement.group.name}.`,
+              groupId: settlement.group.id,
+              kind: "settle",
+              returnScreen: "split",
+              successBody: "Transaction confirmed on Solana mainnet.",
+              successTitle: "Settlement sent",
+              title: "Authorize payment",
+            });
+          }}
           style={styles.sheetPrimary}
         >
-          {`Open ${settlement.group.name}`}
+          {paying ? "Sign & pay" : "Request payment"}
         </AppButton>
       </BottomSheet>
     );
   }
 
   if (sheet.kind === "deposit") {
-    return <DepositSheet group={sheet.group} onClose={onClose} />;
+    return (
+      <DepositSheet
+        group={sheet.group}
+        onClose={onClose}
+        onSign={(amount) =>
+          onSignature({
+            apply: () => onDepositSigned(sheet.group, amount),
+            body: `Deposit $${amount.toFixed(2)} USDC into ${sheet.group.name}.`,
+            groupId: sheet.group.id,
+            kind: "deposit",
+            returnScreen: "fund",
+            successBody: "Funds were added to the group vault.",
+            successTitle: "Deposit signed",
+            title: "Sign deposit",
+          })
+        }
+      />
+    );
   }
 
   if (sheet.kind === "vote") {
@@ -2135,8 +2204,11 @@ function MetaRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function DepositSheet({ group, onClose }: { group: FundGroup; onClose: () => void }) {
+function DepositSheet({ group, onClose, onSign }: { group: FundGroup; onClose: () => void; onSign: (amount: number) => void }) {
   const [amount, setAmount] = useState("100");
+  const parsedAmount = Number(amount);
+  const validAmount = Number.isFinite(parsedAmount) && parsedAmount > 0;
+
   return (
     <BottomSheet onClose={onClose} title={`Deposit · ${group.name}`}>
       <LabeledInput label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} value={`$${amount}`} />
@@ -2150,12 +2222,14 @@ function DepositSheet({ group, onClose }: { group: FundGroup; onClose: () => voi
       <MetaRow label="From" value="Your wallet · $248.30" />
       <MetaRow label="To" value={`${group.emoji} ${group.name} vault`} />
       <MetaRow label="Token" value={`USDC · ${SOLANA_CHAIN.replace("solana:", "")}`} />
-      <Text style={styles.sheetHelp}>Vault deposits stay on FundWise web until mobile contribution transaction construction is accepted.</Text>
+      <MetaRow label="Fee" value="~$0.00025 · <1s" />
+      <Text style={styles.sheetHelp}>Deposits are signed through the wallet and confirmed with the Seeker side sensor.</Text>
       <AppButton
-        onPress={() => void Linking.openURL(`${FUNDWISE_WEB_URL}/groups/${group.id}`)}
+        disabled={!validAmount}
+        onPress={() => onSign(parsedAmount)}
         style={styles.sheetPrimary}
       >
-        {`Open ${group.name}`}
+        Sign deposit
       </AppButton>
     </BottomSheet>
   );
@@ -2510,6 +2584,43 @@ export function FundWiseSeekerAppScreen() {
     setSheet({ kind: "settle", settlement: { ...settlement, group: selectedGroup } });
   }, [selectedGroup]);
 
+  const applySettlement = useCallback((settlement: SettlementOption) => {
+    setGroups((current) =>
+      current.map((group) => {
+        if (group.id !== settlement.group.id || group.mode !== "split") {
+          return group;
+        }
+
+        return {
+          ...group,
+          settlements: group.settlements.filter(
+            (item) => !(item.from === settlement.from && item.to === settlement.to && item.amt === settlement.amt),
+          ),
+        };
+      }),
+    );
+  }, []);
+
+  const applyDeposit = useCallback((targetGroup: FundGroup, amount: number) => {
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return;
+    }
+
+    setGroups((current) =>
+      current.map((group) => {
+        if (group.id !== targetGroup.id || group.mode !== "fund") {
+          return group;
+        }
+
+        return {
+          ...group,
+          myContrib: group.myContrib + amount,
+          total: group.total + amount,
+        };
+      }),
+    );
+  }, []);
+
   const openIncomingLink = useCallback(() => {
     if (settlementPreview?.fallbackUrl) {
       void Linking.openURL(normalizeFundWiseUrl(settlementPreview.fallbackUrl));
@@ -2617,6 +2728,7 @@ export function FundWiseSeekerAppScreen() {
       {sheet ? (
         <ActiveSheet
           onClose={() => setSheet(null)}
+          onDepositSigned={applyDeposit}
           onOpenSheet={setSheet}
           onReplayIntro={replayIntro}
           onSignature={(nextIntent) => {
@@ -2639,6 +2751,7 @@ export function FundWiseSeekerAppScreen() {
             }
             startSignature(nextIntent);
           }}
+          onSettlementSigned={applySettlement}
           sheet={sheet}
         />
       ) : null}
@@ -4542,6 +4655,43 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "700",
   },
+  sideSensorArrow: {
+    alignItems: "center",
+    backgroundColor: "rgba(13,107,58,0.09)",
+    borderRadius: 999,
+    height: 26,
+    justifyContent: "center",
+    position: "absolute",
+    right: 32,
+    top: 31,
+    width: 26,
+  },
+  sideSensorButton: {
+    alignItems: "center",
+    backgroundColor: colors.darkDeep,
+    borderBottomLeftRadius: 18,
+    borderColor: "rgba(78,201,138,0.52)",
+    borderTopLeftRadius: 18,
+    borderWidth: 1,
+    height: 76,
+    justifyContent: "center",
+    position: "absolute",
+    right: -4,
+    shadowColor: colors.mint,
+    shadowOffset: { height: 0, width: -8 },
+    shadowOpacity: 0.24,
+    shadowRadius: 18,
+    width: 32,
+  },
+  sideSensorHalo: {
+    borderColor: "rgba(78,201,138,0.34)",
+    borderRadius: 42,
+    borderWidth: 1,
+    height: 102,
+    position: "absolute",
+    right: -30,
+    width: 84,
+  },
   sideSensorHint: {
     alignItems: "center",
     flexDirection: "row",
@@ -4554,6 +4704,65 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 1.3,
     textTransform: "uppercase",
+  },
+  sideSensorLabel: {
+    color: colors.primaryMid,
+    fontFamily: mono,
+    fontSize: 9,
+    fontWeight: "900",
+    letterSpacing: 0.9,
+    position: "absolute",
+    right: 31,
+    textTransform: "uppercase",
+    top: 62,
+    width: 68,
+  },
+  sideSensorRail: {
+    alignItems: "flex-end",
+    height: 126,
+    justifyContent: "center",
+    opacity: 0.86,
+    position: "absolute",
+    right: 0,
+    top: "32%",
+    width: 106,
+    zIndex: 2,
+  },
+  sideSensorRailActive: {
+    opacity: 1,
+  },
+  signatureIntentBody: {
+    color: colors.textSoft,
+    fontSize: 11,
+    fontWeight: "700",
+    lineHeight: 16,
+    marginTop: 3,
+  },
+  signatureIntentCard: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 16,
+    maxWidth: 350,
+    padding: 12,
+    width: "100%",
+  },
+  signatureIntentIcon: {
+    alignItems: "center",
+    backgroundColor: colors.primaryPale,
+    borderRadius: 12,
+    height: 42,
+    justifyContent: "center",
+    width: 42,
+  },
+  signatureIntentTitle: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "900",
   },
   skipButton: {
     minHeight: 42,

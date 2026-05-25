@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundWise on Seeker · v5 · final</title>
+<link rel="icon" type="image/svg+xml" href="brand-strata/svg/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- base design tokens -->
+<link rel="stylesheet" href="seeker-v3/styles.css">
+<!-- v4 dashboard + sheet styles -->
+<link rel="stylesheet" href="seeker-v4/styles-v4.css">
+<!-- v5: fingerprint sensor + boot animation + welcome halo + tour cards -->
+<link rel="stylesheet" href="seeker-v5/styles-v5.css">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- shared infra (canvas + icons / atoms / sheet primitives) -->
+  <script type="text/babel" src="seeker-v3/design-canvas.jsx"></script>
+  <script type="text/babel" src="seeker-v3/phone.jsx"></script>
+
+  <!-- v5: replaces v3 Phone with SeekerPhone (fingerprint sensor) -->
+  <script type="text/babel" src="seeker-v5/seeker-phone.jsx"></script>
+
+  <!-- shared dashboard + sheets from v4 -->
+  <script type="text/babel" src="seeker-v4/dashboard.jsx"></script>
+  <script type="text/babel" src="seeker-v4/sheets.jsx"></script>
+
+  <!-- v5: onboarding (boot, welcome, tour, wallet consent) -->
+  <script type="text/babel" src="seeker-v5/onboarding-v5.jsx"></script>
+
+  <!-- v5: canvas composition (cuts B & C; adds fingerprint moments) -->
+  <script type="text/babel" src="seeker-v5/app-v5.jsx"></script>
+</body>
+</html>
