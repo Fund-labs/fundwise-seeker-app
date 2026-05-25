@@ -37,6 +37,8 @@ Update:
 - Cross-checked the updated FundWise roadmap: FW-091 remains blocked on the release signing certificate SHA-256 fingerprint; FW-092 and FW-093 are shipped on the FundWise side; FW-094/FW-095/FW-096 are native-money-movement follow-ups, not web/PWA beta blockers.
 - Added Seeker-native support for the FundWise mobile Settlement Request preview API. Incoming `/settle/r/{requestId}` links now show a redacted live preview after wallet authorization, including amount/role when ready and clear expired/wrong-wallet/not-member/not-settleable states.
 - Persisted the latest MWA-authorized wallet address in component state so direct `transact` approvals can drive native preview requests even when the Wallet UI provider has not populated `account`.
+- Captured the UX research in `.superstack/learnings.md` and [SADR-006](../plans/SADR/SADR-006-link-first-seeker-onboarding.md): Seeker should be link-first, explicit about wallet consent, and honest as a recovery/preview/handoff app until native transaction intent and recovery APIs ship.
+- Implemented the first SADR-006 slice in the mounted RN app: onboarding completion now persists, recovered links can bypass generic onboarding, MWA no longer opens automatically, `/settle/r` links render a larger preview/recovery card, preview retry is available, and FundWise handoff prefers preview fallback URLs or concrete group routes.
 
 ## Product Decision
 

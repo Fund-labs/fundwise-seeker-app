@@ -1,4 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { PublicKey } from "@solana/web3.js";
 import { useMobileWallet } from "@wallet-ui/react-native-web3js";
 import { transact } from "@solana-mobile/mobile-wallet-adapter-protocol-web3js";
@@ -94,6 +95,7 @@ type SuccessState = {
 };
 
 const BOOT_MS = 2500;
+const ONBOARDING_STORAGE_KEY = "fundwise-seeker:onboarding-complete:v1";
 
 const MARK_ICONS: Record<string, IoniconName> = {
   copy: "copy-outline",
@@ -182,6 +184,41 @@ function getSettlementPreviewCopy(preview: MobileSettlementRequestPreview) {
   }
 
   return "Preview available";
+}
+
+function getSettlementPreviewRoleCopy(preview: MobileSettlementRequestPreview) {
+  if (preview.role === "payer") return "You pay";
+  if (preview.role === "payee") return "You receive";
+  if (preview.role === "wrong_wallet") return "Wrong wallet";
+  if (preview.role === "not_member") return "Not a member";
+  return "Member";
+}
+
+function getSettlementPreviewStatusCopy(preview: MobileSettlementRequestPreview) {
+  if (preview.status === "ready") return "Ready";
+  if (preview.status === "expired") return "Expired";
+  if (preview.status === "wrong_wallet") return "Wrong wallet";
+  if (preview.status === "not_member") return "Not member";
+  if (preview.status === "not_settleable") return "Needs refresh";
+  return "Preview";
+}
+
+function formatSettlementPreviewExpiry(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Expiry unavailable";
+  }
+
+  return `Expires ${date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} at ${date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+}
+
+function normalizeFundWiseUrl(value: string) {
+  try {
+    return new URL(value, FUNDWISE_WEB_URL).toString();
+  } catch {
+    return value;
+  }
 }
 
 function bytesFromString(value: string) {
@@ -894,6 +931,7 @@ function AuthScreen({
   error,
   intent,
   onSelectWallet,
+  onStart,
   onRetry,
   progress,
   running,
@@ -904,6 +942,7 @@ function AuthScreen({
   error: string | null;
   intent: SignatureIntent;
   onSelectWallet: (preference: WalletPreference) => void;
+  onStart: () => void;
   onRetry: () => void;
   progress: number;
   running: boolean;
@@ -927,8 +966,9 @@ function AuthScreen({
   const idleTitle = intent.kind === "connect" ? "Choose a wallet" : intent.title;
   const idleBody =
     intent.kind === "connect"
-      ? `${selectedWallet.label} is selected. FundWise will open Mobile Wallet Adapter, then you approve with the wallet's biometric prompt.`
+      ? `${selectedWallet.label} is selected. Connecting only verifies your public wallet. FundWise cannot move funds from this step.`
       : intent.body;
+  const primaryCopy = running ? "Waiting for wallet" : canRetry ? "Try again" : intent.kind === "connect" ? "Connect wallet" : "Approve in wallet";
 
   return (
     <View style={styles.onboardingScreen}>
@@ -989,7 +1029,7 @@ function AuthScreen({
         </View>
         <View style={styles.sideSensorHint}>
           <View style={styles.pulseDot} />
-          <Text style={styles.sideSensorHintText}>{running ? "Fingerprint prompt active" : "Side sensor triggers approval"}</Text>
+          <Text style={styles.sideSensorHintText}>{running ? "Wallet approval is open" : "Tap below before the wallet opens"}</Text>
         </View>
         {error ? <Text style={styles.authError}>{error}</Text> : null}
       </View>
@@ -998,7 +1038,9 @@ function AuthScreen({
           <View style={styles.walletDot} />
           <Text style={styles.walletStripText}>{walletAddress ? shortAddress(walletAddress, 6) : `${SOLANA_CHAIN.replace("solana:", "")} · Mobile Wallet Adapter`}</Text>
         </View>
-        {canRetry ? <AppButton onPress={onRetry}>Try again</AppButton> : null}
+        <AppButton disabled={running} onPress={canRetry ? onRetry : onStart}>
+          {primaryCopy}
+        </AppButton>
       </View>
       <View pointerEvents="none" style={styles.gesturePill} />
     </View>
@@ -1111,6 +1153,7 @@ function LinkRecoveryCard({
   onConnectWallet,
   onClear,
   onOpen,
+  onRetryPreview,
   settlementPreview,
   settlementPreviewError,
   settlementPreviewLoading,
@@ -1121,6 +1164,7 @@ function LinkRecoveryCard({
   onConnectWallet: () => void;
   onClear: () => void;
   onOpen: () => void;
+  onRetryPreview: () => void;
   settlementPreview: MobileSettlementRequestPreview | null;
   settlementPreviewError: string | null;
   settlementPreviewLoading: boolean;
@@ -1144,6 +1188,106 @@ function LinkRecoveryCard({
 
   const detail = getFundWiseLinkDetail(intent);
   const isSettlementLink = intent.kind === "settlement-blink";
+
+  if (isSettlementLink) {
+    const canOpenFallback = Boolean(walletAddress || settlementPreview || settlementPreviewError);
+    const primaryAction =
+      !walletAddress
+        ? "Connect wallet"
+        : settlementPreviewLoading
+          ? "Checking"
+          : settlementPreviewError
+            ? "Retry preview"
+            : settlementPreview?.status === "wrong_wallet"
+              ? "Switch wallet"
+              : "Continue on FundWise";
+    const primaryPress =
+      !walletAddress || settlementPreview?.status === "wrong_wallet"
+        ? onConnectWallet
+        : settlementPreviewError
+          ? onRetryPreview
+          : onOpen;
+
+    return (
+      <View style={styles.settlementRecoveryCard}>
+        <View style={styles.settlementRecoveryHead}>
+          <IconTile mark="Pay" size={20} style={styles.linkRecoveryIcon} />
+          <View style={styles.flexOne}>
+            <Text style={styles.linkRecoveryEyebrow}>Recovered settlement link</Text>
+            <Text style={styles.settlementRecoveryTitle}>Review before you open FundWise</Text>
+          </View>
+          {settlementPreview ? (
+            <View style={[styles.statusBadge, settlementPreview.status === "ready" ? styles.statusBadgeReady : null]}>
+              <Text style={[styles.statusBadgeText, settlementPreview.status === "ready" ? styles.statusBadgeTextReady : null]}>
+                {getSettlementPreviewStatusCopy(settlementPreview)}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+
+        {settlementPreviewLoading ? (
+          <View style={styles.settlementSkeleton}>
+            <View style={styles.skeletonAmount} />
+            <View style={styles.skeletonLineWide} />
+            <View style={styles.skeletonLine} />
+          </View>
+        ) : settlementPreview ? (
+          <View style={styles.settlementPreviewBody}>
+            {settlementPreview.amount ? (
+              <Text style={styles.settlementPreviewAmount}>
+                {settlementPreview.amount.display} <Text style={styles.settlementPreviewToken}>{settlementPreview.amount.token}</Text>
+              </Text>
+            ) : (
+              <Text style={styles.settlementPreviewAmountMuted}>Amount unavailable</Text>
+            )}
+            <Text style={styles.settlementPreviewRole}>{getSettlementPreviewRoleCopy(settlementPreview)}</Text>
+            <View style={styles.settlementMetaGrid}>
+              <View style={styles.settlementMetaItem}>
+                <Text style={styles.settlementMetaLabel}>Wallet</Text>
+                <Text style={styles.settlementMetaValue}>{walletAddress ? shortAddress(walletAddress, 6) : "Not connected"}</Text>
+              </View>
+              <View style={styles.settlementMetaItem}>
+                <Text style={styles.settlementMetaLabel}>Request</Text>
+                <Text style={styles.settlementMetaValue}>{shortAddress(settlementPreview.requestId, 5)}</Text>
+              </View>
+            </View>
+            <Text style={styles.settlementPreviewHelp}>{formatSettlementPreviewExpiry(settlementPreview.expiresAt)}</Text>
+          </View>
+        ) : settlementPreviewError ? (
+          <View style={styles.settlementPreviewBody}>
+            <Text style={styles.settlementPreviewAmountMuted}>Preview unavailable</Text>
+            <Text style={styles.settlementPreviewHelp}>{settlementPreviewError}</Text>
+          </View>
+        ) : (
+          <View style={styles.settlementPreviewBody}>
+            <Text style={styles.settlementPreviewAmountMuted}>Wallet needed</Text>
+            <Text style={styles.settlementPreviewHelp}>Connect to verify the amount and your role. FundWise cannot move funds when connecting.</Text>
+          </View>
+        )}
+
+        <View style={styles.settlementRecoveryActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ busy: settlementPreviewLoading, disabled: settlementPreviewLoading }}
+            disabled={settlementPreviewLoading}
+            onPress={primaryPress}
+            style={[styles.linkRecoveryPrimary, styles.settlementRecoveryPrimary, settlementPreviewLoading ? styles.disabled : null]}
+          >
+            <Text style={styles.linkRecoveryPrimaryText}>{primaryAction}</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" onPress={onClear} style={styles.linkRecoverySecondary}>
+            <Text style={styles.linkRecoverySecondaryText}>Clear</Text>
+          </Pressable>
+          {canOpenFallback && !settlementPreviewLoading ? (
+            <Pressable accessibilityRole="button" onPress={onOpen} style={styles.linkRecoverySecondary}>
+              <Text style={styles.linkRecoverySecondaryText}>Open</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
   const previewDetail =
     isSettlementLink && settlementPreviewLoading
       ? "Checking live Settlement amount..."
@@ -1196,6 +1340,7 @@ function HomeScreen({
   onOpenIncomingLink,
   onOpenGroup,
   onProfile,
+  onRetrySettlementPreview,
   onTab,
   settlementPreview,
   settlementPreviewError,
@@ -1212,6 +1357,7 @@ function HomeScreen({
   onOpenIncomingLink: () => void;
   onOpenGroup: (group: FundWiseGroup) => void;
   onProfile: () => void;
+  onRetrySettlementPreview: () => void;
   onTab: (tab: "home" | "groups" | "activity" | "wallet") => void;
   settlementPreview: MobileSettlementRequestPreview | null;
   settlementPreviewError: string | null;
@@ -1228,6 +1374,7 @@ function HomeScreen({
         onConnectWallet={onConnectWallet}
         onClear={onClearIncomingLink}
         onOpen={onOpenIncomingLink}
+        onRetryPreview={onRetrySettlementPreview}
         settlementPreview={settlementPreview}
         settlementPreviewError={settlementPreviewError}
         settlementPreviewLoading={settlementPreviewLoading}
@@ -1794,11 +1941,13 @@ function BottomSheet({ children, onClose, title }: { children: React.ReactNode; 
 function ActiveSheet({
   onClose,
   onOpenSheet,
+  onReplayIntro,
   onSignature,
   sheet,
 }: {
   onClose: () => void;
   onOpenSheet: (sheet: SheetState) => void;
+  onReplayIntro: () => void;
   onSignature: (intent: SignatureIntent) => void;
   sheet: SheetState;
 }) {
@@ -1853,10 +2002,10 @@ function ActiveSheet({
         <MetaRow label="Confirmation" value="FundWise web" />
         <Text style={styles.sheetHelp}>Native settlement is preflight-only until Split Mode exposes a verified mobile transaction intent.</Text>
         <AppButton
-          onPress={() => void Linking.openURL(`${FUNDWISE_WEB_URL}/groups`)}
+          onPress={() => void Linking.openURL(`${FUNDWISE_WEB_URL}/groups/${settlement.group.id}`)}
           style={styles.sheetPrimary}
         >
-          Continue on FundWise web
+          {`Open ${settlement.group.name}`}
         </AppButton>
       </BottomSheet>
     );
@@ -1954,7 +2103,7 @@ function ActiveSheet({
     return <CreateGroupSheet onClose={onClose} />;
   }
 
-  return <ProfileSheet onClose={onClose} />;
+  return <ProfileSheet onClose={onClose} onReplayIntro={onReplayIntro} />;
 }
 
 function SheetAction({ body, mark, onPress, right, title }: { body: string; mark: string; onPress: () => void; right?: string; title: string }) {
@@ -2003,10 +2152,10 @@ function DepositSheet({ group, onClose }: { group: FundGroup; onClose: () => voi
       <MetaRow label="Token" value={`USDC · ${SOLANA_CHAIN.replace("solana:", "")}`} />
       <Text style={styles.sheetHelp}>Vault deposits stay on FundWise web until mobile contribution transaction construction is accepted.</Text>
       <AppButton
-        onPress={() => void Linking.openURL(`${FUNDWISE_WEB_URL}/groups`)}
+        onPress={() => void Linking.openURL(`${FUNDWISE_WEB_URL}/groups/${group.id}`)}
         style={styles.sheetPrimary}
       >
-        Continue on FundWise web
+        {`Open ${group.name}`}
       </AppButton>
     </BottomSheet>
   );
@@ -2073,7 +2222,7 @@ function CreateGroupSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-function ProfileSheet({ onClose }: { onClose: () => void }) {
+function ProfileSheet({ onClose, onReplayIntro }: { onClose: () => void; onReplayIntro: () => void }) {
   return (
     <BottomSheet onClose={onClose} title="Profile">
       <View style={styles.profileSheetTop}>
@@ -2083,6 +2232,7 @@ function ProfileSheet({ onClose }: { onClose: () => void }) {
           <Text style={styles.sheetHelp}>Seed Vault · biometrics</Text>
         </View>
       </View>
+      <SheetAction body="Replay the Seeker intro and wallet explanation" mark="FW" onPress={onReplayIntro} title="Replay intro" />
       {["Security", "Notifications", "Default token", "Network", "Connected dApps", "Help & support"].map((row) => (
         <SheetAction body={row === "Network" ? SOLANA_CHAIN.replace("solana:", "") : "FundWise setting"} key={row} mark={row} onPress={() => undefined} title={row} />
       ))}
@@ -2112,6 +2262,7 @@ function LabeledInput({ label, onChangeText, placeholder, value }: { label: stri
 export function FundWiseSeekerAppScreen() {
   const { account } = useMobileWallet();
   const [screen, setScreen] = useState<ScreenId>("boot");
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [groups, setGroups] = useState<FundWiseGroup[]>(GROUPS);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("lisbon");
   const [sheet, setSheet] = useState<SheetState | null>(null);
@@ -2125,7 +2276,7 @@ export function FundWiseSeekerAppScreen() {
   const [settlementPreview, setSettlementPreview] = useState<MobileSettlementRequestPreview | null>(null);
   const [settlementPreviewError, setSettlementPreviewError] = useState<string | null>(null);
   const [settlementPreviewLoading, setSettlementPreviewLoading] = useState(false);
-  const startedIntentRef = useRef(false);
+  const [settlementPreviewRefreshKey, setSettlementPreviewRefreshKey] = useState(0);
   const isOnline = useNetworkStatus();
   const incomingLink = useIncomingFundWiseLink();
   const walletAddress = walletAddressToString(account?.address) || authorizedWalletAddress;
@@ -2138,12 +2289,46 @@ export function FundWiseSeekerAppScreen() {
     incomingIntent?.kind === "settlement-blink" ? incomingIntent.requestId || null : null;
 
   useEffect(() => {
+    let cancelled = false;
+
+    async function loadOnboardingState() {
+      try {
+        const completed = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
+
+        if (cancelled) {
+          return;
+        }
+
+        setOnboardingChecked(true);
+
+        if (completed === "true") {
+          setScreen("home");
+        }
+      } catch {
+        if (!cancelled) {
+          setOnboardingChecked(true);
+        }
+      }
+    }
+
+    void loadOnboardingState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!onboardingChecked) {
+      return undefined;
+    }
+
     if (screen === "boot") {
       const timer = setTimeout(() => setScreen("welcome"), BOOT_MS);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [screen]);
+  }, [onboardingChecked, screen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2192,7 +2377,13 @@ export function FundWiseSeekerAppScreen() {
     return () => {
       cancelled = true;
     };
-  }, [incomingSettlementRequestId, walletAddress]);
+  }, [incomingSettlementRequestId, settlementPreviewRefreshKey, walletAddress]);
+
+  useEffect(() => {
+    if (!incomingLink.loading && incomingLink.url && screen !== "auth" && screen !== "success") {
+      setScreen("home");
+    }
+  }, [incomingLink.loading, incomingLink.url, screen]);
 
   const openGroup = useCallback((group: FundWiseGroup) => {
     setSelectedGroupId(group.id);
@@ -2208,7 +2399,6 @@ export function FundWiseSeekerAppScreen() {
     setIntent(nextIntent);
     setAuthError(null);
     setAuthProgress(0);
-    startedIntentRef.current = false;
     setScreen("auth");
   }, []);
 
@@ -2301,22 +2491,8 @@ export function FundWiseSeekerAppScreen() {
     }
   }, [activeIntent, runningAuth]);
 
-  useEffect(() => {
-    if (screen !== "auth") {
-      startedIntentRef.current = false;
-      return;
-    }
-
-    if (startedIntentRef.current) {
-      return;
-    }
-
-    startedIntentRef.current = true;
-    const timer = setTimeout(() => void runSignature(), 420);
-    return () => clearTimeout(timer);
-  }, [runSignature, screen]);
-
   const afterSuccess = useCallback(() => {
+    void AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, "true");
     setScreen(success.returnScreen);
     setIntent(null);
   }, [success.returnScreen]);
@@ -2335,17 +2511,32 @@ export function FundWiseSeekerAppScreen() {
   }, [selectedGroup]);
 
   const openIncomingLink = useCallback(() => {
+    if (settlementPreview?.fallbackUrl) {
+      void Linking.openURL(normalizeFundWiseUrl(settlementPreview.fallbackUrl));
+      return;
+    }
+
     if (incomingLink.url) {
       void Linking.openURL(incomingLink.url);
     }
-  }, [incomingLink.url]);
+  }, [incomingLink.url, settlementPreview?.fallbackUrl]);
 
   const clearIncomingLink = useCallback(() => {
     void incomingLink.clear();
   }, [incomingLink.clear]);
 
+  const replayIntro = useCallback(() => {
+    void AsyncStorage.removeItem(ONBOARDING_STORAGE_KEY);
+    setSheet(null);
+    setIntent(null);
+    setAuthError(null);
+    setRunningAuth(false);
+    setAuthProgress(0);
+    setScreen("welcome");
+  }, []);
+
   const content = (() => {
-    if (screen === "boot") return <BootScreen onDone={() => setScreen("welcome")} />;
+    if (screen === "boot") return <BootScreen onDone={() => onboardingChecked && setScreen("welcome")} />;
     if (screen === "welcome") {
       return (
         <WelcomeScreen
@@ -2369,6 +2560,7 @@ export function FundWiseSeekerAppScreen() {
               setAuthError(null);
             }
           }}
+          onStart={() => void runSignature()}
           onRetry={() => void runSignature()}
           progress={authProgress}
           running={runningAuth}
@@ -2409,6 +2601,7 @@ export function FundWiseSeekerAppScreen() {
         onOpenGroup={openGroup}
         onOpenIncomingLink={openIncomingLink}
         onProfile={() => setSheet({ kind: "profile" })}
+        onRetrySettlementPreview={() => setSettlementPreviewRefreshKey((current) => current + 1)}
         onTab={goTab}
         settlementPreview={settlementPreview}
         settlementPreviewError={settlementPreviewError}
@@ -2425,6 +2618,7 @@ export function FundWiseSeekerAppScreen() {
         <ActiveSheet
           onClose={() => setSheet(null)}
           onOpenSheet={setSheet}
+          onReplayIntro={replayIntro}
           onSignature={(nextIntent) => {
             if (nextIntent.kind === "vote" && nextIntent.groupId) {
               nextIntent.apply = () => {
@@ -3520,6 +3714,149 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
     marginTop: 2,
+  },
+  settlementMetaGrid: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 14,
+  },
+  settlementMetaItem: {
+    backgroundColor: colors.surfaceInset,
+    borderColor: colors.border,
+    borderRadius: 12,
+    borderWidth: 1,
+    flex: 1,
+    padding: 10,
+  },
+  settlementMetaLabel: {
+    color: colors.textSubtle,
+    fontFamily: mono,
+    fontSize: 9,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  settlementMetaValue: {
+    color: colors.text,
+    fontFamily: mono,
+    fontSize: 11,
+    fontWeight: "900",
+    marginTop: 4,
+  },
+  settlementPreviewAmount: {
+    color: colors.text,
+    fontFamily: serif,
+    fontSize: 36,
+    fontWeight: "700",
+    letterSpacing: 0,
+    lineHeight: 40,
+  },
+  settlementPreviewAmountMuted: {
+    color: colors.text,
+    fontFamily: serif,
+    fontSize: 25,
+    fontWeight: "700",
+    lineHeight: 31,
+  },
+  settlementPreviewBody: {
+    marginTop: 18,
+  },
+  settlementPreviewHelp: {
+    color: colors.textSoft,
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 18,
+    marginTop: 10,
+  },
+  settlementPreviewRole: {
+    color: colors.primaryMid,
+    fontSize: 13,
+    fontWeight: "900",
+    marginTop: 4,
+  },
+  settlementPreviewToken: {
+    color: colors.textSoft,
+    fontFamily: mono,
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  settlementRecoveryActions: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 18,
+  },
+  settlementRecoveryCard: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginHorizontal: 20,
+    marginTop: 14,
+    padding: 14,
+    shadowColor: colors.primaryDeep,
+    shadowOffset: { height: 10, width: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+  },
+  settlementRecoveryHead: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+  },
+  settlementRecoveryPrimary: {
+    flex: 1,
+    minHeight: 42,
+  },
+  settlementRecoveryTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900",
+    lineHeight: 19,
+    marginTop: 2,
+  },
+  settlementSkeleton: {
+    gap: 9,
+    marginTop: 18,
+  },
+  skeletonAmount: {
+    backgroundColor: colors.surfaceInset,
+    borderRadius: 12,
+    height: 38,
+    width: "48%",
+  },
+  skeletonLine: {
+    backgroundColor: colors.surfaceInset,
+    borderRadius: 999,
+    height: 12,
+    width: "42%",
+  },
+  skeletonLineWide: {
+    backgroundColor: colors.surfaceInset,
+    borderRadius: 999,
+    height: 12,
+    width: "74%",
+  },
+  statusBadge: {
+    backgroundColor: colors.surfaceInset,
+    borderColor: colors.border,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  statusBadgeReady: {
+    backgroundColor: colors.primaryPale,
+    borderColor: colors.primaryMid,
+  },
+  statusBadgeText: {
+    color: colors.textSoft,
+    fontFamily: mono,
+    fontSize: 9,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  statusBadgeTextReady: {
+    color: colors.primaryMid,
   },
   jar: {
     alignItems: "center",

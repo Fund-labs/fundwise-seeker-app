@@ -13,6 +13,7 @@ Strategic Architecture Decision Records for FundWiseSeeker plans. These are plan
 | [SADR-003](./SADR-003-readable-wallet-names-skr-sol-phantom.md) | Suggested / research-backed | Explore `.skr`-first readable wallet names, then SNS / `.sol`, with Phantom `@` handles as display/contact hints while keeping wallet addresses canonical |
 | [SADR-004](./SADR-004-native-settlement-transaction-construction.md) | Suggested / research-backed | Explore native Settlement transaction construction through MWA while keeping FundWise as the intent, verification, and ledger source of truth |
 | [SADR-005](./SADR-005-native-settlement-recovery-inbox.md) | Suggested / research-backed | Explore a native Settlement Recovery Inbox for pending signatures, expired intents, receipt recovery, and safe retry paths |
+| [SADR-006](./SADR-006-link-first-seeker-onboarding.md) | Suggested / research-backed, partially implemented | Redesign Seeker around link-first recovery, explicit wallet consent, Settlement Request previews, and receipt/recovery confidence |
 
 ## Cross-Product SADRs
 
