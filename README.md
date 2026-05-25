@@ -110,6 +110,14 @@ Strict release check with production env loaded:
 npm run verify:production:strict
 ```
 
+FundWise contract sync check:
+
+```bash
+npm run verify:fundwise-sync
+```
+
+This check skips app-only changes and verifies the sibling `../FundWise` source only when the current Seeker diff touches shared app links, envs, settlement, receipt, Fundy/Telegram, Supabase, or launch-gate contracts.
+
 ## Build Boundary
 
 Keep all ledger writes, protected reads, settlement receipt verification, and treasury state owned by `FundWise`.

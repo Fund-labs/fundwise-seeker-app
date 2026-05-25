@@ -7,6 +7,8 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "typecheck": "tsc --noEmit",
+    "verify:fundwise-sync": "node scripts/check-fundwise-sync.js",
+    "verify:fundwise-sync:force": "node scripts/check-fundwise-sync.js --force",
     "verify:production": "node scripts/verify-production-readiness.js",
     "verify:production:strict": "node scripts/verify-production-readiness.js --strict"
   },
