@@ -21,7 +21,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
-import { FUNDWISE_IDENTITY, FUNDWISE_WEB_URL, SOLANA_CHAIN } from "../config";
+import { FUNDWISE_IDENTITY, FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
 import {
   ACTIVITY,
   GROUPS,
@@ -34,7 +34,14 @@ import {
   formatUsd,
   personOf,
 } from "../data/fundwise";
+import { useIncomingFundWiseLink } from "../hooks/useIncomingFundWiseLink";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
+import {
+  getFundWiseLinkDetail,
+  getFundWiseLinkLabel,
+  parseFundWiseLink,
+  type FundWiseLinkIntent,
+} from "../lib/fundwise-link";
 import { getSeekerDeviceInfo } from "../lib/seeker-device";
 import { shortAddress } from "../lib/short-address";
 import { colors } from "../theme/colors";
@@ -956,18 +963,92 @@ function TopHeader({
   );
 }
 
+function getLinkRecoveryMark(intent: FundWiseLinkIntent) {
+  if (intent.kind === "settlement-request" || intent.kind === "settlement-blink") {
+    return "Pay";
+  }
+
+  if (intent.kind === "receipt-graph" || intent.kind === "settlement-receipt") {
+    return "Rec";
+  }
+
+  return "FW";
+}
+
+function LinkRecoveryCard({
+  intent,
+  loading,
+  onClear,
+  onOpen,
+}: {
+  intent: FundWiseLinkIntent | null;
+  loading: boolean;
+  onClear: () => void;
+  onOpen: () => void;
+}) {
+  if (loading) {
+    return (
+      <View style={styles.linkRecoveryCard}>
+        <View style={styles.linkRecoveryIcon}>
+          <Text style={styles.linkRecoveryIconText}>FW</Text>
+        </View>
+        <View style={styles.flexOne}>
+          <Text style={styles.linkRecoveryTitle}>Checking saved link</Text>
+          <Text style={styles.linkRecoverySub}>Recovering the latest FundWise handoff on this phone.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!intent) {
+    return null;
+  }
+
+  const detail = getFundWiseLinkDetail(intent);
+  const compactDetail = detail.length > 24 ? shortAddress(detail, 6) : detail;
+
+  return (
+    <View style={styles.linkRecoveryCard}>
+      <View style={styles.linkRecoveryIcon}>
+        <Text style={styles.linkRecoveryIconText}>{getLinkRecoveryMark(intent)}</Text>
+      </View>
+      <View style={styles.flexOne}>
+        <Text style={styles.linkRecoveryEyebrow}>Recovered link</Text>
+        <Text numberOfLines={1} style={styles.linkRecoveryTitle}>{getFundWiseLinkLabel(intent)}</Text>
+        <Text numberOfLines={1} style={styles.linkRecoverySub}>{compactDetail}</Text>
+      </View>
+      <View style={styles.linkRecoveryActions}>
+        <Pressable accessibilityRole="button" onPress={onOpen} style={styles.linkRecoveryPrimary}>
+          <Text style={styles.linkRecoveryPrimaryText}>Open</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={onClear} style={styles.linkRecoverySecondary}>
+          <Text style={styles.linkRecoverySecondaryText}>Clear</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function HomeScreen({
   groups,
+  incomingIntent,
+  incomingLoading,
   onAction,
+  onClearIncomingLink,
   onFab,
+  onOpenIncomingLink,
   onOpenGroup,
   onProfile,
   onTab,
   walletAddress,
 }: {
   groups: FundWiseGroup[];
+  incomingIntent: FundWiseLinkIntent | null;
+  incomingLoading: boolean;
   onAction: (kind: SheetState) => void;
+  onClearIncomingLink: () => void;
   onFab: () => void;
+  onOpenIncomingLink: () => void;
   onOpenGroup: (group: FundWiseGroup) => void;
   onProfile: () => void;
   onTab: (tab: "home" | "groups" | "activity" | "wallet") => void;
@@ -977,6 +1058,12 @@ function HomeScreen({
     <AppShell activeTab="home" onFab={onFab} onTab={onTab}>
       <TopHeader onProfile={onProfile} walletAddress={walletAddress} />
       <BalanceHero />
+      <LinkRecoveryCard
+        intent={incomingIntent}
+        loading={incomingLoading}
+        onClear={onClearIncomingLink}
+        onOpen={onOpenIncomingLink}
+      />
       <View style={styles.quickGrid}>
         <QuickAction label="Split" mark="Split" onPress={() => onAction({ kind: "add-expense" })} />
         <QuickAction label="Deposit" mark="In" onPress={() => onAction({ group: groups.find((group): group is FundGroup => group.mode === "fund")!, kind: "deposit" })} />
@@ -1550,7 +1637,7 @@ function ActiveSheet({
     );
     return (
       <BottomSheet onClose={onClose} title="Settle up">
-        <Text style={styles.sheetHelp}>Pick a balance to settle. One wallet signature, devnet testing, ~$0.00025 in fees.</Text>
+        <Text style={styles.sheetHelp}>Pick a balance to review. Payment continues on FundWise web until mobile transaction intents are live.</Text>
         {options.map((settlement, index) => (
           <SheetAction
             body={`${settlement.group.emoji} ${settlement.group.name}`}
@@ -1579,29 +1666,21 @@ function ActiveSheet({
         <Text style={styles.previewAmount}>${settlement.amt.toFixed(2)}</Text>
         <MetaRow label={paying ? "To" : "From"} value={personOf(counterparty).name} />
         <MetaRow label="Group" value={`${settlement.group.emoji} ${settlement.group.name}`} />
-        <MetaRow label="Token" value="USDC · Solana devnet" />
-        <MetaRow label="Network fee" value="~$0.00025" />
+        <MetaRow label="Token" value={`USDC · ${SOLANA_CHAIN.replace("solana:", "")}`} />
+        <MetaRow label="Confirmation" value="FundWise web" />
+        <Text style={styles.sheetHelp}>Native settlement is preflight-only until Split Mode exposes a verified mobile transaction intent.</Text>
         <AppButton
-          onPress={() =>
-            onSignature({
-              body: "Use the side fingerprint reader to sign this USDC settlement.",
-              kind: "settle",
-              returnScreen: "split",
-              successBody: "Signature approved. The settlement is ready for devnet submission.",
-              successTitle: paying ? "Settlement signed" : "Request signed",
-              title: paying ? "Authorize payment" : "Authorize request",
-            })
-          }
+          onPress={() => void Linking.openURL(`${FUNDWISE_WEB_URL}/groups`)}
           style={styles.sheetPrimary}
         >
-          {paying ? "Sign & pay" : "Sign request"}
+          Continue on FundWise web
         </AppButton>
       </BottomSheet>
     );
   }
 
   if (sheet.kind === "deposit") {
-    return <DepositSheet group={sheet.group} onClose={onClose} onSignature={onSignature} />;
+    return <DepositSheet group={sheet.group} onClose={onClose} />;
   }
 
   if (sheet.kind === "vote") {
@@ -1722,7 +1801,7 @@ function MetaRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function DepositSheet({ group, onClose, onSignature }: { group: FundGroup; onClose: () => void; onSignature: (intent: SignatureIntent) => void }) {
+function DepositSheet({ group, onClose }: { group: FundGroup; onClose: () => void }) {
   const [amount, setAmount] = useState("100");
   return (
     <BottomSheet onClose={onClose} title={`Deposit · ${group.name}`}>
@@ -1736,22 +1815,13 @@ function DepositSheet({ group, onClose, onSignature }: { group: FundGroup; onClo
       </View>
       <MetaRow label="From" value="Your wallet · $248.30" />
       <MetaRow label="To" value={`${group.emoji} ${group.name} vault`} />
-      <MetaRow label="Token" value="USDC · Solana devnet" />
+      <MetaRow label="Token" value={`USDC · ${SOLANA_CHAIN.replace("solana:", "")}`} />
+      <Text style={styles.sheetHelp}>Vault deposits stay on FundWise web until mobile contribution transaction construction is accepted.</Text>
       <AppButton
-        onPress={() =>
-          onSignature({
-            body: "Use the side fingerprint reader to sign this vault deposit.",
-            groupId: group.id,
-            kind: "deposit",
-            returnScreen: "fund",
-            successBody: `$${amount || "0"} USDC deposit signature captured for the group vault.`,
-            successTitle: "Deposit signed",
-            title: "Authorize deposit",
-          })
-        }
+        onPress={() => void Linking.openURL(`${FUNDWISE_WEB_URL}/groups`)}
         style={styles.sheetPrimary}
       >
-        Sign & deposit
+        Continue on FundWise web
       </AppButton>
     </BottomSheet>
   );
@@ -1868,8 +1938,13 @@ export function FundWiseSeekerAppScreen() {
   const [walletPreference, setWalletPreference] = useState<WalletPreference>("seeker");
   const startedIntentRef = useRef(false);
   const isOnline = useNetworkStatus();
+  const incomingLink = useIncomingFundWiseLink();
   const walletAddress = walletAddressToString(account?.address);
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) || groups[0];
+  const incomingIntent = useMemo(
+    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL) : null),
+    [incomingLink.url],
+  );
 
   useEffect(() => {
     if (screen === "boot") {
@@ -2017,6 +2092,16 @@ export function FundWiseSeekerAppScreen() {
     setSheet({ kind: "settle", settlement: { ...settlement, group: selectedGroup } });
   }, [selectedGroup]);
 
+  const openIncomingLink = useCallback(() => {
+    if (incomingLink.url) {
+      void Linking.openURL(incomingLink.url);
+    }
+  }, [incomingLink.url]);
+
+  const clearIncomingLink = useCallback(() => {
+    void incomingLink.clear();
+  }, [incomingLink.clear]);
+
   const content = (() => {
     if (screen === "boot") return <BootScreen onDone={() => setScreen("welcome")} />;
     if (screen === "welcome") {
@@ -2070,7 +2155,21 @@ export function FundWiseSeekerAppScreen() {
     if (screen === "fund" && selectedGroup.mode === "fund") {
       return <FundGroupScreen group={selectedGroup} onBack={() => setScreen("home")} onInvite={() => setSheet({ group: selectedGroup, kind: "invite" })} onSheet={setSheet} />;
     }
-    return <HomeScreen groups={groups} onAction={setSheet} onFab={() => setSheet({ kind: "fab" })} onOpenGroup={openGroup} onProfile={() => setSheet({ kind: "profile" })} onTab={goTab} walletAddress={walletAddress} />;
+    return (
+      <HomeScreen
+        groups={groups}
+        incomingIntent={incomingIntent}
+        incomingLoading={incomingLink.loading}
+        onAction={setSheet}
+        onClearIncomingLink={clearIncomingLink}
+        onFab={() => setSheet({ kind: "fab" })}
+        onOpenGroup={openGroup}
+        onOpenIncomingLink={openIncomingLink}
+        onProfile={() => setSheet({ kind: "profile" })}
+        onTab={goTab}
+        walletAddress={walletAddress}
+      />
+    );
   })();
 
   return (
@@ -3040,6 +3139,81 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     minHeight: 48,
     paddingHorizontal: 13,
+  },
+  linkRecoveryActions: {
+    gap: 6,
+  },
+  linkRecoveryCard: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    marginHorizontal: 20,
+    marginTop: 14,
+    minHeight: 86,
+    padding: 12,
+  },
+  linkRecoveryEyebrow: {
+    color: colors.textSubtle,
+    fontFamily: mono,
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  linkRecoveryIcon: {
+    alignItems: "center",
+    backgroundColor: colors.primaryPale,
+    borderRadius: 14,
+    height: 46,
+    justifyContent: "center",
+    width: 46,
+  },
+  linkRecoveryIconText: {
+    color: colors.primaryMid,
+    fontSize: 10,
+    fontWeight: "900",
+  },
+  linkRecoveryPrimary: {
+    alignItems: "center",
+    backgroundColor: colors.primaryMid,
+    borderRadius: 10,
+    minHeight: 34,
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
+  linkRecoveryPrimaryText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "900",
+  },
+  linkRecoverySecondary: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceInset,
+    borderRadius: 10,
+    minHeight: 34,
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
+  linkRecoverySecondaryText: {
+    color: colors.textSoft,
+    fontSize: 11,
+    fontWeight: "900",
+  },
+  linkRecoverySub: {
+    color: colors.textSoft,
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 17,
+    marginTop: 2,
+  },
+  linkRecoveryTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "900",
+    marginTop: 2,
   },
   jar: {
     alignItems: "center",

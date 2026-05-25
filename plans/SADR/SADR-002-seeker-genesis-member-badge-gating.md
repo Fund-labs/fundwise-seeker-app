@@ -112,7 +112,7 @@ Relevant source:
 
 FundWiseSeeker should add a server-verified Seeker ownership track, but FundWise should own final entitlements.
 
-The first accepted product use should be narrow:
+The first proposed product use should be narrow:
 
 1. **Seeker Verified Member** status inside FundWise/FundWiseSeeker.
 2. **Seeker beta access** to Tap-to-Settle and mobile-first experiments.

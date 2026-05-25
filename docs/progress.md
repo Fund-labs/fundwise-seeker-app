@@ -2,9 +2,9 @@
 
 ## Snapshot
 
-Date: 2026-05-19
+Date: 2026-05-25
 
-Status: Android Studio project generated, local typecheck passing, device/emulator run blocked by missing local Android toolchain.
+Status: Seeker-side link recovery fixes landed, local typecheck and prebuild passing, current debug APK rebuild blocked by missing Java runtime in this shell, runtime validation still blocked by no connected Android device/emulator.
 
 Update:
 
@@ -26,6 +26,11 @@ Update:
 - Recorded the MWA platform boundary: Android native is supported; iOS is not a target for this MWA flow.
 - Cross-checked the current wallet integration against the React Native install/setup docs: `react-native-quick-crypto` loads first through `index.js`, `MobileWalletProvider` wraps the app, and the onboarding approval path uses direct MWA `transact` from `@solana-mobile/mobile-wallet-adapter-protocol-web3js`.
 - Added recommended wallet choices for Seeker-native Solana Mobile Wallet, Solflare, and other MWA-compatible wallets.
+- Wired persisted incoming-link recovery into the currently mounted `FundWiseSeekerAppScreen`, not only the legacy `SeekerHomeScreen`.
+- Expanded FundWise link parsing to cover `/settle/r/{requestId}`, `/receipts/{receiptId_or_tx_signature}`, and configurable Receipt service `/v1/receipts` and `/v1/graph/receipts` links.
+- Expanded Android intent filters for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`.
+- Changed native settlement and deposit sheets back to web continuation instead of presenting message signing as payment.
+- Aligned default mobile cluster/RPC config with mainnet defaults.
 
 ## Product Decision
 
@@ -124,6 +129,7 @@ Implemented:
 - Wallet UI `useMobileWallet` hook for legacy connect/disconnect in `SeekerHomeScreen`
 - Solana chain/RPC config via Expo public env vars
 - FundWise API base URL config
+- configurable Receipt service URL for link recovery
 - first-run animated onboarding
 - onboarding screens for link recovery, MWA handoff, and continuation URL handoff
 - reduced-motion handling via Android accessibility state
@@ -138,8 +144,8 @@ Implemented:
 - public invite-code lookup through `GET /api/groups?code=...`
 - latest incoming FundWise link persistence and parsing
 - lightweight Seeker device signal from `Platform.constants.Model`
-- FundWise link previews for Groups, invite links, Settlement requests, and Settlement receipts
-- Android app link intent filter for `https://fundwise.fun/groups`
+- FundWise link previews for Groups, invite links, Settlement requests, Settlement links, Settlement receipts, and Receipt Graph links
+- Android app link intent filters for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`
 - open FundWise Groups in browser/web app
 - open incoming FundWise link
 - open or share the current FundWise continuation link for phone -> web / desktop handoff
@@ -157,6 +163,7 @@ Intentionally not implemented yet:
 - protected Group dashboard reads in native app
 - receipt persistence from native tx
 - dApp Store publishing assets
+- production `assetlinks.json` on `fundwise.fun`
 - secure SGT / Seeker-owner gating
 - `.skr` address resolution
 
@@ -201,6 +208,7 @@ Latest validation:
 ```bash
 cd /Users/sarthiborkar/Build/fundlabs/FundWiseSeeker
 npm run typecheck
+npx tsx -e "import { parseFundWiseLink } from './src/lib/fundwise-link.ts'; console.log(parseFundWiseLink('https://fundwise.fun/settle/r/req123', 'https://fundwise.fun', 'https://fundwise.fun'))"
 npm exec expo -- install --check
 npx expo prebuild --platform android --no-install
 ./android/gradlew assembleDebug
@@ -209,17 +217,18 @@ npx expo prebuild --platform android --no-install
 Result:
 
 - `npm run typecheck`: pass.
+- Parser smoke check for `/groups`, `/settle/r`, `/receipts`, and `/v1/graph/receipts`: pass.
 - `npm exec expo -- install --check`: pass using local Expo dependency map because command context is offline.
 - `npx expo prebuild --platform android --no-install`: pass, `android/` generated.
-- `./android/gradlew assembleDebug`: pass with JDK 17 and Android SDK configured.
-- Debug APK generated at `android/app/build/outputs/apk/debug/app-debug.apk`.
+- `./android/gradlew assembleDebug`: blocked in the current shell because no Java runtime is visible.
+- Existing debug APK from the earlier successful build remains at `android/app/build/outputs/apk/debug/app-debug.apk`, but it was not rebuilt after the latest Seeker-side link fixes.
 - `./android/gradlew assembleRelease`: blocked by `No space left on device` while compiling release native libraries; no release APK produced.
 
 Notes:
 
 - Expo dependency check used local SDK map because network unavailable in command context.
 - Public config shows Android package `fun.fundwise.seeker`.
-- Public config shows app link filter for `https://fundwise.fun/groups`.
+- Public config shows app link filters for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`.
 - Public config shows `minSdkVersion: 26`.
 
 Audit:
@@ -236,18 +245,20 @@ Result:
 
 ## Local Blockers
 
-Android toolchain is now present enough for native debug APK builds.
+The generated Android project is present, but the current shell cannot see a Java runtime for Gradle.
 
 Remaining runtime blocker:
 
+- Install or expose a JDK, then rerun `./android/gradlew assembleDebug`.
 - No Android device or emulator was connected during the latest validation.
 - MWA wallet connection still needs physical-device or emulator testing with Mock MWA Wallet or a real MWA-compatible wallet.
+- `https://fundwise.fun/.well-known/assetlinks.json` is still required on the FundWise/Split Mode host before Android App Links can verify.
 - dApp Store release signing still needs a real keystore and `FUNDWISE_DAPP_STORE_*` secret values.
-- Local disk had only 133 MiB free after the release attempt, which is not enough for native release packaging.
+- Local disk had 5.3 GiB free during this pass; release packaging may still need more free disk plus signing secrets.
 
 ## Next Steps
 
-1. Install Android toolchain.
+1. Connect an Android device/emulator with Mock MWA Wallet or a real MWA-compatible wallet.
 2. Run:
 
 ```bash
@@ -256,10 +267,10 @@ npm run android
 ```
 
 3. Test wallet connect with Mock MWA Wallet.
-4. Test app link open from `https://fundwise.fun/groups?...`.
+4. Test app link open from `https://fundwise.fun/groups?...`, `https://fundwise.fun/settle/r/...`, and `https://fundwise.fun/receipts/...`.
 5. Test invite lookup against prod FundWise.
 6. Add native FundWise auth strategy or keep web handoff for protected reads.
-7. After web mainnet flow stable, build native Settlement/Contribution tx path.
+7. Add Split Mode mobile preview / transaction intent / confirmation APIs before enabling native settlement.
 8. Add dApp Store publishing checklist.
 
 ## Current Safety Boundary

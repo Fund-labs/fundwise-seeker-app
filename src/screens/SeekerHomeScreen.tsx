@@ -14,11 +14,11 @@ import {
 } from "react-native";
 import { ActionButton } from "../components/ActionButton";
 import { StatusPill } from "../components/StatusPill";
-import { FUNDWISE_WEB_URL, SOLANA_CHAIN } from "../config";
+import { FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
 import { useIncomingFundWiseLink } from "../hooks/useIncomingFundWiseLink";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { getHealth, lookupInvite, type InviteLookup } from "../lib/fundwise-api";
-import { getFundWiseLinkLabel, parseFundWiseLink, type FundWiseLinkIntent } from "../lib/fundwise-link";
+import { getFundWiseLinkDetail, getFundWiseLinkLabel, parseFundWiseLink, type FundWiseLinkIntent } from "../lib/fundwise-link";
 import { getSeekerDeviceInfo } from "../lib/seeker-device";
 import { shortAddress } from "../lib/short-address";
 import { colors } from "../theme/colors";
@@ -82,14 +82,7 @@ function Header({ walletAddress }: { walletAddress: string | null }) {
 
 function LinkSummary({ intent }: { intent: FundWiseLinkIntent }) {
   const label = getFundWiseLinkLabel(intent);
-  const detail =
-    intent.kind === "invite" && intent.inviteCode
-      ? `Invite ${intent.inviteCode}`
-      : intent.settlementId
-        ? shortAddress(intent.settlementId, 6)
-        : intent.groupId
-          ? shortAddress(intent.groupId, 6)
-          : "FundWise web";
+  const detail = getFundWiseLinkDetail(intent);
 
   return (
     <View style={styles.linkSummary}>
@@ -133,9 +126,9 @@ export function SeekerHomeScreen() {
 
   const walletAddress = account?.address.toBase58() ?? null;
   const normalizedInviteCode = useMemo(() => extractInviteCode(linkInput), [linkInput]);
-  const pastedIntent = useMemo(() => parseFundWiseLink(linkInput, FUNDWISE_WEB_URL), [linkInput]);
+  const pastedIntent = useMemo(() => parseFundWiseLink(linkInput, FUNDWISE_WEB_URL, RECEIPTS_URL), [linkInput]);
   const latestIntent = useMemo(
-    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL) : null),
+    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL) : null),
     [incomingLink.url],
   );
   const activeIntent = pastedIntent || latestIntent;

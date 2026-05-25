@@ -22,6 +22,16 @@
               "scheme": "https",
               "host": "fundwise.fun",
               "pathPrefix": "/groups"
+            },
+            {
+              "scheme": "https",
+              "host": "fundwise.fun",
+              "pathPrefix": "/settle/r"
+            },
+            {
+              "scheme": "https",
+              "host": "fundwise.fun",
+              "pathPrefix": "/receipts"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]

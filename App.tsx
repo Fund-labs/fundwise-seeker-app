@@ -1,4 +1,3 @@
-import { clusterApiUrl } from "@solana/web3.js";
 import { MobileWalletProvider } from "@wallet-ui/react-native-web3js";
 import { SafeAreaView, StatusBar, StyleSheet } from "react-native";
 import { FUNDWISE_IDENTITY, SOLANA_CHAIN, SOLANA_RPC_ENDPOINT } from "./src/config";
@@ -7,9 +6,9 @@ import { colors } from "./src/theme/colors";
 
 export default function App() {
   return (
-      <MobileWalletProvider
+    <MobileWalletProvider
       chain={SOLANA_CHAIN}
-      endpoint={SOLANA_RPC_ENDPOINT || clusterApiUrl("devnet")}
+      endpoint={SOLANA_RPC_ENDPOINT}
       identity={FUNDWISE_IDENTITY}
     >
       <SafeAreaView style={styles.safeArea}>

@@ -106,9 +106,9 @@ Implication:
 
 ## Decision
 
-FundWiseSeeker should add a feature-flagged native settlement execution path after link recovery and mobile preflight are stable on physical Android devices.
+FundWiseSeeker should propose a feature-flagged native settlement execution path after link recovery and mobile preflight are stable on physical Android devices.
 
-V1 accepted:
+Proposed V1:
 
 1. FundWise owns Settlement Request intent, Group membership, live amount, recipient, mint, and server-side verification.
 2. FundWise exposes a mobile-safe preview and transaction-build API.
@@ -119,7 +119,7 @@ V1 accepted:
 7. FundWise records the Settlement only after verifying the on-chain transaction against the execution intent.
 8. Receipts receives or indexes the confirmed signature and returns the receipt/graph URL.
 
-V1 rejected:
+Rejected-for-now V1:
 
 - mobile-calculated settlement amounts;
 - native ledger writes from FundWiseSeeker;

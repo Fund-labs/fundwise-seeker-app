@@ -100,9 +100,9 @@ Implication:
 
 ## Decision
 
-FundWiseSeeker should include a Recovery Inbox before native settlement is considered production-ready.
+FundWiseSeeker should propose a Recovery Inbox before native settlement is considered production-ready.
 
-V1 accepted:
+Proposed V1:
 
 1. Persist every native settlement attempt locally as a recovery session.
 2. FundWise stores server-side execution intent and recovery status.
@@ -112,7 +112,7 @@ V1 accepted:
 6. Receipts exposes pending, ready, and recovery-needed receipt states after FundWise verification.
 7. The inbox always offers one safe next action: refresh, retry, open receipt, continue on web, or contact support/export evidence.
 
-V1 rejected:
+Rejected-for-now V1:
 
 - recording settlement state only in local mobile storage;
 - asking the user to manually paste signatures as the normal recovery path;

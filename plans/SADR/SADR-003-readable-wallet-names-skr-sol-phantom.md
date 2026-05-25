@@ -88,7 +88,7 @@ Implication:
 
 FundWiseSeeker should support a **multi-source wallet name layer** with strict trust levels.
 
-V1 accepted:
+Proposed V1:
 
 1. Resolve `.skr` names through the Seeker / AllDomains-supported path once the resolver source is chosen.
 2. Resolve `.sol` names through SNS.
@@ -97,7 +97,7 @@ V1 accepted:
 5. Always store and act on canonical wallet addresses.
 6. Always show the resolved wallet before settlement.
 
-V1 rejected:
+Rejected-for-now V1:
 
 - using Phantom `@` handles as payment destinations without official resolver support;
 - hiding raw wallet confirmation on money movement;

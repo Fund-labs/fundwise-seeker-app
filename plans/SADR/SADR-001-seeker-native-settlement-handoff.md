@@ -102,7 +102,7 @@ Relevant sources:
 
 FundWiseSeeker should become the Android link recovery and wallet handoff surface for FundWise Settlements, Settlement Blinks, and Receipts.
 
-V1 accepted scope:
+Proposed V1 scope:
 
 1. Recover FundWise links from Android App Links and stored incoming links.
 2. Parse and classify Group, invite, Settlement Request, Settlement Blink, Settlement receipt, and Receipt Graph links.
@@ -111,7 +111,7 @@ V1 accepted scope:
 5. Open the correct FundWise web route for wallet-confirmed Settlement until native tx construction is accepted.
 6. Open or share Receipt Graph / Receipt Endpoint links after payment.
 
-V1 rejected scope:
+Rejected-for-now V1 scope:
 
 - native autonomous settlement;
 - native FundWise ledger writes without server-side verification;

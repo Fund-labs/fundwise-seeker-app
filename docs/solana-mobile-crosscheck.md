@@ -1,6 +1,6 @@
 # Solana Mobile Cross-Check
 
-Date: 2026-05-23
+Date: 2026-05-25
 
 This notes how the current FundWise Seeker app maps to the Solana Mobile resources reviewed from the docs index at `https://docs.solanamobile.com/llms.txt`.
 
@@ -49,6 +49,15 @@ Current app:
 - protected reads and money movement still hand off to FundWise web
 - future secure Seeker verification should use SIWS plus backend SGT checks
 
+## Android App Links
+
+Current app:
+
+- `app.json` declares verified links for `https://fundwise.fun/groups`, `/settle/r`, and `/receipts`
+- `useIncomingFundWiseLink` persists the latest incoming link with AsyncStorage
+- `FundWiseSeekerAppScreen` surfaces the recovered link in the mounted home screen
+- production verification still requires `fundwise.fun/.well-known/assetlinks.json` from the FundWise/Split Mode host
+
 ## Mobile Wallet Adapter Platform Boundary
 
 Docs direction:
@@ -89,5 +98,5 @@ Current app:
 
 - `eas.json` includes a `dapp-store` APK profile
 - local generated `android/app/build.gradle` can read `FUNDWISE_DAPP_STORE_*` signing variables
-- debug APK builds successfully
-- release packaging needs free disk plus real signing secrets before final verification
+- an earlier debug APK build succeeded, but the current shell needs a visible Java runtime before rebuilding
+- release packaging needs free disk, Java, plus real signing secrets before final verification

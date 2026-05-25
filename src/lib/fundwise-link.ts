@@ -1,6 +1,8 @@
 export type FundWiseLinkKind =
   | "invite"
   | "group"
+  | "receipt-graph"
+  | "settlement-blink"
   | "settlement-request"
   | "settlement-receipt"
   | "unknown";
@@ -10,9 +12,12 @@ export type FundWiseLinkIntent = {
   url: string;
   groupId?: string;
   inviteCode?: string;
+  receiptId?: string;
+  requestId?: string;
   settlementId?: string;
   settleFrom?: string;
   settleTo?: string;
+  txSignature?: string;
 };
 
 function getPathParts(url: URL) {
@@ -25,7 +30,7 @@ function getPathParts(url: URL) {
   return parts;
 }
 
-export function parseFundWiseLink(value: string, baseUrl: string): FundWiseLinkIntent | null {
+export function parseFundWiseLink(value: string, baseUrl: string, receiptsUrl?: string): FundWiseLinkIntent | null {
   const trimmed = value.trim();
 
   if (!trimmed) {
@@ -35,9 +40,12 @@ export function parseFundWiseLink(value: string, baseUrl: string): FundWiseLinkI
   try {
     const url = new URL(trimmed, baseUrl);
     const base = new URL(baseUrl);
+    const receiptsBase = receiptsUrl ? new URL(receiptsUrl) : null;
     const isWebUrl = url.protocol === "https:" || url.protocol === "http:";
+    const isFundWiseHost = url.host === base.host;
+    const isReceiptsHost = Boolean(receiptsBase && url.host === receiptsBase.host);
 
-    if (isWebUrl && url.host !== base.host) {
+    if (isWebUrl && !isFundWiseHost && !isReceiptsHost) {
       return {
         kind: "unknown",
         url: url.toString(),
@@ -48,6 +56,41 @@ export function parseFundWiseLink(value: string, baseUrl: string): FundWiseLinkI
     const inviteCode = url.searchParams.get("code")?.trim() || undefined;
     const settleFrom = url.searchParams.get("settleFrom")?.trim() || undefined;
     const settleTo = url.searchParams.get("settleTo")?.trim() || undefined;
+
+    if (parts[0] === "settle" && parts[1] === "r" && parts[2]) {
+      return {
+        kind: "settlement-blink",
+        requestId: parts[2],
+        url: url.toString(),
+      };
+    }
+
+    if (parts[0] === "receipts" && parts[1]) {
+      return {
+        kind: "settlement-receipt",
+        receiptId: parts[1],
+        txSignature: parts[1],
+        url: url.toString(),
+      };
+    }
+
+    if (isReceiptsHost && parts[0] === "v1" && parts[1] === "receipts" && parts[2]) {
+      return {
+        kind: "settlement-receipt",
+        receiptId: parts[2],
+        txSignature: parts[2],
+        url: url.toString(),
+      };
+    }
+
+    if (isReceiptsHost && parts[0] === "v1" && parts[1] === "graph" && parts[2] === "receipts" && parts[3]) {
+      return {
+        kind: "receipt-graph",
+        receiptId: parts[3],
+        txSignature: parts[3],
+        url: url.toString(),
+      };
+    }
 
     if (parts[0] !== "groups") {
       return {
@@ -108,6 +151,10 @@ export function getFundWiseLinkLabel(intent: FundWiseLinkIntent) {
   switch (intent.kind) {
     case "invite":
       return intent.inviteCode ? `Invite ${intent.inviteCode}` : "Invite link";
+    case "receipt-graph":
+      return "Receipt Graph";
+    case "settlement-blink":
+      return "Settlement link";
     case "settlement-request":
       return "Settlement request";
     case "settlement-receipt":
@@ -117,4 +164,28 @@ export function getFundWiseLinkLabel(intent: FundWiseLinkIntent) {
     case "unknown":
       return "FundWise link";
   }
+}
+
+export function getFundWiseLinkDetail(intent: FundWiseLinkIntent) {
+  if (intent.kind === "invite" && intent.inviteCode) {
+    return `Invite ${intent.inviteCode}`;
+  }
+
+  if (intent.kind === "settlement-blink" && intent.requestId) {
+    return `Request ${intent.requestId}`;
+  }
+
+  if ((intent.kind === "settlement-receipt" || intent.kind === "receipt-graph") && (intent.receiptId || intent.txSignature)) {
+    return intent.receiptId || intent.txSignature || "Receipt";
+  }
+
+  if (intent.settlementId) {
+    return intent.settlementId;
+  }
+
+  if (intent.groupId) {
+    return intent.groupId;
+  }
+
+  return "FundWise web";
 }
