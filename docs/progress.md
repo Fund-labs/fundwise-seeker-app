@@ -4,12 +4,27 @@
 
 Date: 2026-05-25
 
-Status: Seeker-side link recovery and design pass landed, local typecheck passing, current debug APK rebuild blocked by missing Java runtime in this shell, runtime validation still blocked by no connected Android device/emulator.
+Status: Seeker-side link recovery, v5 UI/popups, Fundy Telegram handoff, production verifiers, and FundWise sync guardrail are implemented and pushed. Local typecheck and config checks pass. Runtime validation is still blocked by no connected Android device/emulator in this shell.
 
 Roadmap alignment: FundWise ADR-0046 moved the immediate June launch path to mobile web -> Add to Home Screen PWA -> TWA/APK. This React Native Seeker app is now the native companion/follow-on surface for Android App Links, mobile previews, dApp Store packaging, and later native transaction intents. It should not block the web/PWA beta unless a shared handoff contract breaks.
 
+## Next App TODO
+
+Pick up here tomorrow:
+
+1. Run the app on a real Android phone with an MWA-compatible wallet.
+2. QA the mounted v5 UI: onboarding, bottom sheets, popup timing, notification bell, add expense, create group, proposal, invite, and Fundy Telegram sheet.
+3. Test Fundy Telegram redirects from the app, including group-aware `startgroup` links.
+4. Test Android App Links for `https://beta.fundwise.fun/groups`, `/join`, `/settle/r/{requestId}`, and `/receipts/{id}`.
+5. Test wallet connect, reject, retry, background/resume, and recovered-link behavior.
+6. Fix device-only UI issues: text overflow, sheet scrolling, Android back behavior, popup placement, and Telegram button behavior.
+7. After real-device QA passes, build/install a signed APK and rerun the same app flow.
+
+Out of scope for the next app pass: Supabase migrations, mainnet rehearsal, and production secret setup. Those belong to the full FundWise product launch gate, not the immediate Seeker app QA loop.
+
 Update:
 
+- Added `AGENTS.md` and `npm run verify:fundwise-sync` so future Seeker changes check the sibling FundWise source only when shared contracts or handoff surfaces are touched.
 - Synced the Seeker repo with the latest FundWise ADR-0046/ADR-0047 launch order: mobile web/PWA/TWA first, Split Mode mainnet beta, then narrow LI.FI/CCTP route-then-settle funding.
 - Added [production-launch-gate.md](./production-launch-gate.md) to link the HITL env, Supabase migration, mobile QA, tiny mainnet rehearsal, and Seeker/TWA APK steps back to FundWise source docs and migrations.
 - Added Android App Link coverage for `beta.fundwise.fun` and `/join` alongside existing `fundwise.fun`, `/groups`, `/settle/r`, and `/receipts`.

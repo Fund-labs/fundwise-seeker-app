@@ -42,6 +42,19 @@ Solana Mobile docs cross-check: [docs/solana-mobile-crosscheck.md](./docs/solana
 Production launch gate: [docs/production-launch-gate.md](./docs/production-launch-gate.md)
 Planning SADRs: [plans/SADR/README.md](./plans/SADR/README.md)
 
+## Next App TODO
+
+The next app-focused pass is real-device QA:
+
+1. Run the app on a real Android phone with an MWA-compatible wallet.
+2. Check the v5 UI, bottom sheets, popup/notification behavior, and Fundy Telegram redirect.
+3. Open beta FundWise App Links for `/groups`, `/join`, `/settle/r`, and `/receipts`.
+4. Test wallet connect, rejection, retry, background/resume, and recovered-link behavior.
+5. Fix any device-only spacing, sheet, popup, Android back, or Telegram button issues.
+6. Build/install a signed APK only after the app flow passes on device.
+
+The Supabase/mainnet/secret tasks are product-launch gates, not the immediate app QA priority.
+
 ## Run
 
 Prerequisites for Android builds:
