@@ -3,12 +3,15 @@
     "name": "FundWise",
     "slug": "fundwise-seeker",
     "scheme": "fundwiseseeker",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "package": "fun.fundwise.seeker",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#FBFCF9"
@@ -59,7 +62,10 @@
               "pathPrefix": "/receipts"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -75,7 +81,11 @@
       ]
     ],
     "extra": {
-      "fundwiseUrl": "https://fundwise.fun"
-    }
+      "fundwiseUrl": "https://fundwise.fun",
+      "eas": {
+        "projectId": "e8b27a7f-9a8c-4a87-ab2e-94cf258c86c9"
+      }
+    },
+    "owner": "sarthiii"
   }
 }

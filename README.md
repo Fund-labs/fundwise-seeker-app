@@ -44,9 +44,9 @@ Planning SADRs: [plans/SADR/README.md](./plans/SADR/README.md)
 
 ## Next App TODO
 
-The next app-focused pass is real-device QA:
+The next app-focused pass is real-device QA. A fresh local Android debug APK has been built at `android/app/build/outputs/apk/debug/app-debug.apk`; reconnect the Seeker first because ADB currently does not list a device.
 
-1. Run the app on a real Android phone with an MWA-compatible wallet.
+1. Install the fresh APK on a real Android phone with an MWA-compatible wallet.
 2. Check the v5 UI, bottom sheets, popup/notification behavior, and Fundy Telegram redirect.
 3. Open beta FundWise App Links for `/groups`, `/join`, `/settle/r`, and `/receipts`.
 4. Test wallet connect, rejection, retry, background/resume, and recovered-link behavior.
@@ -111,6 +111,16 @@ npm start -- --port 8099
 
 Compatibility aliases are also supported: `EXPO_PUBLIC_SOLANA_CHAIN` and `EXPO_PUBLIC_SOLANA_RPC_URL`.
 
+Devnet config lives in `.env.devnet.example`. The checked-in EAS `devnet` profile builds against `https://fundwise.fun` and Solana devnet.
+
+The EAS project is `@sarthiii/fundwise-seeker` (`e8b27a7f-9a8c-4a87-ab2e-94cf258c86c9`).
+
+Devnet config smoke check:
+
+```bash
+npm run verify:devnet
+```
+
 Production config smoke check:
 
 ```bash
@@ -161,7 +171,17 @@ Do not store private keys in this app.
 
 ## dApp Store APK
 
-EAS can build the required APK format with the checked-in `dapp-store` profile:
+EAS can build the required devnet APK with the checked-in `devnet` profile:
+
+```bash
+eas build --platform android --profile devnet
+```
+
+Current devnet build submitted to EAS: `947e7fc2-55b4-4dc2-b09c-3d8bd6655d99`.
+
+Install and test the fresh APK artifact on the Seeker before sharing it. Do not use an older custom dev-client binary as release evidence; loading current JS into a stale native binary can produce native-module mismatch errors.
+
+For a later mainnet APK, use the checked-in `dapp-store` profile:
 
 ```bash
 eas build --platform android --profile dapp-store

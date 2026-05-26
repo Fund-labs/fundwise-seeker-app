@@ -2,6 +2,8 @@
 
 This is the Seeker-side execution gate for the latest FundWise mobile-native Split Mode update. FundWise web remains the source of truth for ledger writes, Supabase state, Settlement verification, and Receipts. This repo owns Android App Links, native handoff recovery, Seeker/TWA readiness, and native QA evidence.
 
+Current release decision: `v0.1.1` is a devnet APK on the normal `https://fundwise.fun` host. Build it with the `devnet` EAS profile and verify it with `npm run verify:devnet`. The mainnet production sections below remain the later release gate, not the blocker for this devnet release. The EAS project is `@sarthiii/fundwise-seeker` (`e8b27a7f-9a8c-4a87-ab2e-94cf258c86c9`), and devnet build `947e7fc2-55b4-4dc2-b09c-3d8bd6655d99` has been submitted. A local debug APK also builds successfully; final device QA needs a reconnected Seeker.
+
 Source of truth in the sibling FundWise repo:
 
 - ADR-0046: `../../FundWise/docs/adr/0046-mobile-native-split-beta-then-multichain-funding.md`
@@ -17,6 +19,7 @@ Source of truth in the sibling FundWise repo:
 - Android App Links for `fundwise.fun` and `beta.fundwise.fun`.
 - Link recovery for `/groups`, `/join`, `/settle/r/{requestId}`, and `/receipts/{id}`.
 - Public Expo config for FundWise web/API/Receipts hosts and Solana RPC.
+- Devnet APK verification through `npm run verify:devnet`.
 - Production config verification through `npm run verify:production`.
 - TWA/APK readiness documentation for the Seeker/dApp Store path.
 

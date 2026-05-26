@@ -8,6 +8,7 @@ fundwise-*.png
 .env
 .env.*
 !.env.example
+!.env.devnet.example
 *.jks
 *.keystore
 npm-debug.log*
