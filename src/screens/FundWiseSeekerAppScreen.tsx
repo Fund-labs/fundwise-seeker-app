@@ -9,7 +9,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps 
 import {
   Animated,
   Easing,
+  KeyboardAvoidingView,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   Share,
@@ -25,11 +27,11 @@ import {
 } from "react-native";
 import { FUNDWISE_ALLOWED_HOSTS, FUNDWISE_IDENTITY, FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
 import {
-  ACTIVITY,
-  GROUPS,
   ME,
+  type ActivityItem,
   type FundGroup,
   type FundWiseGroup,
+  type GroupMode,
   type PersonId,
   type Proposal,
   type SplitGroup,
@@ -58,6 +60,10 @@ type HapticKind = "tap" | "selection" | "success" | "warning";
 type IconTone = "blue" | "gold" | "green" | "ink" | "telegram";
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
 type NotificationTone = "success" | "info" | "warning";
+type CreateGroupDraft = {
+  mode: GroupMode;
+  name: string;
+};
 type WalletPreference = "seeker" | "solflare" | "any";
 type AppNotification = {
   body: string;
@@ -106,6 +112,9 @@ type SuccessState = {
 
 const BOOT_MS = 2500;
 const ONBOARDING_STORAGE_KEY = "fundwise-seeker:onboarding-complete:v1";
+const STATUS_BAR_SPACE = StatusBar.currentHeight ?? 0;
+const BOTTOM_SAFE_SPACE = 34;
+const SHEET_BOTTOM_SPACE = 76;
 
 const MARK_ICONS: Record<string, IoniconName> = {
   copy: "copy-outline",
@@ -229,6 +238,96 @@ function normalizeFundWiseUrl(value: string) {
   } catch {
     return value;
   }
+}
+
+function makeLocalGroupId(name: string) {
+  const slug = name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 24);
+
+  return `${slug || "group"}-${Date.now().toString(36)}`;
+}
+
+function createLocalGroup(draft: CreateGroupDraft): FundWiseGroup {
+  const name = draft.name.trim() || (draft.mode === "split" ? "Split group" : "Fund group");
+  const id = makeLocalGroupId(name);
+
+  if (draft.mode === "fund") {
+    return {
+      currency: "USDC",
+      emoji: "F",
+      goal: 500,
+      id,
+      members: ["you"],
+      mode: "fund",
+      myContrib: 0,
+      name,
+      proposals: [],
+      total: 0,
+    };
+  }
+
+  return {
+    balances: [],
+    currency: "USDC",
+    emoji: "S",
+    expenses: [],
+    id,
+    members: ["you"],
+    mode: "split",
+    myBalance: 0,
+    name,
+    settlements: [],
+  };
+}
+
+function getDashboardSummary(groups: FundWiseGroup[]) {
+  return groups.reduce(
+    (summary, group) => {
+      if (group.mode === "split") {
+        const balance = group.myBalance;
+        return {
+          ...summary,
+          net: summary.net + balance,
+          owed: summary.owed + Math.max(balance, 0),
+          owe: summary.owe + Math.max(-balance, 0),
+        };
+      }
+
+      return {
+        ...summary,
+        vaults: summary.vaults + group.myContrib,
+      };
+    },
+    { net: 0, owe: 0, owed: 0, vaults: 0 },
+  );
+}
+
+function getActivityItems(groups: FundWiseGroup[]): ActivityItem[] {
+  return groups.flatMap<ActivityItem>((group) => {
+    if (group.mode === "split") {
+      return group.expenses.map((expense) => ({
+        icon: expense.icon,
+        id: `${group.id}-${expense.id}`,
+        kind: expense.myShare >= 0 ? "pos" : "neg",
+        sub: `${personOf(expense.payer).name} paid · ${group.name}`,
+        title: expense.name,
+        value: formatUsd(expense.myShare),
+      } satisfies ActivityItem));
+    }
+
+    return group.proposals.map((proposal) => ({
+      icon: "F",
+      id: `${group.id}-${proposal.id}`,
+      kind: "neutral",
+      sub: `${group.name} · ${proposal.status}`,
+      title: proposal.title,
+      value: proposal.amt ? `$${proposal.amt}` : "",
+    } satisfies ActivityItem));
+  });
 }
 
 function bytesFromString(value: string) {
@@ -408,7 +507,7 @@ function AppShell({
 }) {
   return (
     <View style={styles.appScreen}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} style={styles.appScroll}>
         {children}
       </ScrollView>
       {activeTab && onTab && onFab ? <BottomNav active={activeTab} onFab={onFab} onTab={onTab} /> : null}
@@ -1127,7 +1226,7 @@ function TopHeader({
     <View style={styles.dashboardTop}>
       <View>
         <Text style={styles.greeting}>Good morning</Text>
-        <Text style={styles.userName}>{ME.name} 👋</Text>
+        <Text style={styles.userName}>{walletAddress ? "Wallet connected" : "Welcome"}</Text>
       </View>
       <View style={styles.headerActions}>
         <Pressable accessibilityRole="button" onPress={onNotifications} style={styles.iconButton}>
@@ -1443,6 +1542,24 @@ function HomeScreen({
   settlementPreviewLoading: boolean;
   walletAddress: string | null;
 }) {
+  const activityItems = getActivityItems(groups);
+  const fundGroup = groups.find((group): group is FundGroup => group.mode === "fund");
+  const settlement = groups
+    .filter((group): group is SplitGroup => group.mode === "split")
+    .flatMap((group) =>
+      group.settlements
+        .filter((item) => item.from === "you" || item.to === "you")
+        .map((item) => ({ ...item, group })),
+    )[0];
+  const proposal = groups
+    .filter((group): group is FundGroup => group.mode === "fund")
+    .flatMap((group) =>
+      group.proposals
+        .filter((item) => item.status === "pending" && item.myVote === null)
+        .map((item) => ({ group, proposal: item })),
+    )[0];
+  const hasGroups = groups.length > 0;
+
   return (
     <AppShell activeTab="home" onFab={onFab} onTab={onTab}>
       <TopHeader
@@ -1456,7 +1573,7 @@ function HomeScreen({
         onProfile={onProfile}
         walletAddress={walletAddress}
       />
-      <BalanceHero />
+      <BalanceHero groups={groups} />
       <LinkRecoveryCard
         intent={incomingIntent}
         loading={incomingLoading}
@@ -1470,57 +1587,73 @@ function HomeScreen({
         walletAddress={walletAddress}
       />
       <View style={styles.quickGrid}>
-        <QuickAction label="Split" mark="Split" onPress={() => onAction({ kind: "add-expense" })} />
-        <QuickAction label="Deposit" mark="In" onPress={() => onAction({ group: groups.find((group): group is FundGroup => group.mode === "fund")!, kind: "deposit" })} />
-        <QuickAction label="Settle" mark="Pay" onPress={() => onAction({ kind: "settle-picker" })} />
+        {hasGroups ? <QuickAction label="Split" mark="Split" onPress={() => onAction({ kind: "add-expense" })} /> : null}
+        {fundGroup ? <QuickAction label="Deposit" mark="In" onPress={() => onAction({ group: fundGroup, kind: "deposit" })} /> : null}
+        {hasGroups ? <QuickAction label="Settle" mark="Pay" onPress={() => onAction({ kind: "settle-picker" })} /> : null}
         <QuickAction label="New group" mark="New" onPress={() => onAction({ kind: "create-group" })} />
       </View>
-      <View style={styles.alertStack}>
-        <ActionAlert
-          body="Amazon gift card $450 · 3 of 4 yes"
-          mark="Vote"
-          onPress={() => {
-            const group = groups.find((item) => item.id === "priya");
-            if (group) onOpenGroup(group);
-          }}
-          title="Vote needed · Priya's Gift"
-          tone="vote"
-        />
-        <ActionAlert
-          body="Flatmates · settle in one tap"
-          mark="Pay"
-          onPress={() => {
-            const group = groups.find((item): item is SplitGroup => item.id === "flat" && item.mode === "split");
-            if (group) onAction({ kind: "settle", settlement: { ...group.settlements[0], group } });
-          }}
-          title="You owe Kiran $30"
-          tone="settle"
-        />
-        <ActionAlert body="Open the FundWise mini-app inside any chat" mark="TG" onPress={() => onAction({ kind: "telegram" })} title="Split with anyone, in Telegram" tone="telegram" />
-      </View>
+      {proposal || settlement ? (
+        <View style={styles.alertStack}>
+          {proposal ? (
+            <ActionAlert
+              body={`${proposal.group.name} · ${proposal.proposal.yes} of ${proposal.proposal.total} yes`}
+              mark="Vote"
+              onPress={() => onOpenGroup(proposal.group)}
+              title={`Vote needed · ${proposal.proposal.title}`}
+              tone="vote"
+            />
+          ) : null}
+          {settlement ? (
+            <ActionAlert
+              body={`${settlement.group.name} · ${settlement.from === "you" ? "pay" : "receive"} ${formatUsd(settlement.amt, false)}`}
+              mark="Pay"
+              onPress={() => onAction({ kind: "settle", settlement })}
+              title={settlement.from === "you" ? `You owe ${personOf(settlement.to).name}` : `${personOf(settlement.from).name} owes you`}
+              tone="settle"
+            />
+          ) : null}
+        </View>
+      ) : null}
       <SectionHeader action="See all" onAction={() => onTab("groups")} title="Your groups" />
-      <View style={styles.stack}>
-        {groups.map((group) => (
-          <GroupCard group={group} key={group.id} onPress={() => onOpenGroup(group)} />
-        ))}
-      </View>
-      <SectionHeader action="View all" onAction={() => onTab("activity")} title="Recent activity" />
-      <ActivityList compact />
+      {hasGroups ? (
+        <View style={styles.stack}>
+          {groups.map((group) => (
+            <GroupCard group={group} key={group.id} onPress={() => onOpenGroup(group)} />
+          ))}
+        </View>
+      ) : (
+        <EmptyState
+          actionLabel="Create group"
+          body="Create a split group or fund group when you are ready. Until then, this dashboard stays clean."
+          icon="New"
+          onAction={() => onAction({ kind: "create-group" })}
+          title="No groups yet"
+        />
+      )}
+      {activityItems.length > 0 ? (
+        <>
+          <SectionHeader action="View all" onAction={() => onTab("activity")} title="Recent activity" />
+          <ActivityList compact items={activityItems} />
+        </>
+      ) : null}
     </AppShell>
   );
 }
 
-function BalanceHero() {
+function BalanceHero({ groups }: { groups: FundWiseGroup[] }) {
+  const summary = getDashboardSummary(groups);
+  const groupCopy = groups.length === 0 ? "No balances yet" : `${groups.length} ${groups.length === 1 ? "group" : "groups"} tracked`;
+
   return (
     <View style={styles.balanceHero}>
       <HeroChrome />
       <Text style={styles.heroLabel}>Net balance · all groups</Text>
-      <Text style={styles.heroAmount}>+$39.50</Text>
-      <Text style={styles.heroSub}>USDC owed to you across 2 groups</Text>
+      <Text style={styles.heroAmount}>{formatUsd(summary.net)}</Text>
+      <Text style={styles.heroSub}>{groupCopy}</Text>
       <View style={styles.heroStrip}>
-        <HeroStat label="You're owed" value="$114.50" />
-        <HeroStat label="You owe" value="$75.00" />
-        <HeroStat label="In vaults" value="$250" />
+        <HeroStat label="You're owed" value={formatUsd(summary.owed, false)} />
+        <HeroStat label="You owe" value={formatUsd(summary.owe, false)} />
+        <HeroStat label="In vaults" value={formatUsd(summary.vaults, false)} />
       </View>
     </View>
   );
@@ -1598,6 +1731,31 @@ function SectionHeader({ action, onAction, title }: { action?: string; onAction?
           <Text style={styles.sectionAction}>{action}</Text>
         </Pressable>
       ) : null}
+    </View>
+  );
+}
+
+function EmptyState({
+  actionLabel,
+  body,
+  icon,
+  onAction,
+  title,
+}: {
+  actionLabel: string;
+  body: string;
+  icon: string;
+  onAction: () => void;
+  title: string;
+}) {
+  return (
+    <View style={styles.emptyState}>
+      <IconTile mark={icon} size={22} style={styles.emptyIcon} />
+      <Text style={styles.emptyTitle}>{title}</Text>
+      <Text style={styles.emptyBody}>{body}</Text>
+      <AppButton onPress={onAction} style={styles.emptyButton}>
+        {actionLabel}
+      </AppButton>
     </View>
   );
 }
@@ -1850,28 +2008,49 @@ function GroupsScreen({ groups, onCreate, onFab, onOpenGroup, onTab }: { groups:
         </Pressable>
       </View>
       <SegmentedTabs active={filter} labels={[["all", "All"], ["split", "Split"], ["fund", "Fund"]]} onChange={setFilter} />
-      <View style={styles.stack}>
-        {filtered.map((group) => (
-          <GroupCard group={group} key={group.id} onPress={() => onOpenGroup(group)} />
-        ))}
-      </View>
+      {filtered.length > 0 ? (
+        <View style={styles.stack}>
+          {filtered.map((group) => (
+            <GroupCard group={group} key={group.id} onPress={() => onOpenGroup(group)} />
+          ))}
+        </View>
+      ) : (
+        <EmptyState
+          actionLabel="Create group"
+          body={groups.length === 0 ? "Your groups will appear here after you create or open one." : "No groups match this filter yet."}
+          icon="New"
+          onAction={onCreate}
+          title={groups.length === 0 ? "No groups yet" : "Nothing here"}
+        />
+      )}
     </AppShell>
   );
 }
 
-function ActivityScreen({ onFab, onTab }: { onFab: () => void; onTab: (tab: "home" | "groups" | "activity" | "wallet") => void }) {
+function ActivityScreen({ activityItems, onFab, onTab }: { activityItems: ActivityItem[]; onFab: () => void; onTab: (tab: "home" | "groups" | "activity" | "wallet") => void }) {
   const [filter, setFilter] = useState<"all" | "expenses" | "settlements" | "votes">("all");
 
   return (
     <AppShell activeTab="activity" onFab={onFab} onTab={onTab}>
       <View style={styles.pageHeader}><Text style={styles.pageTitle}>Activity</Text></View>
       <SegmentedTabs active={filter} labels={[["all", "All"], ["expenses", "Expenses"], ["settlements", "Settlements"], ["votes", "Votes"]]} onChange={setFilter} />
-      <ActivityList />
+      {activityItems.length > 0 ? (
+        <ActivityList items={activityItems} />
+      ) : (
+        <EmptyState
+          actionLabel="Create group"
+          body="New expenses, settlements, deposits, and votes will appear here after you start using a group."
+          icon="Rec"
+          onAction={onFab}
+          title="No activity yet"
+        />
+      )}
     </AppShell>
   );
 }
 
 function WalletScreen({
+  activityItems,
   isOnline,
   onFab,
   onProfile,
@@ -1879,6 +2058,7 @@ function WalletScreen({
   onTelegram,
   walletAddress,
 }: {
+  activityItems: ActivityItem[];
   isOnline: boolean;
   onFab: () => void;
   onProfile: () => void;
@@ -1887,6 +2067,7 @@ function WalletScreen({
   walletAddress: string | null;
 }) {
   const device = useMemo(() => getSeekerDeviceInfo(), []);
+  const walletDisplay = walletAddress ? "Connected" : "$0.00";
 
   return (
     <AppShell activeTab="wallet" onFab={onFab} onTab={onTab}>
@@ -1897,12 +2078,12 @@ function WalletScreen({
       <View style={styles.balanceHero}>
         <HeroChrome />
         <Text style={styles.heroLabel}>Wallet balance</Text>
-        <Text style={styles.heroAmount}>$248.30</Text>
-        <Text style={styles.heroSub}>USDC · {SOLANA_CHAIN.replace("solana:", "")}</Text>
+        <Text style={styles.heroAmount}>{walletDisplay}</Text>
+        <Text style={styles.heroSub}>{walletAddress ? shortAddress(walletAddress, 8) : `USDC · ${SOLANA_CHAIN.replace("solana:", "")}`}</Text>
         <View style={styles.heroStrip}>
           <HeroStat label="Device" value={device.isSeekerDevice ? "Seeker" : device.model || "Android"} />
           <HeroStat label="RPC" value={isOnline ? "Online" : "Offline"} />
-          <HeroStat label="Fees · 30d" value="$0.01" />
+          <HeroStat label="Fees · 30d" value="$0.00" />
         </View>
       </View>
       <View style={styles.quickGrid}>
@@ -1912,7 +2093,17 @@ function WalletScreen({
         <QuickAction label="Telegram" mark="TG" onPress={onTelegram} />
       </View>
       <SectionHeader title="Recent transactions" />
-      <ActivityList />
+      {activityItems.length > 0 ? (
+        <ActivityList items={activityItems} />
+      ) : (
+        <EmptyState
+          actionLabel="Create group"
+          body="Wallet-related activity appears after you create a group or open a FundWise request."
+          icon="Wallet"
+          onAction={onFab}
+          title="No wallet activity"
+        />
+      )}
       <SectionHeader title="Address" />
       <View style={styles.addressBox}>
         <Text numberOfLines={1} style={styles.addressText}>{walletAddress || "Wallet not connected"}</Text>
@@ -1931,10 +2122,12 @@ function WalletScreen({
   );
 }
 
-function ActivityList({ compact = false }: { compact?: boolean }) {
+function ActivityList({ compact = false, items }: { compact?: boolean; items: ActivityItem[] }) {
+  const shownItems = compact ? items.slice(0, 4) : items;
+
   return (
     <View style={styles.stack}>
-      {(compact ? ACTIVITY.slice(0, 4) : ACTIVITY).map((activity) => (
+      {shownItems.map((activity) => (
         <View key={activity.id} style={styles.activityRow}>
           <View style={styles.activityIcon}><Text style={styles.activityIconText}>{activity.icon}</Text></View>
           <View style={styles.flexOne}>
@@ -2013,23 +2206,34 @@ function BottomSheet({ children, onClose, title }: { children: React.ReactNode; 
   return (
     <View style={styles.sheetOverlay}>
       <Pressable accessibilityRole="button" onPress={onClose} style={StyleSheet.absoluteFill} />
-      <View style={styles.sheet}>
-        <View style={styles.sheetHandle} />
-        <View style={styles.sheetHead}>
-          <Text style={styles.sheetTitle}>{title}</Text>
-          <Pressable accessibilityRole="button" onPress={onClose} style={styles.sheetClose}>
-            <Ionicons color={colors.textSoft} name="close" size={18} />
-          </Pressable>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "android" ? 0 : STATUS_BAR_SPACE}
+        pointerEvents="box-none"
+        style={styles.sheetKeyboardFrame}
+      >
+        <View style={styles.sheet}>
+          <View style={styles.sheetHandle} />
+          <View style={styles.sheetHead}>
+            <Text style={styles.sheetTitle}>{title}</Text>
+            <Pressable accessibilityRole="button" onPress={onClose} style={styles.sheetClose}>
+              <Ionicons color={colors.textSoft} name="close" size={18} />
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            {children}
+          </ScrollView>
         </View>
-        {children}
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 function ActiveSheet({
+  groups,
   onClose,
   onComplete,
+  onCreateGroup,
   onDepositSigned,
   onNotify,
   onOpenSheet,
@@ -2038,8 +2242,10 @@ function ActiveSheet({
   onSettlementSigned,
   sheet,
 }: {
+  groups: FundWiseGroup[];
   onClose: () => void;
   onComplete: (success: SuccessState, notification?: NotifyInput) => void;
+  onCreateGroup: (draft: CreateGroupDraft) => FundWiseGroup;
   onDepositSigned: (group: FundGroup, amount: number) => void;
   onNotify: (notification: NotifyInput) => void;
   onOpenSheet: (sheet: SheetState) => void;
@@ -2057,34 +2263,38 @@ function ActiveSheet({
   }, [onNotify]);
 
   if (sheet.kind === "fab") {
-    const fund = GROUPS.find((group): group is FundGroup => group.mode === "fund")!;
+    const fund = groups.find((group): group is FundGroup => group.mode === "fund");
     return (
       <BottomSheet onClose={onClose} title="Quick actions">
         <SheetAction body="Log a cost · split with the group" mark="Split" onPress={() => onOpenSheet({ kind: "add-expense" })} title="Add expense" />
         <SheetAction body="Pay what you owe · receive what you're owed" mark="Pay" onPress={() => onOpenSheet({ kind: "settle-picker" })} title="Settle up" />
-        <SheetAction body="Top up a Fund-mode group" mark="Vault" onPress={() => onOpenSheet({ group: fund, kind: "deposit" })} title="Deposit to vault" />
+        {fund ? <SheetAction body="Top up a Fund-mode group" mark="Vault" onPress={() => onOpenSheet({ group: fund, kind: "deposit" })} title="Deposit to vault" /> : null}
         <SheetAction body="Split or Fund · invite people" mark="New" onPress={() => onOpenSheet({ kind: "create-group" })} title="New group" />
       </BottomSheet>
     );
   }
 
   if (sheet.kind === "settle-picker") {
-    const options = GROUPS.filter((group): group is SplitGroup => group.mode === "split").flatMap((group) =>
+    const options = groups.filter((group): group is SplitGroup => group.mode === "split").flatMap((group) =>
       group.settlements.filter((settlement) => settlement.from === "you" || settlement.to === "you").map((settlement) => ({ ...settlement, group })),
     );
     return (
       <BottomSheet onClose={onClose} title="Settle up">
         <Text style={styles.sheetHelp}>Pick a balance to review. Payment continues on FundWise web until mobile transaction intents are live.</Text>
-        {options.map((settlement, index) => (
-          <SheetAction
-            body={`${settlement.group.emoji} ${settlement.group.name}`}
-            key={`${settlement.group.id}-${index}`}
-            mark={settlement.to === "you" ? "In" : "Out"}
-            onPress={() => onOpenSheet({ kind: "settle", settlement })}
-            right={formatUsd(settlement.to === "you" ? settlement.amt : -settlement.amt)}
-            title={settlement.to === "you" ? `${personOf(settlement.from).name} owes you` : `You owe ${personOf(settlement.to).name}`}
-          />
-        ))}
+        {options.length > 0 ? (
+          options.map((settlement, index) => (
+            <SheetAction
+              body={`${settlement.group.emoji} ${settlement.group.name}`}
+              key={`${settlement.group.id}-${index}`}
+              mark={settlement.to === "you" ? "In" : "Out"}
+              onPress={() => onOpenSheet({ kind: "settle", settlement })}
+              right={formatUsd(settlement.to === "you" ? settlement.amt : -settlement.amt)}
+              title={settlement.to === "you" ? `${personOf(settlement.from).name} owes you` : `You owe ${personOf(settlement.to).name}`}
+            />
+          ))
+        ) : (
+          <Text style={styles.sheetHelp}>No settleable balances yet. Add expenses to a split group first.</Text>
+        )}
       </BottomSheet>
     );
   }
@@ -2287,6 +2497,7 @@ function ActiveSheet({
   if (sheet.kind === "add-expense") {
     return (
       <AddExpenseSheet
+        groups={groups}
         onClose={onClose}
         onSave={(draft) =>
           onComplete(
@@ -2335,21 +2546,22 @@ function ActiveSheet({
     return (
       <CreateGroupSheet
         onClose={onClose}
-        onCreate={(groupName) =>
+        onCreate={(draft) => {
+          const group = onCreateGroup(draft);
           onComplete(
             {
-              body: "Share the invite link to add members.",
-              pill: groupName,
+              body: "Your group is ready. Invite members when you want to start splitting.",
+              pill: group.name,
               returnScreen: "groups",
               title: "Group created",
             },
             {
-              body: `${groupName} is ready for invites.`,
-              title: "Group notification ready",
+              body: `${group.name} is ready.`,
+              title: "Group created",
               tone: "success",
             },
-          )
-        }
+          );
+        }}
       />
     );
   }
@@ -2387,13 +2599,13 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 }
 
 function DepositSheet({ group, onClose, onSign }: { group: FundGroup; onClose: () => void; onSign: (amount: number) => void }) {
-  const [amount, setAmount] = useState("100");
+  const [amount, setAmount] = useState("");
   const parsedAmount = Number(amount);
   const validAmount = Number.isFinite(parsedAmount) && parsedAmount > 0;
 
   return (
     <BottomSheet onClose={onClose} title={`Deposit · ${group.name}`}>
-      <LabeledInput label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} value={`$${amount}`} />
+      <LabeledInput label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} placeholder="$0.00" value={amount ? `$${amount}` : ""} />
       <View style={styles.pillRow}>
         {["25", "50", "100", "250"].map((value) => (
           <Pressable accessibilityRole="button" key={value} onPress={() => setAmount(value)} style={[styles.pill, amount === value ? styles.pillActive : null]}>
@@ -2401,7 +2613,7 @@ function DepositSheet({ group, onClose, onSign }: { group: FundGroup; onClose: (
           </Pressable>
         ))}
       </View>
-      <MetaRow label="From" value="Your wallet · $248.30" />
+      <MetaRow label="From" value="Your wallet" />
       <MetaRow label="To" value={`${group.emoji} ${group.name} vault`} />
       <MetaRow label="Token" value={`USDC · ${SOLANA_CHAIN.replace("solana:", "")}`} />
       <MetaRow label="Fee" value="~$0.00025 · <1s" />
@@ -2417,66 +2629,85 @@ function DepositSheet({ group, onClose, onSign }: { group: FundGroup; onClose: (
   );
 }
 
-function AddExpenseSheet({ onClose, onSave }: { onClose: () => void; onSave: (draft: { amount: number; groupName: string; memo: string }) => void }) {
-  const splitGroups = GROUPS.filter((group): group is SplitGroup => group.mode === "split");
-  const [amount, setAmount] = useState("48.00");
+function AddExpenseSheet({ groups, onClose, onSave }: { groups: FundWiseGroup[]; onClose: () => void; onSave: (draft: { amount: number; groupName: string; memo: string }) => void }) {
+  const splitGroups = groups.filter((group): group is SplitGroup => group.mode === "split");
+  const [amount, setAmount] = useState("");
   const [groupId, setGroupId] = useState(splitGroups[0]?.id || "lisbon");
-  const [memo, setMemo] = useState("Wine dinner");
+  const [memo, setMemo] = useState("");
   const activeGroup = splitGroups.find((group) => group.id === groupId) || splitGroups[0];
   const parsedAmount = Number(amount);
   const validAmount = Number.isFinite(parsedAmount) && parsedAmount > 0;
-  const members = activeGroup?.members || (["you", "kiran", "asha", "dev"] as PersonId[]);
-  const share = validAmount ? parsedAmount / members.length : 0;
+  const members = activeGroup?.members || [];
+  const share = validAmount && members.length > 0 ? parsedAmount / members.length : 0;
 
   return (
     <BottomSheet onClose={onClose} title="Add expense">
-      <LabeledInput label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} value={`$${amount}`} />
-      <LabeledInput label="What for?" onChangeText={setMemo} placeholder="e.g. Wine dinner" value={memo} />
-      <Text style={styles.fieldLabel}>Group</Text>
-      <View style={styles.pillRow}>
-        {splitGroups.map((group) => (
-          <Pressable accessibilityRole="button" key={group.id} onPress={() => setGroupId(group.id)} style={[styles.pill, group.id === groupId ? styles.pillActive : null]}>
-            <Text style={[styles.pillText, group.id === groupId ? styles.pillTextActive : null]}>{group.emoji} {group.name}</Text>
-          </Pressable>
-        ))}
-      </View>
-      <Text style={styles.fieldLabel}>Live equal split</Text>
-      <View style={styles.memberList}>
-        {members.map((id) => (
-          <View key={id} style={styles.memberRow}>
-            <Avatar id={id} size={30} />
-            <Text style={styles.memberName}>{personOf(id).name}</Text>
-            <Text style={styles.memberContrib}>${share.toFixed(2)}</Text>
+      {splitGroups.length === 0 ? (
+        <Text style={styles.sheetHelp}>Create a split group before adding expenses.</Text>
+      ) : null}
+      <LabeledInput label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} placeholder="$0.00" value={amount ? `$${amount}` : ""} />
+      <LabeledInput label="What for?" onChangeText={setMemo} placeholder="e.g. Dinner" value={memo} />
+      {splitGroups.length > 0 ? (
+        <>
+          <Text style={styles.fieldLabel}>Group</Text>
+          <View style={styles.pillRow}>
+            {splitGroups.map((group) => (
+              <Pressable accessibilityRole="button" key={group.id} onPress={() => setGroupId(group.id)} style={[styles.pill, group.id === groupId ? styles.pillActive : null]}>
+                <Text style={[styles.pillText, group.id === groupId ? styles.pillTextActive : null]}>{group.emoji} {group.name}</Text>
+              </Pressable>
+            ))}
           </View>
-        ))}
-      </View>
-      <AppButton disabled={!validAmount || !memo.trim()} onPress={() => onSave({ amount: parsedAmount, groupName: activeGroup?.name || "Group", memo: memo.trim() || "Expense" })} style={styles.sheetPrimary}>Save expense</AppButton>
+          <Text style={styles.fieldLabel}>Live equal split</Text>
+          <View style={styles.memberList}>
+            {members.map((id) => (
+              <View key={id} style={styles.memberRow}>
+                <Avatar id={id} size={30} />
+                <Text style={styles.memberName}>{personOf(id).name}</Text>
+                <Text style={styles.memberContrib}>${share.toFixed(2)}</Text>
+              </View>
+            ))}
+          </View>
+        </>
+      ) : null}
+      <AppButton disabled={!activeGroup || !validAmount || !memo.trim()} onPress={() => onSave({ amount: parsedAmount, groupName: activeGroup?.name || "Group", memo: memo.trim() || "Expense" })} style={styles.sheetPrimary}>Save expense</AppButton>
     </BottomSheet>
   );
 }
 
 function ProposeSheet({ group, onClose, onSubmit }: { group: FundGroup; onClose: () => void; onSubmit: (proposalTitle: string) => void }) {
-  const [title, setTitle] = useState("Gift card order");
+  const [title, setTitle] = useState("");
   return (
     <BottomSheet onClose={onClose} title="New proposal">
-      <LabeledInput label="Amount to spend" value="$200" />
+      <LabeledInput label="Amount to spend" placeholder="$0.00" value="" />
       <LabeledInput label="Title" onChangeText={setTitle} placeholder="e.g. Gift card order" value={title} />
-      <LabeledInput label="Memo" placeholder="Amazon · $450" value="" />
+      <LabeledInput label="Memo" placeholder="Add context for members" value="" />
       <Text style={styles.sheetHelp}>Needs 3 of {group.members.length} approvals before the vault can execute the payout.</Text>
       <AppButton onPress={() => onSubmit(title.trim() || "Proposal")} style={styles.sheetPrimary}>Open vote</AppButton>
     </BottomSheet>
   );
 }
 
-function CreateGroupSheet({ onClose, onCreate }: { onClose: () => void; onCreate: (groupName: string) => void }) {
+function CreateGroupSheet({ onClose, onCreate }: { onClose: () => void; onCreate: (draft: CreateGroupDraft) => void }) {
   const [mode, setMode] = useState<"split" | "fund">("split");
-  const [name, setName] = useState("New group");
+  const [name, setName] = useState("");
   return (
     <BottomSheet onClose={onClose} title="New group">
       <Text style={styles.fieldLabel}>Pick a mode</Text>
-      <View style={styles.pillRow}>
-        <Pressable accessibilityRole="button" onPress={() => setMode("split")} style={[styles.pill, mode === "split" ? styles.pillActive : null]}><Text style={[styles.pillText, mode === "split" ? styles.pillTextActive : null]}>Split</Text></Pressable>
-        <Pressable accessibilityRole="button" onPress={() => setMode("fund")} style={[styles.pill, mode === "fund" ? styles.pillActive : null]}><Text style={[styles.pillText, mode === "fund" ? styles.pillTextActive : null]}>Fund</Text></Pressable>
+      <View style={styles.modeGrid}>
+        <ModeOption
+          active={mode === "split"}
+          body="Track shared costs and settle later"
+          icon="people-outline"
+          onPress={() => setMode("split")}
+          title="Split"
+        />
+        <ModeOption
+          active={mode === "fund"}
+          body="Collect into a shared vault"
+          icon="wallet-outline"
+          onPress={() => setMode("fund")}
+          title="Fund"
+        />
       </View>
       <LabeledInput label="Group name" onChangeText={setName} placeholder="e.g. Lisbon Trip" value={name} />
       <Text style={styles.fieldLabel}>Stablecoin</Text>
@@ -2485,8 +2716,37 @@ function CreateGroupSheet({ onClose, onCreate }: { onClose: () => void; onCreate
           <Pressable accessibilityRole="button" key={token} style={[styles.pill, token === "USDC" ? styles.pillActive : null]}><Text style={[styles.pillText, token === "USDC" ? styles.pillTextActive : null]}>{token}</Text></Pressable>
         ))}
       </View>
-      <AppButton onPress={() => onCreate(name.trim() || (mode === "split" ? "Split group" : "Fund group"))} style={styles.sheetPrimary}>Create group</AppButton>
+      <AppButton onPress={() => onCreate({ mode, name: name.trim() })} style={styles.sheetPrimary}>Create group</AppButton>
     </BottomSheet>
+  );
+}
+
+function ModeOption({
+  active,
+  body,
+  icon,
+  onPress,
+  title,
+}: {
+  active: boolean;
+  body: string;
+  icon: IoniconName;
+  onPress: () => void;
+  title: string;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={({ pressed }) => [styles.modeOption, active ? styles.modeOptionActive : null, pressed ? styles.pressed : null]}
+    >
+      <View style={[styles.modeIcon, active ? styles.modeIconActive : null]}>
+        <Ionicons color={active ? colors.white : colors.primaryMid} name={icon} size={20} />
+      </View>
+      <Text style={[styles.modeTitle, active ? styles.modeTitleActive : null]}>{title}</Text>
+      <Text style={styles.modeBody}>{body}</Text>
+    </Pressable>
   );
 }
 
@@ -2545,8 +2805,8 @@ export function FundWiseSeekerAppScreen() {
   const { account } = useMobileWallet();
   const [screen, setScreen] = useState<ScreenId>("boot");
   const [onboardingChecked, setOnboardingChecked] = useState(false);
-  const [groups, setGroups] = useState<FundWiseGroup[]>(GROUPS);
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("lisbon");
+  const [groups, setGroups] = useState<FundWiseGroup[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<SheetState | null>(null);
   const [intent, setIntent] = useState<SignatureIntent | null>(null);
   const [notification, setNotification] = useState<AppNotification | null>(null);
@@ -2563,7 +2823,8 @@ export function FundWiseSeekerAppScreen() {
   const isOnline = useNetworkStatus();
   const incomingLink = useIncomingFundWiseLink();
   const walletAddress = walletAddressToString(account?.address) || authorizedWalletAddress;
-  const selectedGroup = groups.find((group) => group.id === selectedGroupId) || groups[0];
+  const selectedGroup = groups.find((group) => group.id === selectedGroupId);
+  const activityItems = useMemo(() => getActivityItems(groups), [groups]);
   const incomingIntent = useMemo(
     () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL, FUNDWISE_ALLOWED_HOSTS) : null),
     [incomingLink.url],
@@ -2798,7 +3059,7 @@ export function FundWiseSeekerAppScreen() {
   }, [success.returnScreen]);
 
   const onSettleSelected = useCallback(() => {
-    if (selectedGroup.mode !== "split") {
+    if (!selectedGroup || selectedGroup.mode !== "split") {
       setSheet({ kind: "settle-picker" });
       return;
     }
@@ -2847,6 +3108,13 @@ export function FundWiseSeekerAppScreen() {
     );
   }, []);
 
+  const createGroup = useCallback((draft: CreateGroupDraft) => {
+    const group = createLocalGroup(draft);
+    setGroups((current) => [group, ...current]);
+    setSelectedGroupId(group.id);
+    return group;
+  }, []);
+
   const completeWithSuccess = useCallback((nextSuccess: SuccessState, nextNotification?: NotifyInput) => {
     setSheet(null);
     setSuccess(nextSuccess);
@@ -2888,7 +3156,7 @@ export function FundWiseSeekerAppScreen() {
         <WelcomeScreen
           onNext={() => {
             triggerHaptic("tap");
-            setScreen("tour");
+            startSignature(connectIntent);
           }}
         />
       );
@@ -2916,12 +3184,12 @@ export function FundWiseSeekerAppScreen() {
       );
     }
     if (screen === "success") return <SuccessScreen onDone={afterSuccess} state={success} walletAddress={walletAddress} />;
-    if (screen === "groups") return <GroupsScreen groups={groups} onCreate={() => setSheet({ kind: "create-group" })} onFab={() => setSheet({ kind: "fab" })} onOpenGroup={openGroup} onTab={goTab} />;
-    if (screen === "activity") return <ActivityScreen onFab={() => setSheet({ kind: "fab" })} onTab={goTab} />;
+    if (screen === "groups") return <GroupsScreen groups={groups} onCreate={() => setSheet({ kind: "create-group" })} onFab={() => setSheet({ kind: "create-group" })} onOpenGroup={openGroup} onTab={goTab} />;
+    if (screen === "activity") return <ActivityScreen activityItems={activityItems} onFab={() => setSheet({ kind: "create-group" })} onTab={goTab} />;
     if (screen === "wallet") {
-      return <WalletScreen isOnline={isOnline} onFab={() => setSheet({ kind: "fab" })} onProfile={() => setSheet({ kind: "profile" })} onTab={goTab} onTelegram={() => setSheet({ kind: "telegram" })} walletAddress={walletAddress} />;
+      return <WalletScreen activityItems={activityItems} isOnline={isOnline} onFab={() => setSheet({ kind: "create-group" })} onProfile={() => setSheet({ kind: "profile" })} onTab={goTab} onTelegram={() => setSheet({ kind: "telegram" })} walletAddress={walletAddress} />;
     }
-    if (screen === "split" && selectedGroup.mode === "split") {
+    if (screen === "split" && selectedGroup?.mode === "split") {
       return (
         <SplitGroupScreen
           group={selectedGroup}
@@ -2932,7 +3200,7 @@ export function FundWiseSeekerAppScreen() {
         />
       );
     }
-    if (screen === "fund" && selectedGroup.mode === "fund") {
+    if (screen === "fund" && selectedGroup?.mode === "fund") {
       return <FundGroupScreen group={selectedGroup} onBack={() => setScreen("home")} onInvite={() => setSheet({ group: selectedGroup, kind: "invite" })} onSheet={setSheet} />;
     }
     return (
@@ -2943,7 +3211,7 @@ export function FundWiseSeekerAppScreen() {
         onAction={setSheet}
         onClearIncomingLink={clearIncomingLink}
         onConnectWallet={() => startSignature(connectIntent)}
-        onFab={() => setSheet({ kind: "fab" })}
+        onFab={() => setSheet({ kind: "create-group" })}
         onNotify={notify}
         onOpenGroup={openGroup}
         onOpenIncomingLink={openIncomingLink}
@@ -2963,8 +3231,10 @@ export function FundWiseSeekerAppScreen() {
       {content}
       {sheet ? (
         <ActiveSheet
+          groups={groups}
           onClose={() => setSheet(null)}
           onComplete={completeWithSuccess}
+          onCreateGroup={createGroup}
           onDepositSigned={applyDeposit}
           onNotify={notify}
           onOpenSheet={setSheet}
@@ -3020,7 +3290,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     left: 0,
-    paddingBottom: 20,
+    paddingBottom: BOTTOM_SAFE_SPACE,
     paddingHorizontal: 18,
     paddingTop: 12,
     position: "absolute",
@@ -3150,6 +3420,10 @@ const styles = StyleSheet.create({
   },
   appScreen: {
     backgroundColor: colors.bg,
+    flex: 1,
+    paddingTop: STATUS_BAR_SPACE,
+  },
+  appScroll: {
     flex: 1,
   },
   authBody: {
@@ -3446,17 +3720,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(244,241,234,0.94)",
     borderColor: colors.border,
     borderTopWidth: 1,
-    bottom: 0,
     elevation: 8,
     flexDirection: "row",
-    height: 84,
     justifyContent: "space-around",
-    left: 0,
-    paddingBottom: 12,
+    minHeight: 76 + BOTTOM_SAFE_SPACE,
+    paddingBottom: BOTTOM_SAFE_SPACE,
     paddingHorizontal: 12,
     paddingTop: 10,
-    position: "absolute",
-    right: 0,
     shadowColor: colors.text,
     shadowOffset: { height: -8, width: 0 },
     shadowOpacity: 0.08,
@@ -3591,7 +3861,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   detailScroll: {
-    paddingBottom: 112,
+    paddingBottom: 96 + BOTTOM_SAFE_SPACE,
   },
   dashboardTop: {
     alignItems: "center",
@@ -3602,6 +3872,44 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.5,
+  },
+  emptyBody: {
+    color: colors.textSoft,
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 20,
+    marginTop: 8,
+    textAlign: "center",
+  },
+  emptyButton: {
+    alignSelf: "stretch",
+    marginTop: 18,
+  },
+  emptyIcon: {
+    alignItems: "center",
+    backgroundColor: colors.primaryPale,
+    borderRadius: 16,
+    height: 54,
+    justifyContent: "center",
+    width: 54,
+  },
+  emptyState: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginHorizontal: 20,
+    marginTop: 10,
+    padding: 18,
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontFamily: serif,
+    fontSize: 21,
+    fontWeight: "700",
+    marginTop: 12,
+    textAlign: "center",
   },
   dot: {
     backgroundColor: "rgba(13,31,20,0.12)",
@@ -3766,6 +4074,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(13,31,20,0.35)",
     borderRadius: 999,
     bottom: 8,
+    display: "none",
     height: 4,
     position: "absolute",
     width: 128,
@@ -4353,6 +4662,43 @@ const styles = StyleSheet.create({
     backgroundColor: colors.fundBluePale,
     color: colors.fundBlue,
   },
+  modeBody: {
+    color: colors.textSoft,
+    fontSize: 11,
+    fontWeight: "700",
+    lineHeight: 16,
+    marginTop: 4,
+  },
+  modeGrid: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  modeIcon: {
+    alignItems: "center",
+    backgroundColor: colors.primaryPale,
+    borderRadius: 12,
+    height: 40,
+    justifyContent: "center",
+    marginBottom: 12,
+    width: 40,
+  },
+  modeIconActive: {
+    backgroundColor: colors.primaryMid,
+  },
+  modeOption: {
+    backgroundColor: colors.bg,
+    borderColor: colors.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    flex: 1,
+    minHeight: 132,
+    padding: 14,
+  },
+  modeOptionActive: {
+    backgroundColor: colors.surfaceInset,
+    borderColor: colors.primaryMid,
+  },
   modeSplit: {
     backgroundColor: colors.primaryPale,
     color: colors.primaryMid,
@@ -4366,6 +4712,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 2,
     textTransform: "uppercase",
+  },
+  modeTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  modeTitleActive: {
+    color: colors.primaryMid,
   },
   monoTiny: {
     color: colors.textSubtle,
@@ -4486,13 +4840,14 @@ const styles = StyleSheet.create({
   },
   onboardingFooter: {
     gap: 10,
-    paddingBottom: 32,
+    paddingBottom: BOTTOM_SAFE_SPACE,
     paddingHorizontal: 24,
     paddingTop: 12,
   },
   onboardingScreen: {
     backgroundColor: colors.bg,
     flex: 1,
+    paddingTop: STATUS_BAR_SPACE,
   },
   pageHeader: {
     alignItems: "center",
@@ -4778,7 +5133,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   scrollContent: {
-    paddingBottom: 104,
+    paddingBottom: 20,
   },
   sectionAction: {
     color: colors.primaryMid,
@@ -4835,14 +5190,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    bottom: 0,
-    left: 0,
     maxHeight: "92%",
-    paddingBottom: 24,
     paddingHorizontal: 20,
     paddingTop: 10,
-    position: "absolute",
-    right: 0,
+    width: "100%",
   },
   sheetAction: {
     alignItems: "center",
@@ -4900,6 +5251,9 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     marginTop: -2,
   },
+  sheetContent: {
+    paddingBottom: SHEET_BOTTOM_SPACE,
+  },
   sheetHandle: {
     alignSelf: "center",
     backgroundColor: "rgba(13,31,20,0.12)",
@@ -4926,6 +5280,11 @@ const styles = StyleSheet.create({
     fontFamily: serif,
     fontSize: 22,
     fontWeight: "700",
+  },
+  sheetKeyboardFrame: {
+    flex: 1,
+    justifyContent: "flex-end",
+    width: "100%",
   },
   sheetOverlay: {
     ...StyleSheet.absoluteFillObject,
