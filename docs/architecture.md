@@ -43,6 +43,8 @@ The first screen should make the phone role explicit:
 - recover an invite, Group, Settlement Request, or Receipt link
 - continue the same FundWise state in the web app on phone, desktop, or PC
 
+The current mounted app keeps this path low-friction on Seeker: the welcome CTA can proceed directly to wallet authorization, the dashboard opens as a fresh empty state with no demo ledger data, and the bottom plus action opens New group directly. Split/Fund group creation is local in-memory UI state until protected FundWise group reads/writes are wired.
+
 This is intentionally not a separate ledger. It is a Seeker-native entry and recovery surface for the existing FundWise product.
 
 The production mobile UX should still be judged first on the FundWise web/PWA/TWA flow: wallet browser access, Add to Home Screen behavior, `/settle/r/{requestId}`, `/receipts/{id}`, and mobile preview APIs. The native app should mirror that contract and improve device-native recovery, not fork the product model.
@@ -58,6 +60,10 @@ The first-run onboarding owns the initial mental model:
 - continue the same state on web or PC
 
 Motion is limited to short opacity and transform transitions using React Native `Animated`. It respects Android reduced-motion settings through `AccessibilityInfo` and never blocks entry to the app.
+
+## Device Layout Boundary
+
+The Seeker app should respect Android system UI instead of drawing under it. The root status bar is non-translucent, the mounted app adds status-bar padding, bottom navigation participates in normal layout instead of overlaying scroll content, and detail/action bars include bottom-safe padding. Bottom sheets use a keyboard-aware frame plus internal scrolling so primary buttons such as Create group remain reachable above the Android navigation area and software keyboard.
 
 ## MWA Platform Boundary
 

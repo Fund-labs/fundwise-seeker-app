@@ -2,9 +2,11 @@
 
 ## Snapshot
 
-Date: 2026-05-26
+Date: 2026-05-27
 
-Status: `v0.1.1` is prepared as a normal-host devnet APK (`https://fundwise.fun` + Solana devnet). Local typecheck, Expo dependency check, devnet verifier, production verifier, and FundWise sync guardrail pass. EAS project `@sarthiii/fundwise-seeker` is linked and devnet build `947e7fc2-55b4-4dc2-b09c-3d8bd6655d99` has been submitted. A local Android debug APK was built successfully at `android/app/build/outputs/apk/debug/app-debug.apk`. Fresh on-device install is still pending because ADB stopped seeing the Seeker after the stale `0.1.0` debug-client mismatch was identified.
+Status: `main` now includes the first real-device Seeker QA pass after the repo moved to `/Volumes/Sarthi/fundlabs/FundWiseSeeker`. The stale emulator entry was removed, the connected Seeker was targeted, and the debug build installed/launched through `npx expo run:android --port 8082` with JDK 17 and Android SDK env vars exported. `npm run typecheck` passes, the app process stayed alive on device, and filtered Android crash logs were empty after the latest JS bundle reload.
+
+The mounted v5 UI now reflects the May 27 device feedback: onboarding skips the long tour and goes straight to wallet authorization, the dashboard starts clean with no demo groups/activity/balances, the bottom plus opens New group instead of share/link actions, the create-group sheet is keyboard-aware and scrollable so the primary button is pressable above device navigation, and the dashboard/bottom nav respect Android status/navigation safe areas.
 
 Roadmap alignment: FundWise ADR-0046 moved the immediate June launch path to mobile web -> Add to Home Screen PWA -> TWA/APK. This React Native Seeker app is now the native companion/follow-on surface for Android App Links, mobile previews, dApp Store packaging, and later native transaction intents. It should not block the web/PWA beta unless a shared handoff contract breaks.
 
@@ -12,20 +14,27 @@ Roadmap alignment: FundWise ADR-0046 moved the immediate June launch path to mob
 
 Pick up here next:
 
-1. Reconnect the Seeker so `adb devices -l` shows it again, then install the fresh `v0.1.1` APK.
-2. QA the mounted v5 UI: onboarding, bottom sheets, popup timing, notification bell, add expense, create group, proposal, invite, and Fundy Telegram sheet.
-3. Test Fundy Telegram redirects from the app, including group-aware `startgroup` links.
-4. Test Android App Links for `https://fundwise.fun/groups`, `/join`, `/settle/r/{requestId}`, and `/receipts/{id}` against the devnet-backed FundWise environment.
+1. Continue real-device QA on the connected Seeker: onboarding, wallet approval/reject/retry, dashboard empty state, New group, Add expense after group creation, Settle picker empty state, proposal, invite, notification bell, and Wallet tab.
+2. Exercise the create-group sheet with keyboard open/closed and Android navigation visible; verify the mode cards, token chips, and primary button remain reachable.
+3. Test Android App Links for `https://fundwise.fun/groups`, `/join`, `/settle/r/{requestId}`, and `/receipts/{id}` against the devnet-backed FundWise environment.
+4. Test Fundy Telegram redirects from the app, including group-aware `startgroup` links.
 5. Test wallet connect, reject, retry, background/resume, and recovered-link behavior with Solana Mobile Wallet and/or Solflare.
-6. Fix device-only UI issues: text overflow, sheet scrolling, Android back behavior, popup placement, and Telegram button behavior.
-7. Publish/share the UAT APK only after the fresh APK passes on-device QA.
+6. Fix remaining device-only UI issues: text overflow, Android back behavior, popup placement, sheet height edge cases, and Telegram button behavior.
+7. Build/share a UAT APK only after the real-device app flow passes without relying on an active Metro session.
 
 Out of scope for the next app pass: Supabase migrations, mainnet rehearsal, and production secret setup. Those belong to the full FundWise product launch gate, not the immediate Seeker app QA loop.
 
 Update:
 
+- 2026-05-27 real-device pass: installed and launched the updated debug app on the connected Seeker via `npx expo run:android --port 8082`; `npm run typecheck` passed; Android process stayed alive; filtered `AndroidRuntime`, `ReactNativeJS`, `Expo`, and `System.err` crash logs were empty.
+- Reduced onboarding friction by making the welcome CTA start wallet authorization directly instead of forcing the tour. The existing tour component remains available through replay paths but no longer blocks signup.
+- Removed demo dashboard state from the mounted screen. Fresh sessions now start with empty groups, no activity, zero balances, neutral wallet totals, and explicit empty states with a Create group action.
+- Rewired bottom plus actions to open New group directly. The old quick-action/share-style sheet is no longer the bottom-nav path, which removes the unexpected link/share text from the plus button.
+- Added local empty group creation for Split and Fund modes so Create group produces a real in-memory group and returns to the Groups view without invite/share copy as the primary result.
+- Fixed Android top/bottom safe-area behavior in the mounted screen: status bar is non-translucent, dashboard content has status-bar padding, bottom nav participates in layout instead of overlaying content, detail/action bars include bottom safe padding, and the fake gesture pill is hidden.
+- Fixed the create-group usability blocker: bottom sheets are wrapped in a keyboard-aware frame, sheet content scrolls with extra bottom padding, and Split/Fund selection is now presented as two larger mode cards.
 - Linked EAS project `@sarthiii/fundwise-seeker` in `app.json` (`projectId: e8b27a7f-9a8c-4a87-ab2e-94cf258c86c9`) and submitted devnet Android build `947e7fc2-55b4-4dc2-b09c-3d8bd6655d99`. Last checked on 2026-05-26: EAS status is `IN_QUEUE` and no artifact URL is available yet.
-- Built the local native debug APK successfully with JDK 17 and Android SDK configured. Output: `android/app/build/outputs/apk/debug/app-debug.apk` (68 MB). Install/launch QA is blocked until the Seeker reconnects to ADB.
+- Built and installed the local native debug APK successfully with JDK 17 and Android SDK configured. Output: `android/app/build/outputs/apk/debug/app-debug.apk` (68 MB). The 2026-05-27 install/launch path succeeded on the connected Seeker after exporting Android SDK paths from the moved volume checkout.
 - Device QA finding: the installed Seeker package was still `versionName=0.1.0`, `versionCode=1`; loading the current Metro bundle into that stale binary produced `PlatformConstants could not be found`, which is a JS/native dev-client mismatch rather than a repo code fix. The fresh `0.1.1` APK is the real validation target.
 - Prepared `v0.1.1` as a devnet APK path on the normal `https://fundwise.fun` host: app/package version `0.1.1`, Android versionCode `2`, EAS `devnet` profile, `.env.devnet.example`, and `npm run verify:devnet`.
 - Kept `npm run verify:production` as the later mainnet gate so the devnet path does not weaken production readiness checks.
@@ -161,6 +170,7 @@ Implemented:
 
 - MWA provider in `App.tsx`
 - direct MWA `authorize` plus `signMessages` proof in the FundWise onboarding approval flow
+- first-run welcome CTA can continue directly to wallet authorization instead of forcing a multi-step tour
 - Wallet UI `useMobileWallet` hook for legacy connect/disconnect in `SeekerHomeScreen`
 - Solana chain/RPC config via Expo public env vars
 - FundWise API base URL config
@@ -189,6 +199,11 @@ Implemented:
 - retry FundWise API health checks from the app
 - FundWise mobile prototype palette and Strata-style mark
 - generated Android Studio project in `android/`
+- mounted v5 dashboard starts empty without hard-coded demo groups/activity/balances
+- bottom plus opens New group directly
+- local empty Split/Fund group creation in the mounted UI
+- keyboard-aware, scrollable bottom sheets with Android bottom-safe padding
+- Android status/nav safe-area handling for dashboard, detail actions, onboarding footer, and bottom nav
 - 56 px primary tap targets
 - tap haptics
 
@@ -233,7 +248,7 @@ Applied:
 Passed:
 
 ```bash
-cd /Users/sarthiborkar/Build/fundlabs/FundWiseSeeker
+cd /Volumes/Sarthi/fundlabs/FundWiseSeeker
 npm install
 npm run typecheck
 npm exec expo -- install --check
@@ -243,24 +258,27 @@ npm exec expo -- config --type public
 Latest validation:
 
 ```bash
-cd /Users/sarthiborkar/Build/fundlabs/FundWiseSeeker
+cd /Volumes/Sarthi/fundlabs/FundWiseSeeker
 npm run typecheck
 npx tsx -e "import { parseFundWiseLink } from './src/lib/fundwise-link.ts'; console.log(parseFundWiseLink('https://fundwise.fun/settle/r/req123', 'https://fundwise.fun', 'https://fundwise.fun'))"
 npm exec expo -- install --check
 npx expo prebuild --platform android --no-install
 ./android/gradlew assembleDebug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home ANDROID_HOME=/Users/sarthiborkar/Library/Android/sdk ANDROID_SDK_ROOT=/Users/sarthiborkar/Library/Android/sdk npx expo run:android --port 8082
 ```
 
 Result:
 
 - `npm run typecheck`: pass.
+- 2026-05-27 `npx expo run:android --port 8082`: pass after exporting `JAVA_HOME`, `ANDROID_HOME`, and `ANDROID_SDK_ROOT`; debug app installed/opened on the connected Seeker and Metro reloaded the updated JS bundle.
+- 2026-05-27 filtered on-device crash logs after launch: empty for `AndroidRuntime`, `ReactNativeJS`, `Expo`, and `System.err`.
 - Native preview API client compile check: pass.
 - Parser smoke check for `/groups`, `/settle/r`, `/receipts`, and `/v1/graph/receipts`: pass.
 - `npm exec expo -- install --check`: pass using local Expo dependency map because command context is offline.
 - `npx expo prebuild --platform android --no-install`: pass, `android/` generated.
-- `./android/gradlew assembleDebug`: blocked in the current shell because no Java runtime is visible.
-- Existing debug APK from the earlier successful build remains at `android/app/build/outputs/apk/debug/app-debug.apk`, but it was not rebuilt after the latest Seeker-side link fixes.
-- `./android/gradlew assembleRelease`: blocked by `No space left on device` while compiling release native libraries; no release APK produced.
+- `./android/gradlew assembleDebug`: previously blocked when Java was not visible; current local debug build succeeds when `JAVA_HOME` points at Homebrew JDK 17.
+- Local debug APK path: `android/app/build/outputs/apk/debug/app-debug.apk`. Treat it as a dev-client/test artifact, not release evidence.
+- `./android/gradlew assembleRelease`: previously blocked by `No space left on device` while compiling release native libraries; no release APK has been produced yet.
 
 Notes:
 
@@ -283,28 +301,27 @@ Result:
 
 ## Local Blockers
 
-The generated Android project is present, but the current shell cannot see a Java runtime for Gradle.
+The generated Android project is present and the debug build/install path works when JDK 17 and Android SDK paths are exported.
 
-Remaining runtime blocker:
+Remaining blockers:
 
-- Install or expose a JDK, then rerun `./android/gradlew assembleDebug`.
-- No Android device or emulator was connected during the latest validation.
-- MWA wallet connection still needs physical-device or emulator testing with Mock MWA Wallet or a real MWA-compatible wallet.
+- MWA wallet connection still needs a fuller physical-device pass with Solana Mobile Wallet and/or Solflare: approve, reject, retry, background/resume, and recovered-link recovery.
+- The 2026-05-27 debug install depended on Metro for the latest JS bundle. A shareable UAT APK still needs a build/test pass that does not rely on an active Metro session.
 - `https://fundwise.fun/.well-known/assetlinks.json` now has a FundWise route, but production verification still requires the real Seeker release signing cert SHA-256 fingerprint in `FUNDWISE_SEEKER_ANDROID_CERT_SHA256_FINGERPRINTS`.
 - dApp Store release signing still needs a real keystore and `FUNDWISE_DAPP_STORE_*` secret values.
-- Local disk had 5.3 GiB free during this pass; release packaging may still need more free disk plus signing secrets.
+- Release packaging may still need more free disk plus signing secrets.
 
 ## Next Steps
 
-1. Connect an Android device/emulator with Mock MWA Wallet or a real MWA-compatible wallet.
-2. Run:
+1. Continue on the connected Seeker or another Android device with a real MWA-compatible wallet.
+2. Run the volume-aware Android command:
 
 ```bash
-cd /Users/sarthiborkar/Build/fundlabs/FundWiseSeeker
-npm run android
+cd /Volumes/Sarthi/fundlabs/FundWiseSeeker
+JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home ANDROID_HOME=/Users/sarthiborkar/Library/Android/sdk ANDROID_SDK_ROOT=/Users/sarthiborkar/Library/Android/sdk npx expo run:android --port 8082
 ```
 
-3. Test wallet connect with Mock MWA Wallet.
+3. Test wallet connect with Solana Mobile Wallet, Solflare, or Mock MWA Wallet.
 4. Test app link open from `https://fundwise.fun/groups?...`, `https://fundwise.fun/join/...`, `https://fundwise.fun/settle/r/...`, and `https://fundwise.fun/receipts/...`, then repeat on `https://beta.fundwise.fun`.
 5. Test invite lookup against prod FundWise.
 6. Add native FundWise auth strategy or keep web handoff for protected reads.
