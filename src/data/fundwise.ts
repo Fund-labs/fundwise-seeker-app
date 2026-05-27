@@ -80,8 +80,8 @@ export const PEOPLE: Record<PersonId, Person> = {
 };
 
 export const ME = {
-  initial: "S",
-  name: "Sarthi",
+  initial: "Y",
+  name: "You",
 };
 
 export const GROUPS: FundWiseGroup[] = [
