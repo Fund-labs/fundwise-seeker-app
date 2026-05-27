@@ -12,7 +12,7 @@ export default function App() {
       identity={FUNDWISE_IDENTITY}
     >
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.bg} />
+        <StatusBar barStyle="dark-content" backgroundColor={colors.bg} translucent={false} />
         <FundWiseSeekerAppScreen />
       </SafeAreaView>
     </MobileWalletProvider>
