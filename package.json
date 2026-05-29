@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "verify:fundwise-sync": "node scripts/check-fundwise-sync.js",
     "verify:fundwise-sync:force": "node scripts/check-fundwise-sync.js --force",
+    "qa:device": "bash scripts/seeker-device-qa.sh",
     "verify:devnet": "node scripts/verify-production-readiness.js --target=devnet",
     "verify:production": "node scripts/verify-production-readiness.js",
     "verify:production:strict": "node scripts/verify-production-readiness.js --strict"

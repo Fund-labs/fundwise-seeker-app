@@ -11,6 +11,7 @@ import {
   Easing,
   KeyboardAvoidingView,
   Linking,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -29,6 +30,7 @@ import { FUNDWISE_ALLOWED_HOSTS, FUNDWISE_IDENTITY, FUNDWISE_WEB_URL, RECEIPTS_U
 import {
   ME,
   type ActivityItem,
+  type Expense,
   type FundGroup,
   type FundWiseGroup,
   type GroupMode,
@@ -110,10 +112,25 @@ type SuccessState = {
   title: string;
 };
 
+type AddExpenseDraft = {
+  amount: number;
+  groupId: string;
+  groupName: string;
+  memo: string;
+};
+
+type StoredLocalState = {
+  groups: FundWiseGroup[];
+  selectedGroupId: string | null;
+  version: 1;
+};
+
 const BOOT_MS = 2500;
 const ONBOARDING_STORAGE_KEY = "fundwise-seeker:onboarding-complete:v1";
+const LOCAL_STATE_STORAGE_KEY = "fundwise-seeker:local-state:v1";
 const STATUS_BAR_SPACE = StatusBar.currentHeight ?? 0;
 const BOTTOM_SAFE_SPACE = 34;
+const BOTTOM_NAV_SPACE = 76 + BOTTOM_SAFE_SPACE;
 const SHEET_BOTTOM_SPACE = 76;
 
 const MARK_ICONS: Record<string, IoniconName> = {
@@ -251,6 +268,63 @@ function makeLocalGroupId(name: string) {
   return `${slug || "group"}-${Date.now().toString(36)}`;
 }
 
+function makeLocalExpenseId() {
+  return `expense-${Date.now().toString(36)}`;
+}
+
+function dayLabelForNow() {
+  return "Today";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function isStoredGroup(value: unknown): value is FundWiseGroup {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (typeof value.id !== "string" || typeof value.name !== "string") {
+    return false;
+  }
+
+  if (value.mode === "split") {
+    return Array.isArray(value.members) && Array.isArray(value.expenses) && Array.isArray(value.settlements);
+  }
+
+  if (value.mode === "fund") {
+    return Array.isArray(value.members) && Array.isArray(value.proposals);
+  }
+
+  return false;
+}
+
+function readStoredLocalState(value: string | null): StoredLocalState | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+
+    if (!isRecord(parsed) || parsed.version !== 1 || !Array.isArray(parsed.groups)) {
+      return null;
+    }
+
+    const groups = parsed.groups.filter(isStoredGroup);
+    const selectedGroupId = typeof parsed.selectedGroupId === "string" ? parsed.selectedGroupId : null;
+
+    return {
+      groups,
+      selectedGroupId: groups.some((group) => group.id === selectedGroupId) ? selectedGroupId : null,
+      version: 1,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function createLocalGroup(draft: CreateGroupDraft): FundWiseGroup {
   const name = draft.name.trim() || (draft.mode === "split" ? "Split group" : "Fund group");
   const id = makeLocalGroupId(name);
@@ -281,6 +355,46 @@ function createLocalGroup(draft: CreateGroupDraft): FundWiseGroup {
     myBalance: 0,
     name,
     settlements: [],
+  };
+}
+
+function addLocalExpenseToGroup(group: SplitGroup, draft: AddExpenseDraft): SplitGroup {
+  const members: PersonId[] = group.members.length > 0 ? group.members : ["you"];
+  const share = draft.amount / members.length;
+  const myShare = draft.amount - share;
+  const nextExpense: Expense = {
+    date: dayLabelForNow(),
+    day: dayLabelForNow(),
+    icon: "R",
+    id: makeLocalExpenseId(),
+    myShare,
+    name: draft.memo,
+    payer: "you",
+    total: draft.amount,
+  };
+  const balanceByPerson = new Map<PersonId, number>();
+
+  members.forEach((member) => balanceByPerson.set(member, 0));
+  group.balances.forEach((balance) => balanceByPerson.set(balance.who, balance.v));
+  members.forEach((member) => {
+    const delta = member === "you" ? myShare : -share;
+    balanceByPerson.set(member, (balanceByPerson.get(member) || 0) + delta);
+  });
+
+  const settlements = [
+    ...group.settlements,
+    ...members
+      .filter((member) => member !== "you" && share > 0)
+      .map((member) => ({ amt: share, from: member, to: "you" as PersonId })),
+  ];
+
+  return {
+    ...group,
+    balances: members.map((member) => ({ v: balanceByPerson.get(member) || 0, who: member })),
+    expenses: [nextExpense, ...group.expenses],
+    members,
+    myBalance: group.myBalance + myShare,
+    settlements,
   };
 }
 
@@ -479,6 +593,7 @@ function AppButton({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
@@ -507,7 +622,7 @@ function AppShell({
 }) {
   return (
     <View style={styles.appScreen}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} style={styles.appScroll}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, activeTab ? styles.scrollContentWithNav : null]} showsVerticalScrollIndicator={false} style={styles.appScroll}>
         {children}
       </ScrollView>
       {activeTab && onTab && onFab ? <BottomNav active={activeTab} onFab={onFab} onTab={onTab} /> : null}
@@ -1624,7 +1739,7 @@ function HomeScreen({
       ) : (
         <EmptyState
           actionLabel="Create group"
-          body="Create a split group or fund group when you are ready. Until then, this dashboard stays clean."
+          body="Create a split or fund group to start."
           icon="New"
           onAction={() => onAction({ kind: "create-group" })}
           title="No groups yet"
@@ -1768,12 +1883,16 @@ function GroupCard({ group, onPress }: { group: FundWiseGroup; onPress: () => vo
 
   return (
     <Pressable
+      accessibilityLabel={`Open ${group.name}`}
       accessibilityRole="button"
+      android_ripple={{ color: "rgba(13,107,58,0.08)" }}
+      hitSlop={6}
       onPress={() => {
         triggerHaptic("tap");
         onPress();
       }}
       style={({ pressed }) => [styles.groupCard, pressed ? styles.pressed : null]}
+      testID={`group-card-${group.id}`}
     >
       <View style={styles.groupIcon}><Text style={styles.groupIconText}>{group.emoji}</Text></View>
       <View style={styles.groupCopy}>
@@ -1908,7 +2027,7 @@ function FundGroupScreen({
           <View style={styles.flexOne}>
             <Text style={styles.cardSubtle}>Your contribution</Text>
             <Text style={styles.contributionAmount}>${group.myContrib}</Text>
-            <Text style={styles.monoTiny}>{Math.round((group.myContrib / group.total) * 100)}% of pool</Text>
+            <Text style={styles.monoTiny}>{group.total > 0 ? Math.round((group.myContrib / group.total) * 100) : 0}% of pool</Text>
           </View>
           <AppButton onPress={() => onSheet({ group, kind: "deposit" })} style={styles.smallButton}>Top up</AppButton>
         </View>
@@ -2204,28 +2323,30 @@ function NavButton({ active, id, label, onTab }: { active: boolean; id: "home" |
 
 function BottomSheet({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
   return (
-    <View style={styles.sheetOverlay}>
-      <Pressable accessibilityRole="button" onPress={onClose} style={StyleSheet.absoluteFill} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "android" ? 0 : STATUS_BAR_SPACE}
-        pointerEvents="box-none"
-        style={styles.sheetKeyboardFrame}
-      >
-        <View style={styles.sheet}>
-          <View style={styles.sheetHandle} />
-          <View style={styles.sheetHead}>
-            <Text style={styles.sheetTitle}>{title}</Text>
-            <Pressable accessibilityRole="button" onPress={onClose} style={styles.sheetClose}>
-              <Ionicons color={colors.textSoft} name="close" size={18} />
-            </Pressable>
+    <Modal animationType="fade" onRequestClose={onClose} statusBarTranslucent transparent visible>
+      <View style={styles.sheetOverlay}>
+        <Pressable accessibilityLabel="Close sheet" accessibilityRole="button" onPress={onClose} style={StyleSheet.absoluteFill} />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "android" ? 0 : STATUS_BAR_SPACE}
+          pointerEvents="box-none"
+          style={styles.sheetKeyboardFrame}
+        >
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <View style={styles.sheetHead}>
+              <Text style={styles.sheetTitle}>{title}</Text>
+              <Pressable accessibilityLabel={`Close ${title}`} accessibilityRole="button" hitSlop={8} onPress={onClose} style={styles.sheetClose}>
+                <Ionicons color={colors.textSoft} name="close" size={18} />
+              </Pressable>
+            </View>
+            <ScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+              {children}
+            </ScrollView>
           </View>
-          <ScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-            {children}
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </View>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
   );
 }
 
@@ -2233,6 +2354,7 @@ function ActiveSheet({
   groups,
   onClose,
   onComplete,
+  onAddExpense,
   onCreateGroup,
   onDepositSigned,
   onNotify,
@@ -2243,6 +2365,7 @@ function ActiveSheet({
   sheet,
 }: {
   groups: FundWiseGroup[];
+  onAddExpense: (draft: AddExpenseDraft) => SplitGroup | null;
   onClose: () => void;
   onComplete: (success: SuccessState, notification?: NotifyInput) => void;
   onCreateGroup: (draft: CreateGroupDraft) => FundWiseGroup;
@@ -2499,21 +2622,32 @@ function ActiveSheet({
       <AddExpenseSheet
         groups={groups}
         onClose={onClose}
-        onSave={(draft) =>
+        onSave={(draft) => {
+          const group = onAddExpense(draft);
+
+          if (!group) {
+            onNotify({
+              body: "Create or reopen a split group before saving an expense.",
+              title: "Expense not saved",
+              tone: "warning",
+            });
+            return;
+          }
+
           onComplete(
             {
               body: "Split calculated. Everyone is notified.",
-              pill: draft.groupName,
-              returnScreen: "home",
+              pill: group.name,
+              returnScreen: "split",
               title: "Expense added",
             },
             {
-              body: `${draft.groupName} members were notified about ${draft.memo}.`,
+              body: `${group.name} members were notified about ${draft.memo}.`,
               title: "Expense notification sent",
               tone: "success",
             },
-          )
-        }
+          );
+        }}
       />
     );
   }
@@ -2552,7 +2686,7 @@ function ActiveSheet({
             {
               body: "Your group is ready. Invite members when you want to start splitting.",
               pill: group.name,
-              returnScreen: "groups",
+              returnScreen: group.mode === "split" ? "split" : "fund",
               title: "Group created",
             },
             {
@@ -2605,7 +2739,7 @@ function DepositSheet({ group, onClose, onSign }: { group: FundGroup; onClose: (
 
   return (
     <BottomSheet onClose={onClose} title={`Deposit · ${group.name}`}>
-      <LabeledInput label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} placeholder="$0.00" value={amount ? `$${amount}` : ""} />
+      <LabeledInput keyboardType="decimal-pad" label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} placeholder="$0.00" value={amount ? `$${amount}` : ""} />
       <View style={styles.pillRow}>
         {["25", "50", "100", "250"].map((value) => (
           <Pressable accessibilityRole="button" key={value} onPress={() => setAmount(value)} style={[styles.pill, amount === value ? styles.pillActive : null]}>
@@ -2629,7 +2763,7 @@ function DepositSheet({ group, onClose, onSign }: { group: FundGroup; onClose: (
   );
 }
 
-function AddExpenseSheet({ groups, onClose, onSave }: { groups: FundWiseGroup[]; onClose: () => void; onSave: (draft: { amount: number; groupName: string; memo: string }) => void }) {
+function AddExpenseSheet({ groups, onClose, onSave }: { groups: FundWiseGroup[]; onClose: () => void; onSave: (draft: AddExpenseDraft) => void }) {
   const splitGroups = groups.filter((group): group is SplitGroup => group.mode === "split");
   const [amount, setAmount] = useState("");
   const [groupId, setGroupId] = useState(splitGroups[0]?.id || "lisbon");
@@ -2645,7 +2779,7 @@ function AddExpenseSheet({ groups, onClose, onSave }: { groups: FundWiseGroup[];
       {splitGroups.length === 0 ? (
         <Text style={styles.sheetHelp}>Create a split group before adding expenses.</Text>
       ) : null}
-      <LabeledInput label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} placeholder="$0.00" value={amount ? `$${amount}` : ""} />
+      <LabeledInput keyboardType="decimal-pad" label="Amount" onChangeText={(value) => setAmount(value.replace(/[^0-9.]/g, ""))} placeholder="$0.00" value={amount ? `$${amount}` : ""} />
       <LabeledInput label="What for?" onChangeText={setMemo} placeholder="e.g. Dinner" value={memo} />
       {splitGroups.length > 0 ? (
         <>
@@ -2669,7 +2803,7 @@ function AddExpenseSheet({ groups, onClose, onSave }: { groups: FundWiseGroup[];
           </View>
         </>
       ) : null}
-      <AppButton disabled={!activeGroup || !validAmount || !memo.trim()} onPress={() => onSave({ amount: parsedAmount, groupName: activeGroup?.name || "Group", memo: memo.trim() || "Expense" })} style={styles.sheetPrimary}>Save expense</AppButton>
+      <AppButton disabled={!activeGroup || !validAmount || !memo.trim()} onPress={() => activeGroup && onSave({ amount: parsedAmount, groupId: activeGroup.id, groupName: activeGroup.name, memo: memo.trim() || "Expense" })} style={styles.sheetPrimary}>Save expense</AppButton>
     </BottomSheet>
   );
 }
@@ -2678,7 +2812,7 @@ function ProposeSheet({ group, onClose, onSubmit }: { group: FundGroup; onClose:
   const [title, setTitle] = useState("");
   return (
     <BottomSheet onClose={onClose} title="New proposal">
-      <LabeledInput label="Amount to spend" placeholder="$0.00" value="" />
+      <LabeledInput keyboardType="decimal-pad" label="Amount to spend" placeholder="$0.00" value="" />
       <LabeledInput label="Title" onChangeText={setTitle} placeholder="e.g. Gift card order" value={title} />
       <LabeledInput label="Memo" placeholder="Add context for members" value="" />
       <Text style={styles.sheetHelp}>Needs 3 of {group.members.length} approvals before the vault can execute the payout.</Text>
@@ -2782,12 +2916,32 @@ function ProfileSheet({ onClose, onNotify, onReplayIntro }: { onClose: () => voi
   );
 }
 
-function LabeledInput({ label, onChangeText, placeholder, value }: { label: string; onChangeText?: (value: string) => void; placeholder?: string; value: string }) {
+function LabeledInput({
+  keyboardType = "default",
+  label,
+  onChangeText,
+  placeholder,
+  value,
+}: {
+  keyboardType?: ComponentProps<typeof TextInput>["keyboardType"];
+  label: string;
+  onChangeText?: (value: string) => void;
+  placeholder?: string;
+  value: string;
+}) {
   const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
+        accessibilityLabel={label}
+        autoCorrect={false}
+        keyboardType={keyboardType}
         onChangeText={(next) => {
           setLocalValue(next);
           onChangeText?.(next);
@@ -2805,6 +2959,7 @@ export function FundWiseSeekerAppScreen() {
   const { account } = useMobileWallet();
   const [screen, setScreen] = useState<ScreenId>("boot");
   const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [localStateChecked, setLocalStateChecked] = useState(false);
   const [groups, setGroups] = useState<FundWiseGroup[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<SheetState | null>(null);
@@ -2822,6 +2977,7 @@ export function FundWiseSeekerAppScreen() {
   const [settlementPreviewRefreshKey, setSettlementPreviewRefreshKey] = useState(0);
   const isOnline = useNetworkStatus();
   const incomingLink = useIncomingFundWiseLink();
+  const lastRoutedIncomingUrlRef = useRef<string | null>(null);
   const walletAddress = walletAddressToString(account?.address) || authorizedWalletAddress;
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
   const activityItems = useMemo(() => getActivityItems(groups), [groups]);
@@ -2831,6 +2987,50 @@ export function FundWiseSeekerAppScreen() {
   );
   const incomingSettlementRequestId =
     incomingIntent?.kind === "settlement-blink" ? incomingIntent.requestId || null : null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLocalState() {
+      try {
+        const storedValue = await AsyncStorage.getItem(LOCAL_STATE_STORAGE_KEY);
+        const storedState = readStoredLocalState(storedValue);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (storedState) {
+          setGroups(storedState.groups);
+          setSelectedGroupId(storedState.selectedGroupId);
+        }
+      } finally {
+        if (!cancelled) {
+          setLocalStateChecked(true);
+        }
+      }
+    }
+
+    void loadLocalState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!localStateChecked) {
+      return;
+    }
+
+    const localState: StoredLocalState = {
+      groups,
+      selectedGroupId: selectedGroupId && groups.some((group) => group.id === selectedGroupId) ? selectedGroupId : null,
+      version: 1,
+    };
+
+    void AsyncStorage.setItem(LOCAL_STATE_STORAGE_KEY, JSON.stringify(localState)).catch(() => undefined);
+  }, [groups, localStateChecked, selectedGroupId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2924,7 +3124,21 @@ export function FundWiseSeekerAppScreen() {
   }, [incomingSettlementRequestId, settlementPreviewRefreshKey, walletAddress]);
 
   useEffect(() => {
-    if (!incomingLink.loading && incomingLink.url && screen !== "auth" && screen !== "success") {
+    if (incomingLink.loading) {
+      return;
+    }
+
+    if (!incomingLink.url) {
+      lastRoutedIncomingUrlRef.current = null;
+      return;
+    }
+
+    if (lastRoutedIncomingUrlRef.current === incomingLink.url) {
+      return;
+    }
+
+    if (screen !== "auth" && screen !== "success") {
+      lastRoutedIncomingUrlRef.current = incomingLink.url;
       setScreen("home");
     }
   }, [incomingLink.loading, incomingLink.url, screen]);
@@ -3115,6 +3329,21 @@ export function FundWiseSeekerAppScreen() {
     return group;
   }, []);
 
+  const addExpense = useCallback((draft: AddExpenseDraft) => {
+    const targetGroup = groups.find((group): group is SplitGroup => group.id === draft.groupId && group.mode === "split");
+
+    if (!targetGroup) {
+      return null;
+    }
+
+    const updatedGroup = addLocalExpenseToGroup(targetGroup, draft);
+
+    setGroups((current) => current.map((group) => (group.id === draft.groupId && group.mode === "split" ? updatedGroup : group)));
+    setSelectedGroupId(updatedGroup.id);
+
+    return updatedGroup;
+  }, [groups]);
+
   const completeWithSuccess = useCallback((nextSuccess: SuccessState, nextNotification?: NotifyInput) => {
     setSheet(null);
     setSuccess(nextSuccess);
@@ -3232,6 +3461,7 @@ export function FundWiseSeekerAppScreen() {
       {sheet ? (
         <ActiveSheet
           groups={groups}
+          onAddExpense={addExpense}
           onClose={() => setSheet(null)}
           onComplete={completeWithSuccess}
           onCreateGroup={createGroup}
@@ -3287,6 +3517,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderTopWidth: 1,
     bottom: 0,
+    elevation: 12,
     flexDirection: "row",
     gap: 10,
     left: 0,
@@ -3629,16 +3860,16 @@ const styles = StyleSheet.create({
   balanceHero: {
     backgroundColor: colors.primaryDeep,
     borderRadius: 22,
-    elevation: 4,
+    elevation: 2,
     marginHorizontal: 20,
-    marginTop: 12,
+    marginTop: 10,
     overflow: "hidden",
-    padding: 22,
+    padding: 18,
     position: "relative",
     shadowColor: colors.primaryDeep,
-    shadowOffset: { height: 12, width: 0 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
   },
   bigEmoji: {
     color: colors.white,
@@ -3875,23 +4106,23 @@ const styles = StyleSheet.create({
   },
   emptyBody: {
     color: colors.textSoft,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "700",
-    lineHeight: 20,
-    marginTop: 8,
+    lineHeight: 18,
+    marginTop: 6,
     textAlign: "center",
   },
   emptyButton: {
     alignSelf: "stretch",
-    marginTop: 18,
+    marginTop: 12,
   },
   emptyIcon: {
     alignItems: "center",
     backgroundColor: colors.primaryPale,
-    borderRadius: 16,
-    height: 54,
+    borderRadius: 14,
+    height: 46,
     justifyContent: "center",
-    width: 54,
+    width: 46,
   },
   emptyState: {
     alignItems: "center",
@@ -3901,14 +4132,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginHorizontal: 20,
     marginTop: 10,
-    padding: 18,
+    padding: 14,
   },
   emptyTitle: {
     color: colors.text,
     fontFamily: serif,
-    fontSize: 21,
+    fontSize: 18,
     fontWeight: "700",
-    marginTop: 12,
+    marginTop: 8,
     textAlign: "center",
   },
   dot: {
@@ -4190,9 +4421,9 @@ const styles = StyleSheet.create({
   heroAmount: {
     color: colors.white,
     fontFamily: serif,
-    fontSize: 40,
+    fontSize: 34,
     fontWeight: "700",
-    marginTop: 6,
+    marginTop: 4,
   },
   heroGlow: {
     backgroundColor: colors.mint,
@@ -4239,7 +4470,7 @@ const styles = StyleSheet.create({
   heroSheen: {
     backgroundColor: "rgba(255,255,255,0.10)",
     borderRadius: 80,
-    height: 86,
+    height: 74,
     position: "absolute",
     right: -78,
     top: 34,
@@ -4251,8 +4482,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     flexDirection: "row",
     gap: 10,
-    marginTop: 18,
-    paddingTop: 14,
+    marginTop: 12,
+    paddingTop: 10,
   },
   heroSub: {
     color: "rgba(255,255,255,0.76)",
@@ -4314,7 +4545,7 @@ const styles = StyleSheet.create({
     gap: 12,
     marginHorizontal: 20,
     marginTop: 14,
-    minHeight: 86,
+    minHeight: 78,
     padding: 12,
   },
   linkRecoveryEyebrow: {
@@ -5133,7 +5364,10 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 24,
+  },
+  scrollContentWithNav: {
+    paddingBottom: BOTTOM_NAV_SPACE + 28,
   },
   sectionAction: {
     color: colors.primaryMid,
@@ -5190,10 +5424,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: "92%",
+    elevation: 41,
+    maxHeight: "90%",
     paddingHorizontal: 20,
     paddingTop: 10,
     width: "100%",
+    zIndex: 41,
   },
   sheetAction: {
     alignItems: "center",
@@ -5252,7 +5488,7 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   sheetContent: {
-    paddingBottom: SHEET_BOTTOM_SPACE,
+    paddingBottom: SHEET_BOTTOM_SPACE + BOTTOM_SAFE_SPACE + 12,
   },
   sheetHandle: {
     alignSelf: "center",
@@ -5285,11 +5521,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     width: "100%",
+    zIndex: 40,
   },
   sheetOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(8,16,11,0.42)",
+    elevation: 40,
     justifyContent: "flex-end",
+    zIndex: 40,
   },
   sheetPrimary: {
     marginTop: 16,
