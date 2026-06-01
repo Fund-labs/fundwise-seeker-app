@@ -70,17 +70,17 @@ export type ActivityItem = {
 };
 
 export const PEOPLE: Record<PersonId, Person> = {
-  you: { color: "#0A4D2C", initial: "S", name: "You" },
-  kiran: { color: "#0D6B3A", initial: "K", name: "Kiran" },
-  asha: { color: "#1A9151", initial: "A", name: "Asha" },
-  dev: { color: "#4EC98A", initial: "D", name: "Dev" },
-  mia: { color: "#2A4FA8", initial: "M", name: "Mia" },
-  raj: { color: "#A07816", initial: "R", name: "Raj" },
-  priya: { color: "#C73B3B", initial: "P", name: "Priya" },
+  you: { color: "#16170F", initial: "S", name: "You" },
+  kiran: { color: "#2DB870", initial: "K", name: "Kiran" },
+  asha: { color: "#E8983B", initial: "A", name: "Asha" },
+  dev: { color: "#4671D8", initial: "D", name: "Dev" },
+  mia: { color: "#A05AE0", initial: "M", name: "Mia" },
+  raj: { color: "#B07D2A", initial: "R", name: "Raj" },
+  priya: { color: "#E0594F", initial: "P", name: "Priya" },
 };
 
 export const ME = {
-  initial: "Y",
+  initial: "S",
   name: "You",
 };
 

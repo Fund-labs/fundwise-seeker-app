@@ -17,18 +17,18 @@ export function StatusPill({ label, tone = "idle" }: StatusPillProps) {
 const styles = StyleSheet.create({
   pill: {
     alignSelf: "flex-start",
-    borderWidth: 1,
     borderRadius: 999,
+    borderWidth: 2,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   ok: {
-    backgroundColor: colors.primaryPale,
-    borderColor: colors.borderStrong,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
   },
   warn: {
     backgroundColor: colors.warningPale,
-    borderColor: colors.warning,
+    borderColor: colors.border,
   },
   idle: {
     backgroundColor: colors.surface,

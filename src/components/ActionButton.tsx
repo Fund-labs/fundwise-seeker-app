@@ -50,18 +50,23 @@ export function ActionButton({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 56,
     alignItems: "center",
+    borderColor: colors.border,
+    borderRadius: 14,
+    borderWidth: 2,
+    elevation: 3,
     justifyContent: "center",
-    borderRadius: 12,
+    minHeight: 56,
     paddingHorizontal: 18,
+    shadowColor: colors.text,
+    shadowOffset: { height: 3, width: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   primary: {
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.primary,
   },
   secondary: {
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.surface,
   },
   pressed: {
@@ -71,11 +76,11 @@ const styles = StyleSheet.create({
     opacity: 0.48,
   },
   label: {
-    color: colors.white,
+    color: colors.text,
     fontSize: 15,
     fontWeight: "800",
   },
   secondaryLabel: {
-    color: colors.primaryMid,
+    color: colors.text,
   },
 });

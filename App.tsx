@@ -65,7 +65,9 @@ const styles = StyleSheet.create({
   },
   errorButton: {
     alignItems: "center",
-    backgroundColor: colors.primaryDeep,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 14,
     justifyContent: "center",
     marginTop: 22,
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   errorButtonText: {
-    color: colors.white,
+    color: colors.text,
     fontSize: 14,
     fontWeight: "900",
   },

@@ -191,10 +191,10 @@ function toneForMark(mark: string): IconTone {
 
 function iconColorForTone(tone: IconTone) {
   if (tone === "blue") return colors.fundBlue;
-  if (tone === "gold") return colors.gold;
-  if (tone === "telegram") return "#229ED9";
+  if (tone === "gold") return colors.white;
+  if (tone === "telegram") return colors.white;
   if (tone === "ink") return colors.textSoft;
-  return colors.primaryMid;
+  return colors.text;
 }
 
 function getSettlementPreviewCopy(preview: MobileSettlementRequestPreview) {
@@ -540,7 +540,7 @@ function StrataLogo({ size = 56, white = false }: { size?: number; white?: boole
         style={[
           styles.logoSlab,
           {
-            backgroundColor: white ? "#FFFFFF" : colors.primaryMid,
+            backgroundColor: white ? "#FFFFFF" : colors.primary,
             borderRadius: 7 * scale,
             height: 14 * scale,
             left: 11 * scale,
@@ -553,7 +553,7 @@ function StrataLogo({ size = 56, white = false }: { size?: number; white?: boole
         style={[
           styles.logoSlab,
           {
-            backgroundColor: white ? "#FFFFFF" : colors.mint,
+            backgroundColor: slabColor,
             borderRadius: 7 * scale,
             height: 14 * scale,
             left: 17 * scale,
@@ -604,7 +604,7 @@ function AppButton({
         style,
       ]}
     >
-      <Text style={[styles.buttonText, variant === "ghost" ? styles.buttonGhostText : null, textStyle]}>{children}</Text>
+      <Text style={[styles.buttonText, variant === "ghost" ? styles.buttonGhostText : variant === "blue" || variant === "danger" ? styles.buttonInverseText : null, textStyle]}>{children}</Text>
     </Pressable>
   );
 }
@@ -806,7 +806,7 @@ function WelcomeScreen({ onNext }: { onNext: () => void }) {
     <View style={[styles.onboardingScreen, styles.welcomeScreen]}>
       <StatusBar barStyle="dark-content" hidden={false} />
       <View style={styles.onboardingBody}>
-        <StrataLogo size={58} />
+        <StrataLogo size={84} />
         <Text style={styles.welcomeTitle}>
           Welcome to{"\n"}Fund<Text style={[styles.wordmarkItalic, styles.wordmarkAccent]}>w</Text>ise
         </Text>
@@ -1341,7 +1341,7 @@ function TopHeader({
     <View style={styles.dashboardTop}>
       <View>
         <Text style={styles.greeting}>Good morning</Text>
-        <Text style={styles.userName}>{walletAddress ? "Wallet connected" : "Welcome"}</Text>
+        <Text style={styles.userName}>{ME.name}</Text>
       </View>
       <View style={styles.headerActions}>
         <Pressable accessibilityRole="button" onPress={onNotifications} style={styles.iconButton}>
@@ -1707,28 +1707,33 @@ function HomeScreen({
         {hasGroups ? <QuickAction label="Settle" mark="Pay" onPress={() => onAction({ kind: "settle-picker" })} /> : null}
         <QuickAction label="New group" mark="New" onPress={() => onAction({ kind: "create-group" })} />
       </View>
-      {proposal || settlement ? (
-        <View style={styles.alertStack}>
-          {proposal ? (
-            <ActionAlert
-              body={`${proposal.group.name} · ${proposal.proposal.yes} of ${proposal.proposal.total} yes`}
-              mark="Vote"
-              onPress={() => onOpenGroup(proposal.group)}
-              title={`Vote needed · ${proposal.proposal.title}`}
-              tone="vote"
-            />
-          ) : null}
-          {settlement ? (
-            <ActionAlert
-              body={`${settlement.group.name} · ${settlement.from === "you" ? "pay" : "receive"} ${formatUsd(settlement.amt, false)}`}
-              mark="Pay"
-              onPress={() => onAction({ kind: "settle", settlement })}
-              title={settlement.from === "you" ? `You owe ${personOf(settlement.to).name}` : `${personOf(settlement.from).name} owes you`}
-              tone="settle"
-            />
-          ) : null}
-        </View>
-      ) : null}
+      <View style={styles.alertStack}>
+        {proposal ? (
+          <ActionAlert
+            body={`${proposal.group.name} · ${proposal.proposal.yes} of ${proposal.proposal.total} yes`}
+            mark="Vote"
+            onPress={() => onOpenGroup(proposal.group)}
+            title={`Vote needed · ${proposal.proposal.title}`}
+            tone="vote"
+          />
+        ) : null}
+        {settlement ? (
+          <ActionAlert
+            body={`${settlement.group.name} · ${settlement.from === "you" ? "pay" : "receive"} ${formatUsd(settlement.amt, false)}`}
+            mark="Pay"
+            onPress={() => onAction({ kind: "settle", settlement })}
+            title={settlement.from === "you" ? `You owe ${personOf(settlement.to).name}` : `${personOf(settlement.from).name} owes you`}
+            tone="settle"
+          />
+        ) : null}
+        <ActionAlert
+          body="Open the FundWise mini-app inside any chat"
+          mark="TG"
+          onPress={() => onAction({ kind: "telegram" })}
+          title="Split with anyone, in Telegram"
+          tone="telegram"
+        />
+      </View>
       <SectionHeader action="See all" onAction={() => onTab("groups")} title="Your groups" />
       {hasGroups ? (
         <View style={styles.stack}>
@@ -1793,7 +1798,7 @@ function QuickAction({ label, mark, onPress }: { label: string; mark: string; on
       }}
       style={({ pressed }) => [styles.quickAction, pressed ? styles.pressed : null]}
     >
-      <IconTile mark={mark} size={20} style={styles.quickIcon} />
+      <IconTile mark={mark} size={20} style={styles.quickIcon} tone={mark.toLowerCase() === "tg" ? "telegram" : "green"} />
       <Text style={styles.quickLabel}>{label}</Text>
     </Pressable>
   );
@@ -2123,7 +2128,7 @@ function GroupsScreen({ groups, onCreate, onFab, onOpenGroup, onTab }: { groups:
       <View style={styles.pageHeader}>
         <Text style={styles.pageTitle}>Groups</Text>
         <Pressable accessibilityRole="button" onPress={onCreate} style={styles.addButton}>
-          <Ionicons color={colors.white} name="add" size={23} />
+          <Ionicons color={colors.text} name="add" size={23} />
         </Pressable>
       </View>
       <SegmentedTabs active={filter} labels={[["all", "All"], ["split", "Split"], ["fund", "Fund"]]} onChange={setFilter} />
@@ -2294,7 +2299,7 @@ function BottomNav({ active, onFab, onTab }: { active: "home" | "groups" | "acti
         <NavButton active={active === id} id={id} key={id} label={label} onTab={onTab} />
       ))}
       <Pressable accessibilityRole="button" onPress={onFab} style={styles.fab}>
-        <Ionicons color={colors.white} name="add" size={26} />
+        <Ionicons color={colors.text} name="add" size={26} />
       </Pressable>
       {tabs.slice(2).map(([id, label]) => (
         <NavButton active={active === id} id={id} key={id} label={label} onTab={onTab} />
@@ -2315,7 +2320,7 @@ function NavButton({ active, id, label, onTab }: { active: boolean; id: "home" |
       }}
       style={styles.navItem}
     >
-      <Ionicons color={active ? colors.primaryMid : colors.textSubtle} name={icon} size={20} />
+      <Ionicons color={active ? colors.text : colors.textSubtle} name={icon} size={20} />
       <Text style={[styles.navLabel, active ? styles.navActive : null]}>{label}</Text>
     </Pressable>
   );
@@ -3500,24 +3505,41 @@ export function FundWiseSeekerAppScreen() {
 
 const serif = "serif";
 const mono = "monospace";
+const hardShadow = {
+  elevation: 5,
+  shadowColor: colors.text,
+  shadowOffset: { height: 4, width: 4 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+};
+const hardShadowSmall = {
+  elevation: 3,
+  shadowColor: colors.text,
+  shadowOffset: { height: 3, width: 3 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+};
 
 const styles = StyleSheet.create({
   actionAlert: {
     alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 12,
+    marginHorizontal: 20,
     minHeight: 64,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    ...hardShadowSmall,
   },
   actionBar: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderTopWidth: 1,
+    borderTopWidth: 2,
     bottom: 0,
-    elevation: 12,
     flexDirection: "row",
     gap: 10,
     left: 0,
@@ -3532,7 +3554,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 10,
-    borderWidth: 1,
+    borderWidth: 2,
     height: 36,
     justifyContent: "center",
     width: 36,
@@ -3547,10 +3569,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 12,
     padding: 12,
+    ...hardShadowSmall,
   },
   activitySub: {
     color: colors.textSubtle,
@@ -3571,11 +3594,14 @@ const styles = StyleSheet.create({
   },
   addButton: {
     alignItems: "center",
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 16,
     height: 42,
     justifyContent: "center",
     width: 42,
+    ...hardShadowSmall,
   },
   addButtonText: {
     color: colors.white,
@@ -3588,7 +3614,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderStyle: "dashed",
+    borderWidth: 2,
     flexDirection: "row",
     gap: 10,
     marginTop: 8,
@@ -3607,6 +3634,8 @@ const styles = StyleSheet.create({
   alertMark: {
     alignItems: "center",
     backgroundColor: colors.primaryPale,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 10,
     height: 36,
     justifyContent: "center",
@@ -3618,12 +3647,11 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   alertSettle: {
-    backgroundColor: "rgba(160,120,22,0.06)",
-    borderColor: "rgba(160,120,22,0.25)",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
   alertStack: {
     gap: 10,
-    paddingHorizontal: 20,
     paddingTop: 16,
   },
   alertSub: {
@@ -3634,8 +3662,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   alertTelegram: {
-    backgroundColor: "rgba(34,158,217,0.06)",
-    borderColor: "rgba(34,158,217,0.25)",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
   alertTitle: {
     color: colors.text,
@@ -3643,8 +3671,8 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   alertVote: {
-    backgroundColor: "rgba(78,201,138,0.08)",
-    borderColor: "rgba(78,201,138,0.28)",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
   alignRight: {
     alignItems: "flex-end",
@@ -3699,16 +3727,13 @@ const styles = StyleSheet.create({
   },
   authMethodTabActive: {
     backgroundColor: colors.surface,
-    shadowColor: colors.primaryDeep,
-    shadowOffset: { height: 8, width: 0 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
+    ...hardShadowSmall,
   },
   authMethodTabs: {
     backgroundColor: colors.surfaceInset,
     borderColor: colors.border,
     borderRadius: 18,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 4,
     marginBottom: 22,
@@ -3722,7 +3747,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   authMethodTextActive: {
-    color: colors.primaryDeep,
+    color: colors.text,
   },
   authTitle: {
     color: colors.text,
@@ -3737,17 +3762,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 10,
     minHeight: 58,
     paddingHorizontal: 10,
     paddingVertical: 8,
     width: "100%",
+    ...hardShadowSmall,
   },
   walletOptionActive: {
     backgroundColor: colors.primaryPale,
-    borderColor: colors.primaryMid,
+    borderColor: colors.border,
   },
   walletOptionBody: {
     color: colors.textSoft,
@@ -3764,8 +3790,10 @@ const styles = StyleSheet.create({
   },
   walletOptionMark: {
     alignItems: "center",
-    backgroundColor: colors.primaryDeep,
+    backgroundColor: colors.text,
+    borderColor: colors.border,
     borderRadius: 12,
+    borderWidth: 2,
     height: 36,
     justifyContent: "center",
     width: 36,
@@ -3791,7 +3819,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   walletOptionTagActive: {
-    color: colors.primaryMid,
+    color: colors.text,
   },
   walletOptionTitle: {
     color: colors.text,
@@ -3837,10 +3865,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     marginRight: 8,
     minWidth: 106,
     padding: 12,
+    ...hardShadowSmall,
   },
   balanceChipName: {
     color: colors.textSoft,
@@ -3859,17 +3888,15 @@ const styles = StyleSheet.create({
   },
   balanceHero: {
     backgroundColor: colors.primaryDeep,
-    borderRadius: 22,
-    elevation: 2,
+    borderColor: colors.border,
+    borderRadius: 20,
+    borderWidth: 2,
     marginHorizontal: 20,
     marginTop: 10,
     overflow: "hidden",
     padding: 18,
     position: "relative",
-    shadowColor: colors.primaryDeep,
-    shadowOffset: { height: 8, width: 0 },
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
+    ...hardShadow,
   },
   bigEmoji: {
     color: colors.white,
@@ -3877,7 +3904,7 @@ const styles = StyleSheet.create({
     lineHeight: 38,
   },
   bootBottom: {
-    backgroundColor: colors.mint,
+    backgroundColor: colors.bg,
     left: 41,
     top: 126,
     width: 158,
@@ -3886,7 +3913,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bootGlow: {
-    backgroundColor: "rgba(78,201,138,0.18)",
+    backgroundColor: "rgba(198,242,74,0.18)",
     borderRadius: 150,
     height: 280,
     position: "absolute",
@@ -3915,7 +3942,7 @@ const styles = StyleSheet.create({
     width: 56,
   },
   bootMid: {
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.primary,
     left: 28,
     top: 78,
     width: 184,
@@ -3941,34 +3968,32 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   bootTop: {
-    backgroundColor: colors.primaryDeep,
+    backgroundColor: colors.bg,
     left: 35,
     top: 30,
     width: 170,
   },
   bottomNav: {
     alignItems: "center",
-    backgroundColor: "rgba(244,241,234,0.94)",
+    backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderTopWidth: 1,
-    elevation: 8,
+    borderTopWidth: 2,
     flexDirection: "row",
     justifyContent: "space-around",
     minHeight: 76 + BOTTOM_SAFE_SPACE,
     paddingBottom: BOTTOM_SAFE_SPACE,
     paddingHorizontal: 12,
     paddingTop: 10,
-    shadowColor: colors.text,
-    shadowOffset: { height: -8, width: 0 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
   },
   button: {
     alignItems: "center",
+    borderColor: colors.border,
     borderRadius: 14,
+    borderWidth: 2,
     justifyContent: "center",
     minHeight: 52,
     paddingHorizontal: 16,
+    ...hardShadowSmall,
   },
   buttonBlue: {
     backgroundColor: "#229ED9",
@@ -3977,18 +4002,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.danger,
   },
   buttonGhost: {
-    backgroundColor: "transparent",
+    backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderWidth: 1,
   },
   buttonGhostText: {
-    color: colors.textSoft,
+    color: colors.text,
   },
   buttonPrimary: {
-    backgroundColor: colors.primaryDeep,
+    backgroundColor: colors.primary,
+  },
+  buttonInverseText: {
+    color: colors.white,
   },
   buttonText: {
-    color: colors.white,
+    color: colors.text,
     fontSize: 14,
     fontWeight: "900",
   },
@@ -4056,15 +4083,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 12,
     marginHorizontal: 20,
     marginTop: 14,
     padding: 14,
+    ...hardShadowSmall,
   },
   copyChip: {
     backgroundColor: colors.primaryPale,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 7,
@@ -4088,7 +4118,7 @@ const styles = StyleSheet.create({
   detailAmount: {
     color: colors.white,
     fontFamily: serif,
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: "700",
   },
   detailScroll: {
@@ -4118,8 +4148,10 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     alignItems: "center",
-    backgroundColor: colors.primaryPale,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
     borderRadius: 14,
+    borderWidth: 2,
     height: 46,
     justifyContent: "center",
     width: 46,
@@ -4129,10 +4161,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 2,
     marginHorizontal: 20,
     marginTop: 10,
     padding: 14,
+    ...hardShadowSmall,
   },
   emptyTitle: {
     color: colors.text,
@@ -4164,7 +4197,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 11,
-    borderWidth: 1,
+    borderWidth: 2,
     height: 38,
     justifyContent: "center",
     width: 38,
@@ -4182,15 +4215,16 @@ const styles = StyleSheet.create({
   },
   expenseRow: {
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: "transparent",
+    borderBottomColor: "rgba(22,23,15,0.16)",
     borderRadius: 14,
-    borderWidth: 1,
+    borderBottomWidth: 1,
     flexDirection: "row",
     gap: 12,
     padding: 12,
   },
   expenseShare: {
+    fontFamily: mono,
     fontSize: 10,
     fontWeight: "800",
     marginTop: 2,
@@ -4208,19 +4242,15 @@ const styles = StyleSheet.create({
   },
   fab: {
     alignItems: "center",
-    backgroundColor: colors.primaryMid,
-    borderColor: "rgba(255,255,255,0.18)",
-    borderRadius: 18,
-    borderWidth: 1,
-    elevation: 8,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
+    borderRadius: 16,
+    borderWidth: 2,
     height: 54,
     justifyContent: "center",
     marginTop: -24,
-    shadowColor: colors.primaryMid,
-    shadowOffset: { height: 8, width: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
     width: 54,
+    ...hardShadow,
   },
   field: {
     gap: 7,
@@ -4250,11 +4280,14 @@ const styles = StyleSheet.create({
   },
   fpIcon: {
     alignItems: "center",
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.text,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 38,
     height: 76,
     justifyContent: "center",
     width: 76,
+    ...hardShadowSmall,
   },
   fpLineInner: {
     borderColor: colors.white,
@@ -4281,7 +4314,7 @@ const styles = StyleSheet.create({
     width: 3,
   },
   fpRing: {
-    borderColor: "rgba(78,201,138,0.5)",
+    borderColor: "rgba(198,242,74,0.65)",
     borderRadius: 88,
     borderWidth: 2,
     height: 176,
@@ -4289,7 +4322,7 @@ const styles = StyleSheet.create({
     width: 176,
   },
   fpScanLine: {
-    backgroundColor: colors.mint,
+    backgroundColor: colors.primary,
     borderRadius: 2,
     height: 3,
     left: 13,
@@ -4337,27 +4370,30 @@ const styles = StyleSheet.create({
   },
   groupAmount: {
     color: colors.text,
-    fontFamily: serif,
+    fontFamily: mono,
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "900",
   },
   groupCard: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 12,
     minHeight: 76,
     padding: 12,
+    ...hardShadowSmall,
   },
   groupCopy: {
     flex: 1,
   },
   groupIcon: {
     alignItems: "center",
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surfaceInset,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 12,
     height: 42,
     justifyContent: "center",
@@ -4421,7 +4457,7 @@ const styles = StyleSheet.create({
   heroAmount: {
     color: colors.white,
     fontFamily: serif,
-    fontSize: 34,
+    fontSize: 44,
     fontWeight: "700",
     marginTop: 4,
   },
@@ -4462,9 +4498,9 @@ const styles = StyleSheet.create({
   },
   heroStatValue: {
     color: colors.white,
-    fontFamily: serif,
-    fontSize: 18,
-    fontWeight: "700",
+    fontFamily: mono,
+    fontSize: 17,
+    fontWeight: "900",
     marginTop: 3,
   },
   heroSheen: {
@@ -4496,10 +4532,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 2,
     height: 38,
     justifyContent: "center",
     width: 38,
+    ...hardShadowSmall,
   },
   iconButtonText: {
     color: colors.text,
@@ -4510,22 +4547,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.fundBluePale,
   },
   iconToneGold: {
-    backgroundColor: "rgba(160,120,22,0.16)",
+    backgroundColor: colors.gold,
   },
   iconToneGreen: {
-    backgroundColor: "rgba(13,107,58,0.08)",
+    backgroundColor: colors.primary,
   },
   iconToneInk: {
     backgroundColor: colors.surfaceInset,
   },
   iconToneTelegram: {
-    backgroundColor: "rgba(34,158,217,0.13)",
+    backgroundColor: "#229ED9",
   },
   input: {
     backgroundColor: colors.bg,
     borderColor: colors.border,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 2,
     color: colors.text,
     fontSize: 16,
     fontWeight: "800",
@@ -4540,13 +4577,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 12,
     marginHorizontal: 20,
     marginTop: 14,
     minHeight: 78,
     padding: 12,
+    ...hardShadowSmall,
   },
   linkRecoveryEyebrow: {
     color: colors.textSubtle,
@@ -4557,8 +4595,10 @@ const styles = StyleSheet.create({
   },
   linkRecoveryIcon: {
     alignItems: "center",
-    backgroundColor: colors.primaryPale,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
     borderRadius: 12,
+    borderWidth: 2,
     height: 42,
     justifyContent: "center",
     width: 42,
@@ -4570,20 +4610,24 @@ const styles = StyleSheet.create({
   },
   linkRecoveryPrimary: {
     alignItems: "center",
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 10,
     minHeight: 34,
     justifyContent: "center",
     paddingHorizontal: 12,
   },
   linkRecoveryPrimaryText: {
-    color: colors.white,
+    color: colors.text,
     fontSize: 11,
     fontWeight: "900",
   },
   linkRecoverySecondary: {
     alignItems: "center",
     backgroundColor: colors.surfaceInset,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 10,
     minHeight: 34,
     justifyContent: "center",
@@ -4616,7 +4660,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceInset,
     borderColor: colors.border,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 2,
     flex: 1,
     padding: 10,
   },
@@ -4681,14 +4725,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 18,
-    borderWidth: 1,
+    borderWidth: 2,
     marginHorizontal: 20,
     marginTop: 14,
     padding: 14,
-    shadowColor: colors.primaryDeep,
-    shadowOffset: { height: 10, width: 0 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
+    ...hardShadowSmall,
   },
   settlementRecoveryHead: {
     alignItems: "center",
@@ -4732,13 +4773,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceInset,
     borderColor: colors.border,
     borderRadius: 999,
-    borderWidth: 1,
+    borderWidth: 2,
     paddingHorizontal: 9,
     paddingVertical: 5,
   },
   statusBadgeReady: {
-    backgroundColor: colors.primaryPale,
-    borderColor: colors.primaryMid,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
   },
   statusBadgeText: {
     color: colors.textSoft,
@@ -4748,7 +4789,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   statusBadgeTextReady: {
-    color: colors.primaryMid,
+    color: colors.text,
   },
   jar: {
     alignItems: "center",
@@ -4829,9 +4870,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 2,
     marginHorizontal: 20,
     overflow: "hidden",
+    ...hardShadowSmall,
   },
   memberName: {
     color: colors.text,
@@ -4852,11 +4894,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 12,
     marginHorizontal: 20,
     padding: 14,
+    ...hardShadowSmall,
   },
   membersLine: {
     alignItems: "center",
@@ -4908,7 +4951,9 @@ const styles = StyleSheet.create({
   modeIcon: {
     alignItems: "center",
     backgroundColor: colors.primaryPale,
+    borderColor: colors.border,
     borderRadius: 12,
+    borderWidth: 2,
     height: 40,
     justifyContent: "center",
     marginBottom: 12,
@@ -4918,17 +4963,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryMid,
   },
   modeOption: {
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 2,
     flex: 1,
     minHeight: 132,
     padding: 14,
+    ...hardShadowSmall,
   },
   modeOptionActive: {
-    backgroundColor: colors.surfaceInset,
-    borderColor: colors.primaryMid,
+    backgroundColor: colors.primaryPale,
+    borderColor: colors.border,
   },
   modeSplit: {
     backgroundColor: colors.primaryPale,
@@ -4961,17 +5007,18 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   navActive: {
-    color: colors.primaryMid,
+    color: colors.text,
   },
   navButton: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 999,
-    borderWidth: 1,
-    height: 36,
+    borderRadius: 11,
+    borderWidth: 2,
+    height: 38,
     justifyContent: "center",
-    width: 36,
+    width: 38,
+    ...hardShadowSmall,
   },
   navButtonText: {
     color: colors.text,
@@ -5001,7 +5048,7 @@ const styles = StyleSheet.create({
     minWidth: 58,
   },
   navRightText: {
-    color: colors.primaryMid,
+    color: colors.text,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -5043,22 +5090,19 @@ const styles = StyleSheet.create({
   },
   notificationToast: {
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.97)",
+    backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 18,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 12,
     left: 16,
     padding: 12,
     position: "absolute",
     right: 16,
-    shadowColor: "#0D1F14",
-    shadowOpacity: 0.14,
-    shadowRadius: 20,
-    shadowOffset: { height: 10, width: 0 },
     top: 44,
     zIndex: 90,
+    ...hardShadowSmall,
   },
   notificationWarning: {
     backgroundColor: colors.warningPale,
@@ -5085,25 +5129,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 10,
   },
   pageTitle: {
     color: colors.text,
     fontFamily: serif,
-    fontSize: 30,
+    fontSize: 34,
     fontWeight: "700",
   },
   pill: {
     backgroundColor: colors.bg,
     borderColor: colors.border,
     borderRadius: 999,
-    borderWidth: 1,
+    borderWidth: 2,
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
   pillActive: {
-    backgroundColor: colors.primaryPale,
-    borderColor: colors.primaryMid,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
   },
   pillRow: {
     flexDirection: "row",
@@ -5117,7 +5161,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   pillTextActive: {
-    color: colors.primaryMid,
+    color: colors.text,
   },
   poolIllustration: {
     alignItems: "center",
@@ -5157,6 +5201,8 @@ const styles = StyleSheet.create({
   previewCard: {
     alignItems: "center",
     backgroundColor: colors.bg,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 14,
     flexDirection: "row",
     gap: 14,
@@ -5166,16 +5212,21 @@ const styles = StyleSheet.create({
   },
   profileButton: {
     alignItems: "center",
-    backgroundColor: colors.primaryMid,
-    borderRadius: 20,
+    backgroundColor: colors.text,
+    borderColor: colors.border,
+    borderRadius: 11,
+    borderWidth: 2,
     height: 40,
     justifyContent: "center",
     width: 40,
+    ...hardShadowSmall,
   },
   profileButtonLarge: {
     alignItems: "center",
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.text,
+    borderColor: colors.border,
     borderRadius: 30,
+    borderWidth: 2,
     height: 60,
     justifyContent: "center",
     width: 60,
@@ -5220,8 +5271,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     padding: 14,
+    ...hardShadowSmall,
   },
   proposalFill: {
     backgroundColor: colors.primaryMid,
@@ -5251,7 +5303,9 @@ const styles = StyleSheet.create({
   },
   proposalTrack: {
     backgroundColor: colors.surfaceInset,
+    borderColor: colors.border,
     borderRadius: 3,
+    borderWidth: 1,
     height: 6,
     marginTop: 12,
     overflow: "hidden",
@@ -5273,17 +5327,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     flex: 1,
     gap: 7,
     minHeight: 82,
     paddingHorizontal: 8,
     paddingVertical: 12,
+    ...hardShadowSmall,
   },
   quickIcon: {
     alignItems: "center",
     backgroundColor: colors.primaryPale,
+    borderColor: colors.border,
     borderRadius: 12,
+    borderWidth: 2,
     height: 38,
     justifyContent: "center",
     width: 38,
@@ -5303,9 +5360,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 18,
-    borderWidth: 1,
+    borderWidth: 2,
     padding: 18,
     width: 260,
+    ...hardShadowSmall,
   },
   receiptAmount: {
     color: colors.text,
@@ -5339,7 +5397,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryPale,
     borderColor: colors.borderStrong,
     borderRadius: 7,
-    borderWidth: 1,
+    borderWidth: 2,
     height: 18,
     width: 42,
   },
@@ -5370,7 +5428,7 @@ const styles = StyleSheet.create({
     paddingBottom: BOTTOM_NAV_SPACE + 28,
   },
   sectionAction: {
-    color: colors.primaryMid,
+    color: colors.text,
     fontFamily: mono,
     fontSize: 10,
     fontWeight: "900",
@@ -5389,18 +5447,20 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: colors.text,
-    fontSize: 14,
-    fontWeight: "800",
+    fontSize: 13,
+    fontWeight: "900",
   },
   segment: {
     alignItems: "center",
-    borderRadius: 12,
+    borderColor: colors.border,
+    borderRadius: 999,
+    borderWidth: 2,
     flex: 1,
     justifyContent: "center",
     minHeight: 38,
   },
   segmentActive: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.text,
   },
   segmentText: {
     color: colors.textSoft,
@@ -5408,20 +5468,22 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   segmentTextActive: {
-    color: colors.text,
+    color: colors.bg,
     fontWeight: "900",
   },
   segmented: {
-    backgroundColor: colors.surfaceInset,
-    borderRadius: 14,
+    backgroundColor: "transparent",
+    borderRadius: 999,
     flexDirection: "row",
-    gap: 4,
+    gap: 6,
     marginHorizontal: 20,
     marginTop: 12,
-    padding: 4,
+    padding: 0,
   },
   sheet: {
     backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderTopWidth: 2,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     elevation: 41,
@@ -5436,12 +5498,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     borderColor: colors.border,
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 14,
     marginBottom: 8,
     minHeight: 70,
     padding: 14,
+    ...hardShadowSmall,
   },
   sheetActionBody: {
     color: colors.textSubtle,
@@ -5452,7 +5515,9 @@ const styles = StyleSheet.create({
   sheetActionIcon: {
     alignItems: "center",
     backgroundColor: colors.primaryPale,
+    borderColor: colors.border,
     borderRadius: 12,
+    borderWidth: 2,
     height: 42,
     justifyContent: "center",
     width: 42,
@@ -5476,7 +5541,9 @@ const styles = StyleSheet.create({
   sheetClose: {
     alignItems: "center",
     backgroundColor: colors.bg,
-    borderRadius: 999,
+    borderColor: colors.border,
+    borderRadius: 10,
+    borderWidth: 2,
     height: 32,
     justifyContent: "center",
     width: 32,
@@ -5525,7 +5592,7 @@ const styles = StyleSheet.create({
   },
   sheetOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(8,16,11,0.42)",
+    backgroundColor: "rgba(22,23,15,0.55)",
     elevation: 40,
     justifyContent: "flex-end",
     zIndex: 40,
@@ -5541,7 +5608,7 @@ const styles = StyleSheet.create({
   },
   sideSensorArrow: {
     alignItems: "center",
-    backgroundColor: "rgba(13,107,58,0.09)",
+    backgroundColor: "rgba(198,242,74,0.2)",
     borderRadius: 999,
     height: 26,
     justifyContent: "center",
@@ -5554,7 +5621,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.darkDeep,
     borderBottomLeftRadius: 18,
-    borderColor: "rgba(78,201,138,0.52)",
+    borderColor: "rgba(198,242,74,0.72)",
     borderTopLeftRadius: 18,
     borderWidth: 1,
     height: 76,
@@ -5568,7 +5635,7 @@ const styles = StyleSheet.create({
     width: 32,
   },
   sideSensorHalo: {
-    borderColor: "rgba(78,201,138,0.34)",
+    borderColor: "rgba(198,242,74,0.48)",
     borderRadius: 42,
     borderWidth: 1,
     height: 102,
@@ -5582,7 +5649,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sideSensorHintText: {
-    color: colors.primaryMid,
+    color: colors.text,
     fontFamily: mono,
     fontSize: 10,
     fontWeight: "900",
@@ -5590,7 +5657,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   sideSensorLabel: {
-    color: colors.primaryMid,
+    color: colors.text,
     fontFamily: mono,
     fontSize: 9,
     fontWeight: "900",
@@ -5682,12 +5749,15 @@ const styles = StyleSheet.create({
     left: "18%",
   },
   splitHero: {
-    backgroundColor: colors.primaryDeep,
-    borderRadius: 22,
+    backgroundColor: colors.primaryMid,
+    borderColor: colors.border,
+    borderRadius: 20,
+    borderWidth: 2,
     marginHorizontal: 20,
     overflow: "hidden",
     padding: 20,
     position: "relative",
+    ...hardShadow,
   },
   stack: {
     gap: 10,
@@ -5713,7 +5783,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 26,
   },
   successCheck: {
-    color: colors.white,
+    color: colors.text,
     fontSize: 54,
     fontWeight: "900",
   },
@@ -5734,8 +5804,10 @@ const styles = StyleSheet.create({
   },
   successMark: {
     alignItems: "center",
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.primary,
+    borderColor: colors.darkDeep,
     borderRadius: 60,
+    borderWidth: 2,
     height: 120,
     justifyContent: "center",
     marginBottom: 24,
@@ -5773,11 +5845,14 @@ const styles = StyleSheet.create({
   telegramHero: {
     alignItems: "center",
     backgroundColor: "#229ED9",
+    borderColor: colors.border,
     borderRadius: 16,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 12,
     marginBottom: 14,
     padding: 16,
+    ...hardShadowSmall,
   },
   telegramMark: {
     alignItems: "center",
@@ -5813,10 +5888,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 18,
-    borderWidth: 1,
+    borderWidth: 2,
     overflow: "hidden",
     padding: 18,
     width: 250,
+    ...hardShadowSmall,
   },
   ticketAmount: {
     color: colors.text,
@@ -5851,9 +5927,11 @@ const styles = StyleSheet.create({
     width: 34,
   },
   ticketTag: {
-    backgroundColor: colors.primaryPale,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
+    borderWidth: 2,
     borderRadius: 7,
-    color: colors.primaryMid,
+    color: colors.text,
     fontFamily: mono,
     fontSize: 9,
     fontWeight: "900",
@@ -5919,7 +5997,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   walletDot: {
-    backgroundColor: colors.primaryMid,
+    backgroundColor: colors.primary,
+    borderColor: colors.border,
+    borderWidth: 1,
     borderRadius: 3,
     height: 6,
     width: 6,
@@ -5927,10 +6007,10 @@ const styles = StyleSheet.create({
   walletStrip: {
     alignItems: "center",
     alignSelf: "center",
-    backgroundColor: "rgba(13,31,20,0.04)",
+    backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 999,
-    borderWidth: 1,
+    borderWidth: 2,
     flexDirection: "row",
     gap: 8,
     paddingHorizontal: 12,
@@ -5964,14 +6044,14 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     color: colors.text,
     fontFamily: serif,
-    fontSize: 38,
+    fontSize: 40,
     fontWeight: "700",
-    lineHeight: 42,
+    lineHeight: 43,
     marginTop: 24,
     textAlign: "center",
   },
   welcomeScreen: {
-    backgroundColor: colors.cream,
+    backgroundColor: colors.bg,
   },
   wordmark: {
     fontFamily: serif,
