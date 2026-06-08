@@ -78,7 +78,8 @@
             "minSdkVersion": 26
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "fundwiseUrl": "https://fundwise.fun",

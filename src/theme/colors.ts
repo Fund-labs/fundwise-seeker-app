@@ -32,4 +32,16 @@ export const colors = {
   dangerPale: "#F8D4D0",
   warning: "#9A6B12",
   warningPale: "#F6E5C5",
+  // FundWise web design-system additions
+  greenPale: "#E9F6EE",
+  greenDeep: "#0F5C40",
+  greenForest: "#178654",
+  greenLight: "#A8EBC8",
+  greenMint: "#78DCA9",
+  blueDeep: "#243B88",
+  bluePale: "#E9EFFD",
+  purple: "#A05AE0",
+  purplePale: "#F1E8FB",
+  redPale: "#FBE4DE",
+  amberPale: "#FCEFDD",
 };

@@ -6,6 +6,7 @@ import { transact } from "@solana-mobile/mobile-wallet-adapter-protocol-web3js";
 import * as Haptics from "expo-haptics";
 import { atob } from "js-base64";
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { toQR } from "toqr";
 import {
   Animated,
   Easing,
@@ -56,6 +57,7 @@ import {
 import { getSeekerDeviceInfo } from "../lib/seeker-device";
 import { shortAddress } from "../lib/short-address";
 import { colors } from "../theme/colors";
+import { fonts, sansForWeight } from "../theme/fonts";
 
 type ScreenId = "boot" | "welcome" | "tour" | "auth" | "success" | "home" | "groups" | "activity" | "wallet" | "split" | "fund";
 type HapticKind = "tap" | "selection" | "success" | "warning";
@@ -82,6 +84,7 @@ type SheetState =
   | { kind: "vote"; choice: "yes" | "no"; groupId: string; proposal: Proposal }
   | { kind: "telegram"; group?: FundWiseGroup }
   | { kind: "invite"; group?: FundWiseGroup }
+  | { kind: "invite-qr"; group?: FundWiseGroup }
   | { kind: "deposit"; group: FundGroup }
   | { kind: "propose"; group: FundGroup }
   | { kind: "create-group" }
@@ -2602,21 +2605,46 @@ function ActiveSheet({
             <Text style={styles.copyChipText}>{copiedKey === "invite" ? "Ready" : "Share"}</Text>
           </Pressable>
         </View>
-        <View style={styles.quickGrid}>
+        <View style={[styles.quickGrid, styles.sheetQuickGrid]}>
           <QuickAction label="Telegram" mark="TG" onPress={() => onOpenSheet({ group: sheet.group, kind: "telegram" })} />
-          <QuickAction
-            label="QR"
-            mark="QR"
-            onPress={() =>
-              onNotify({
-                body: "QR invite handoff is queued for the native share sheet.",
-                title: "QR coming next",
-                tone: "info",
-              })
-            }
-          />
+          <QuickAction label="QR" mark="QR" onPress={() => onOpenSheet({ group: sheet.group, kind: "invite-qr" })} />
           <QuickAction label="SMS" mark="SMS" onPress={() => void Share.share({ message: link })} />
           <QuickAction label="More" mark="More" onPress={() => void Share.share({ message: link })} />
+        </View>
+      </BottomSheet>
+    );
+  }
+
+  if (sheet.kind === "invite-qr") {
+    const link = `${FUNDWISE_WEB_URL}/join/${sheet.group?.id || "group"}`;
+    return (
+      <BottomSheet onClose={onClose} title="Invite QR">
+        <Text style={styles.sheetHelp}>Scan this code from another phone to open the FundWise invite.</Text>
+        <InviteQrCode value={link} />
+        <View style={styles.addressBox}>
+          <Text style={styles.addressText}>{link}</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              void Share.share({ message: link });
+              markShared("invite-qr", {
+                body: `${sheet.group?.name || "Group"} QR invite link is ready to send.`,
+                title: "QR invite ready",
+                tone: "success",
+              });
+            }}
+            style={styles.copyChip}
+          >
+            <Text style={styles.copyChipText}>{copiedKey === "invite-qr" ? "Ready" : "Share"}</Text>
+          </Pressable>
+        </View>
+        <View style={styles.row}>
+          <AppButton onPress={() => onOpenSheet({ group: sheet.group, kind: "invite" })} style={styles.flexOne} variant="ghost">
+            Back
+          </AppButton>
+          <AppButton onPress={() => void Share.share({ message: link })} style={styles.flexOne}>
+            Share link
+          </AppButton>
         </View>
       </BottomSheet>
     );
@@ -2733,6 +2761,38 @@ function MetaRow({ label, value }: { label: string; value: string }) {
     <View style={styles.metaRow}>
       <Text style={styles.metaLabel}>{label}</Text>
       <Text style={styles.metaValue}>{value}</Text>
+    </View>
+  );
+}
+
+function InviteQrCode({ size = 212, value }: { size?: number; value: string }) {
+  const qr = useMemo(() => {
+    const modules = toQR(bytesFromString(value));
+    const dimension = Math.sqrt(modules.length);
+    const cellSize = Math.floor(size / dimension);
+
+    return {
+      cellSize,
+      dimension,
+      modules: Array.from(modules),
+      renderSize: cellSize * dimension,
+    };
+  }, [size, value]);
+
+  return (
+    <View style={styles.qrShell}>
+      <View style={[styles.qrGrid, { height: qr.renderSize, width: qr.renderSize }]}>
+        {qr.modules.map((dark, index) => (
+          <View
+            key={`${qr.dimension}-${index}`}
+            style={[
+              styles.qrCell,
+              { height: qr.cellSize, width: qr.cellSize },
+              dark ? styles.qrCellDark : null,
+            ]}
+          />
+        ))}
+      </View>
     </View>
   );
 }
@@ -2986,10 +3046,19 @@ export function FundWiseSeekerAppScreen() {
   const walletAddress = walletAddressToString(account?.address) || authorizedWalletAddress;
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
   const activityItems = useMemo(() => getActivityItems(groups), [groups]);
-  const incomingIntent = useMemo(
-    () => (incomingLink.url ? parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL, FUNDWISE_ALLOWED_HOSTS) : null),
-    [incomingLink.url],
-  );
+  const incomingIntent = useMemo(() => {
+    if (!incomingLink.url) {
+      return null;
+    }
+
+    const parsedIntent = parseFundWiseLink(incomingLink.url, FUNDWISE_WEB_URL, RECEIPTS_URL, FUNDWISE_ALLOWED_HOSTS);
+
+    if (!parsedIntent || parsedIntent.kind === "unknown" || (parsedIntent.kind === "group" && !parsedIntent.groupId)) {
+      return null;
+    }
+
+    return parsedIntent;
+  }, [incomingLink.url]);
   const incomingSettlementRequestId =
     incomingIntent?.kind === "settlement-blink" ? incomingIntent.requestId || null : null;
 
@@ -3138,15 +3207,19 @@ export function FundWiseSeekerAppScreen() {
       return;
     }
 
-    if (lastRoutedIncomingUrlRef.current === incomingLink.url) {
+    if (!incomingIntent) {
+      return;
+    }
+
+    if (lastRoutedIncomingUrlRef.current === incomingIntent.url) {
       return;
     }
 
     if (screen !== "auth" && screen !== "success") {
-      lastRoutedIncomingUrlRef.current = incomingLink.url;
+      lastRoutedIncomingUrlRef.current = incomingIntent.url;
       setScreen("home");
     }
-  }, [incomingLink.loading, incomingLink.url, screen]);
+  }, [incomingIntent, incomingLink.loading, incomingLink.url, screen]);
 
   useEffect(() => {
     if (!notification) {
@@ -3364,10 +3437,10 @@ export function FundWiseSeekerAppScreen() {
       return;
     }
 
-    if (incomingLink.url) {
-      void Linking.openURL(incomingLink.url);
+    if (incomingIntent?.url) {
+      void Linking.openURL(incomingIntent.url);
     }
-  }, [incomingLink.url, settlementPreview?.fallbackUrl]);
+  }, [incomingIntent?.url, settlementPreview?.fallbackUrl]);
 
   const clearIncomingLink = useCallback(() => {
     void incomingLink.clear();
@@ -3503,12 +3576,12 @@ export function FundWiseSeekerAppScreen() {
   );
 }
 
-const serif = "serif";
-const mono = "monospace";
+const serif = fonts.display;
+const mono = fonts.mono;
 const hardShadow = {
   elevation: 5,
   shadowColor: colors.text,
-  shadowOffset: { height: 4, width: 4 },
+  shadowOffset: { height: 5, width: 5 },
   shadowOpacity: 1,
   shadowRadius: 0,
 };
@@ -3516,6 +3589,13 @@ const hardShadowSmall = {
   elevation: 3,
   shadowColor: colors.text,
   shadowOffset: { height: 3, width: 3 },
+  shadowOpacity: 1,
+  shadowRadius: 0,
+};
+const hardShadowLarge = {
+  elevation: 8,
+  shadowColor: colors.text,
+  shadowOffset: { height: 8, width: 8 },
   shadowOpacity: 1,
   shadowRadius: 0,
 };
@@ -3561,6 +3641,7 @@ const styles = StyleSheet.create({
   },
   activityIconText: {
     color: colors.text,
+    fontFamily: fonts.sans,
     fontSize: 16,
     lineHeight: 20,
   },
@@ -3577,12 +3658,14 @@ const styles = StyleSheet.create({
   },
   activitySub: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansSemibold,
     fontSize: 11,
     fontWeight: "600",
     marginTop: 2,
   },
   activityTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "800",
   },
@@ -3605,6 +3688,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: colors.white,
+    fontFamily: fonts.sansMedium,
     fontSize: 28,
     fontWeight: "500",
     marginTop: -2,
@@ -3643,6 +3727,7 @@ const styles = StyleSheet.create({
   },
   alertMarkText: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "900",
   },
@@ -3656,6 +3741,7 @@ const styles = StyleSheet.create({
   },
   alertSub: {
     color: colors.textSoft,
+    fontFamily: fonts.sansSemibold,
     fontSize: 11,
     fontWeight: "600",
     lineHeight: 16,
@@ -3667,6 +3753,7 @@ const styles = StyleSheet.create({
   },
   alertTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "900",
   },
@@ -3693,6 +3780,7 @@ const styles = StyleSheet.create({
   },
   authCopy: {
     color: colors.textSoft,
+    fontFamily: fonts.sansSemibold,
     fontSize: 13,
     fontWeight: "600",
     lineHeight: 20,
@@ -3702,6 +3790,7 @@ const styles = StyleSheet.create({
   },
   authError: {
     color: colors.danger,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "800",
     lineHeight: 18,
@@ -3743,6 +3832,7 @@ const styles = StyleSheet.create({
   },
   authMethodText: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -3777,6 +3867,7 @@ const styles = StyleSheet.create({
   },
   walletOptionBody: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "700",
     lineHeight: 14,
@@ -3824,6 +3915,7 @@ const styles = StyleSheet.create({
   walletOptionTitle: {
     color: colors.text,
     flexShrink: 1,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -3840,6 +3932,7 @@ const styles = StyleSheet.create({
   },
   avatarRestText: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "900",
   },
@@ -3848,6 +3941,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   avatarText: {
+    fontFamily: fonts.sansBold,
     fontWeight: "900",
   },
   badge: {
@@ -3873,6 +3967,7 @@ const styles = StyleSheet.create({
   },
   balanceChipName: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "700",
   },
@@ -3900,6 +3995,7 @@ const styles = StyleSheet.create({
   },
   bigEmoji: {
     color: colors.white,
+    fontFamily: fonts.sans,
     fontSize: 30,
     lineHeight: 38,
   },
@@ -4016,11 +4112,13 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 14,
     fontWeight: "900",
   },
   cardSubtle: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "700",
   },
@@ -4034,11 +4132,13 @@ const styles = StyleSheet.create({
   },
   checkBadgeText: {
     color: colors.white,
+    fontFamily: fonts.sansBold,
     fontSize: 20,
     fontWeight: "900",
   },
   chevron: {
     color: colors.textSubtle,
+    fontFamily: fonts.sans,
     fontSize: 24,
     fontWeight: "300",
   },
@@ -4101,6 +4201,7 @@ const styles = StyleSheet.create({
   },
   copyChipText: {
     color: colors.primaryMid,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "900",
   },
@@ -4136,6 +4237,7 @@ const styles = StyleSheet.create({
   },
   emptyBody: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "700",
     lineHeight: 18,
@@ -4204,11 +4306,13 @@ const styles = StyleSheet.create({
   },
   expenseIconText: {
     color: colors.text,
+    fontFamily: fonts.sans,
     fontSize: 17,
     lineHeight: 21,
   },
   expenseMeta: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansSemibold,
     fontSize: 11,
     fontWeight: "600",
     marginTop: 2,
@@ -4231,6 +4335,7 @@ const styles = StyleSheet.create({
   },
   expenseTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "700",
   },
@@ -4250,7 +4355,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: -24,
     width: 54,
-    ...hardShadow,
+    ...hardShadowLarge,
   },
   field: {
     gap: 7,
@@ -4365,6 +4470,7 @@ const styles = StyleSheet.create({
   },
   greeting: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "700",
   },
@@ -4401,12 +4507,14 @@ const styles = StyleSheet.create({
   },
   groupIconText: {
     color: colors.text,
+    fontFamily: fonts.sans,
     fontSize: 19,
     lineHeight: 23,
   },
   groupMeta: {
     color: colors.textSubtle,
     flexShrink: 1,
+    fontFamily: fonts.sansSemibold,
     fontSize: 11,
     fontWeight: "600",
   },
@@ -4418,6 +4526,7 @@ const styles = StyleSheet.create({
   },
   groupName: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 14,
     fontWeight: "700",
   },
@@ -4493,6 +4602,7 @@ const styles = StyleSheet.create({
   },
   heroStatLabel: {
     color: "rgba(255,255,255,0.62)",
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "700",
   },
@@ -4523,6 +4633,7 @@ const styles = StyleSheet.create({
   },
   heroSub: {
     color: "rgba(255,255,255,0.76)",
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "700",
     marginTop: 4,
@@ -4540,6 +4651,7 @@ const styles = StyleSheet.create({
   },
   iconButtonText: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 15,
     fontWeight: "900",
   },
@@ -4564,6 +4676,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 2,
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 16,
     fontWeight: "800",
     minHeight: 48,
@@ -4605,6 +4718,7 @@ const styles = StyleSheet.create({
   },
   linkRecoveryIconText: {
     color: colors.primaryMid,
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "900",
   },
@@ -4620,6 +4734,7 @@ const styles = StyleSheet.create({
   },
   linkRecoveryPrimaryText: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "900",
   },
@@ -4635,11 +4750,13 @@ const styles = StyleSheet.create({
   },
   linkRecoverySecondaryText: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "900",
   },
   linkRecoverySub: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "700",
     lineHeight: 17,
@@ -4647,6 +4764,7 @@ const styles = StyleSheet.create({
   },
   linkRecoveryTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 15,
     fontWeight: "800",
     marginTop: 2,
@@ -4698,6 +4816,7 @@ const styles = StyleSheet.create({
   },
   settlementPreviewHelp: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "700",
     lineHeight: 18,
@@ -4705,6 +4824,7 @@ const styles = StyleSheet.create({
   },
   settlementPreviewRole: {
     color: colors.primaryMid,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "900",
     marginTop: 4,
@@ -4742,6 +4862,7 @@ const styles = StyleSheet.create({
   },
   settlementRecoveryTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 15,
     fontWeight: "900",
     lineHeight: 19,
@@ -4878,6 +4999,7 @@ const styles = StyleSheet.create({
   memberName: {
     color: colors.text,
     flex: 1,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "900",
   },
@@ -4910,11 +5032,13 @@ const styles = StyleSheet.create({
   membersText: {
     color: colors.textSoft,
     flex: 1,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "700",
   },
   metaLabel: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "700",
   },
@@ -4928,16 +5052,18 @@ const styles = StyleSheet.create({
   metaValue: {
     color: colors.text,
     flexShrink: 1,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "900",
     textAlign: "right",
   },
   modeFund: {
-    backgroundColor: colors.fundBluePale,
+    backgroundColor: colors.bluePale,
     color: colors.fundBlue,
   },
   modeBody: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "700",
     lineHeight: 16,
@@ -4977,8 +5103,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   modeSplit: {
-    backgroundColor: colors.primaryPale,
-    color: colors.primaryMid,
+    backgroundColor: colors.greenPale,
+    color: colors.greenForest,
   },
   modeTag: {
     borderRadius: 5,
@@ -4992,6 +5118,7 @@ const styles = StyleSheet.create({
   },
   modeTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 16,
     fontWeight: "900",
   },
@@ -5022,6 +5149,7 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     color: colors.text,
+    fontFamily: fonts.sans,
     fontSize: 28,
     fontWeight: "300",
     marginTop: -3,
@@ -5035,11 +5163,13 @@ const styles = StyleSheet.create({
   },
   navLabel: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansBold,
     fontSize: 9,
     fontWeight: "800",
   },
   navMark: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "900",
   },
@@ -5049,6 +5179,7 @@ const styles = StyleSheet.create({
   },
   navRightText: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -5065,6 +5196,7 @@ const styles = StyleSheet.create({
   },
   notificationBody: {
     color: colors.textSoft,
+    fontFamily: fonts.sansSemibold,
     fontSize: 11,
     fontWeight: "600",
     lineHeight: 15,
@@ -5085,6 +5217,7 @@ const styles = StyleSheet.create({
   },
   notificationTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "900",
   },
@@ -5157,6 +5290,7 @@ const styles = StyleSheet.create({
   },
   pillText: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "900",
   },
@@ -5175,8 +5309,9 @@ const styles = StyleSheet.create({
     color: colors.primaryMid,
   },
   pressed: {
-    opacity: 0.78,
-    transform: [{ scale: 0.985 }],
+    elevation: 1,
+    shadowOffset: { height: 1, width: 1 },
+    transform: [{ translateX: 2 }, { translateY: 2 }],
   },
   previewAmount: {
     color: colors.text,
@@ -5210,6 +5345,28 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     padding: 16,
   },
+  qrCell: {
+    backgroundColor: colors.surface,
+  },
+  qrCellDark: {
+    backgroundColor: colors.text,
+  },
+  qrGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  qrShell: {
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 16,
+    borderWidth: 2,
+    justifyContent: "center",
+    marginBottom: 16,
+    padding: 16,
+    ...hardShadowSmall,
+  },
   profileButton: {
     alignItems: "center",
     backgroundColor: colors.text,
@@ -5233,11 +5390,13 @@ const styles = StyleSheet.create({
   },
   profileInitial: {
     color: colors.white,
+    fontFamily: fonts.sansBold,
     fontSize: 14,
     fontWeight: "900",
   },
   profileInitialLarge: {
     color: colors.white,
+    fontFamily: fonts.sansBold,
     fontSize: 22,
     fontWeight: "900",
   },
@@ -5282,6 +5441,7 @@ const styles = StyleSheet.create({
   },
   proposalMemo: {
     color: colors.textSoft,
+    fontFamily: fonts.sansSemibold,
     fontSize: 11,
     fontWeight: "600",
     marginTop: 2,
@@ -5298,6 +5458,7 @@ const styles = StyleSheet.create({
   },
   proposalTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 14,
     fontWeight: "700",
   },
@@ -5347,11 +5508,13 @@ const styles = StyleSheet.create({
   },
   quickIconText: {
     color: colors.primaryMid,
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "900",
   },
   quickLabel: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "700",
     textAlign: "center",
@@ -5374,12 +5537,14 @@ const styles = StyleSheet.create({
   },
   receiptMeta: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "700",
     marginTop: 6,
   },
   receiptStatus: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "900",
   },
@@ -5410,6 +5575,7 @@ const styles = StyleSheet.create({
   },
   receiptWhere: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "700",
   },
@@ -5447,6 +5613,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "900",
   },
@@ -5464,11 +5631,13 @@ const styles = StyleSheet.create({
   },
   segmentText: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "800",
   },
   segmentTextActive: {
     color: colors.bg,
+    fontFamily: fonts.sansBold,
     fontWeight: "900",
   },
   segmented: {
@@ -5508,6 +5677,7 @@ const styles = StyleSheet.create({
   },
   sheetActionBody: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansSemibold,
     fontSize: 11,
     fontWeight: "600",
     marginTop: 2,
@@ -5524,6 +5694,7 @@ const styles = StyleSheet.create({
   },
   sheetActionIconText: {
     color: colors.primaryMid,
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "900",
   },
@@ -5535,6 +5706,7 @@ const styles = StyleSheet.create({
   },
   sheetActionTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 14,
     fontWeight: "700",
   },
@@ -5550,12 +5722,16 @@ const styles = StyleSheet.create({
   },
   sheetCloseText: {
     color: colors.text,
+    fontFamily: fonts.sans,
     fontSize: 24,
     fontWeight: "300",
     marginTop: -2,
   },
   sheetContent: {
     paddingBottom: SHEET_BOTTOM_SPACE + BOTTOM_SAFE_SPACE + 12,
+  },
+  sheetQuickGrid: {
+    paddingHorizontal: 0,
   },
   sheetHandle: {
     alignSelf: "center",
@@ -5573,6 +5749,7 @@ const styles = StyleSheet.create({
   },
   sheetHelp: {
     color: colors.textSoft,
+    fontFamily: fonts.sansSemibold,
     fontSize: 12,
     fontWeight: "600",
     lineHeight: 18,
@@ -5684,6 +5861,7 @@ const styles = StyleSheet.create({
   },
   signatureIntentBody: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "700",
     lineHeight: 16,
@@ -5712,6 +5890,7 @@ const styles = StyleSheet.create({
   },
   signatureIntentTitle: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "900",
   },
@@ -5722,6 +5901,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "900",
   },
@@ -5784,11 +5964,13 @@ const styles = StyleSheet.create({
   },
   successCheck: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 54,
     fontWeight: "900",
   },
   successCopy: {
     color: colors.darkMuted,
+    fontFamily: fonts.sansBold,
     fontSize: 13,
     fontWeight: "700",
     lineHeight: 20,
@@ -5864,22 +6046,26 @@ const styles = StyleSheet.create({
   },
   telegramMarkText: {
     color: colors.white,
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "900",
   },
   telegramSub: {
     color: "rgba(255,255,255,0.78)",
+    fontFamily: fonts.sansBold,
     fontSize: 12,
     fontWeight: "700",
     marginTop: 2,
   },
   telegramTitle: {
     color: colors.white,
+    fontFamily: fonts.sansBold,
     fontSize: 16,
     fontWeight: "900",
   },
   terms: {
     color: colors.textSubtle,
+    fontFamily: fonts.sansBold,
     fontSize: 10,
     fontWeight: "800",
     textAlign: "center",
@@ -5907,6 +6093,7 @@ const styles = StyleSheet.create({
   },
   ticketLabel: {
     color: colors.textSoft,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "700",
   },
@@ -5948,6 +6135,7 @@ const styles = StyleSheet.create({
   },
   ticketValue: {
     color: colors.text,
+    fontFamily: fonts.sansBold,
     fontSize: 11,
     fontWeight: "900",
   },
@@ -5959,6 +6147,7 @@ const styles = StyleSheet.create({
   },
   tourCopy: {
     color: colors.textSoft,
+    fontFamily: fonts.sansSemibold,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 22,
@@ -6027,6 +6216,7 @@ const styles = StyleSheet.create({
   },
   welcomeCopy: {
     color: colors.textSoft,
+    fontFamily: fonts.sansSemibold,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 22,
