@@ -1,10 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { PublicKey } from "@solana/web3.js";
 import { useMobileWallet } from "@wallet-ui/react-native-web3js";
-import { transact } from "@solana-mobile/mobile-wallet-adapter-protocol-web3js";
 import * as Haptics from "expo-haptics";
-import { atob } from "js-base64";
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import { toQR } from "toqr";
 import {
@@ -27,7 +24,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
-import { FUNDWISE_ALLOWED_HOSTS, FUNDWISE_IDENTITY, FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
+import { FUNDWISE_ALLOWED_HOSTS, FUNDWISE_WEB_URL, RECEIPTS_URL, SOLANA_CHAIN } from "../config";
 import {
   ME,
   type ActivityItem,
@@ -470,11 +467,35 @@ function triggerHaptic(kind: HapticKind = "tap") {
   void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => Vibration.vibrate([10]));
 }
 
+const WALLET_CONNECT_TIMEOUT_MS = 60000;
+
+// Race a wallet round-trip against a timeout so a non-responding wallet surfaces
+// a retry instead of hanging forever (MWA transact has no built-in timeout).
+function withWalletTimeout<T>(promise: Promise<T>, ms = WALLET_CONNECT_TIMEOUT_MS): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("Wallet request timed out.")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 function readableWalletError(error: unknown) {
   const message = error instanceof Error && error.message ? error.message : "Wallet approval did not complete.";
 
   if (message.includes("CancellationException") || message.toLowerCase().includes("cancel")) {
     return "Wallet request was cancelled. Retry and approve it with the side fingerprint sensor.";
+  }
+
+  if (message.toLowerCase().includes("timed out") || message.toLowerCase().includes("timeout")) {
+    return "Your wallet didn't respond. Open your wallet, then tap Try again.";
   }
 
   if (message.toLowerCase().includes("authorization request failed")) {
@@ -513,10 +534,6 @@ function walletAddressToString(value: unknown) {
   }
 
   return String(value);
-}
-
-function base64ToBytes(value: string) {
-  return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
 }
 
 function StrataLogo({ size = 56, white = false }: { size?: number; white?: boolean }) {
@@ -1157,31 +1174,29 @@ function AuthScreen({
   canRetry,
   error,
   intent,
-  onSelectWallet,
   onStart,
   onRetry,
   progress,
   running,
-  walletPreference,
   walletAddress,
 }: {
   canRetry: boolean;
   error: string | null;
   intent: SignatureIntent;
-  onSelectWallet: (preference: WalletPreference) => void;
   onStart: () => void;
   onRetry: () => void;
   progress: number;
   running: boolean;
-  walletPreference: WalletPreference;
   walletAddress: string | null;
 }) {
   const ring = useRef(new Animated.Value(0)).current;
   const isConnect = intent.kind === "connect";
+  // Informational only — Mobile Wallet Adapter can't target a wallet from the
+  // app, so this lists what works; the phone's own picker makes the choice.
   const walletOptions: Array<{ body: string; id: WalletPreference; label: string; mark: string; tag: string }> = [
-    { body: "Seeker-native approval with the side fingerprint sensor.", id: "seeker", label: "Solana Mobile Wallet", mark: "SM", tag: "Recommended" },
-    { body: "Installed wallet. Works through Mobile Wallet Adapter.", id: "solflare", label: "Solflare", mark: "SF", tag: "Installed" },
-    { body: "Show every MWA-compatible wallet on this phone.", id: "any", label: "Other wallets", mark: "MW", tag: "Adapter" },
+    { body: "Seeker-native approval with the side fingerprint sensor.", id: "seeker", label: "Solana Mobile Wallet", mark: "SM", tag: "Seed Vault" },
+    { body: "Installed wallet, via Mobile Wallet Adapter.", id: "solflare", label: "Solflare", mark: "SF", tag: "Installed" },
+    { body: "Any MWA-compatible wallet on this phone.", id: "any", label: "Other wallets", mark: "MW", tag: "MWA" },
   ];
 
   useEffect(() => {
@@ -1190,11 +1205,10 @@ function AuthScreen({
     return () => loop.stop();
   }, [ring]);
 
-  const selectedWallet = walletOptions.find((option) => option.id === walletPreference) || walletOptions[0];
-  const idleTitle = isConnect ? "Choose a wallet" : intent.title;
+  const idleTitle = isConnect ? "Connect your wallet" : intent.title;
   const idleBody =
     isConnect
-      ? `${selectedWallet.label} is selected. Connecting only verifies your public wallet. FundWise cannot move funds from this step.`
+      ? "Tap Connect and your phone opens its wallet picker. Connecting only shares your public address — FundWise can't move funds from this step."
       : intent.body;
   const primaryCopy = running ? "Waiting for wallet" : canRetry ? "Try again" : isConnect ? "Connect wallet" : "Approve in wallet";
   const authEyebrow = isConnect
@@ -1223,36 +1237,24 @@ function AuthScreen({
         <Text style={styles.authEyebrow}>{authEyebrow}</Text>
         <Text style={styles.authTitle}>{running ? "Approve in wallet" : idleTitle}</Text>
         <Text style={styles.authCopy}>
-          {running ? `Approve in ${selectedWallet.label}, then use the side fingerprint sensor if the wallet asks.` : idleBody}
+          {running ? "Approve in your wallet, then use the side fingerprint sensor if it asks." : idleBody}
         </Text>
         {isConnect ? (
           <View style={styles.walletOptions}>
-            {walletOptions.map((option) => {
-              const active = option.id === walletPreference;
-              return (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  key={option.id}
-                  onPress={() => {
-                    triggerHaptic("selection");
-                    onSelectWallet(option.id);
-                  }}
-                  style={[styles.walletOption, active ? styles.walletOptionActive : null]}
-                >
-                  <View style={styles.walletOptionMark}>
-                    <Text style={styles.walletOptionMarkText}>{option.mark}</Text>
+            {walletOptions.map((option) => (
+              <View key={option.id} style={styles.walletOption}>
+                <View style={styles.walletOptionMark}>
+                  <Text style={styles.walletOptionMarkText}>{option.mark}</Text>
+                </View>
+                <View style={styles.flexOne}>
+                  <View style={styles.walletOptionHead}>
+                    <Text style={styles.walletOptionTitle}>{option.label}</Text>
+                    <Text style={styles.walletOptionTag}>{option.tag}</Text>
                   </View>
-                  <View style={styles.flexOne}>
-                    <View style={styles.walletOptionHead}>
-                      <Text style={styles.walletOptionTitle}>{option.label}</Text>
-                      <Text style={[styles.walletOptionTag, active ? styles.walletOptionTagActive : null]}>{option.tag}</Text>
-                    </View>
-                    <Text style={styles.walletOptionBody}>{option.body}</Text>
-                  </View>
-                </Pressable>
-              );
-            })}
+                  <Text style={styles.walletOptionBody}>{option.body}</Text>
+                </View>
+              </View>
+            ))}
           </View>
         ) : (
           <View style={styles.signatureIntentCard}>
@@ -2179,6 +2181,7 @@ function ActivityScreen({ activityItems, onFab, onTab }: { activityItems: Activi
 function WalletScreen({
   activityItems,
   isOnline,
+  onDisconnect,
   onFab,
   onProfile,
   onTab,
@@ -2187,6 +2190,7 @@ function WalletScreen({
 }: {
   activityItems: ActivityItem[];
   isOnline: boolean;
+  onDisconnect: () => void;
   onFab: () => void;
   onProfile: () => void;
   onTab: (tab: "home" | "groups" | "activity" | "wallet") => void;
@@ -2245,6 +2249,11 @@ function WalletScreen({
           <Text style={styles.copyChipText}>Copy</Text>
         </Pressable>
       </View>
+      {walletAddress ? (
+        <Pressable accessibilityRole="button" onPress={onDisconnect} style={({ pressed }) => [styles.disconnectButton, pressed ? styles.pressed : null]}>
+          <Text style={styles.disconnectButtonText}>Disconnect wallet</Text>
+        </Pressable>
+      ) : null}
     </AppShell>
   );
 }
@@ -3021,7 +3030,7 @@ function LabeledInput({
 }
 
 export function FundWiseSeekerAppScreen() {
-  const { account } = useMobileWallet();
+  const { account, connect, disconnect, signMessages } = useMobileWallet();
   const [screen, setScreen] = useState<ScreenId>("boot");
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [localStateChecked, setLocalStateChecked] = useState(false);
@@ -3030,12 +3039,10 @@ export function FundWiseSeekerAppScreen() {
   const [sheet, setSheet] = useState<SheetState | null>(null);
   const [intent, setIntent] = useState<SignatureIntent | null>(null);
   const [notification, setNotification] = useState<AppNotification | null>(null);
-  const [success, setSuccess] = useState<SuccessState>({ body: "Signature verified by Seed Vault.", returnScreen: "home", title: "Wallet connected" });
+  const [success, setSuccess] = useState<SuccessState>({ body: "Approved with Seed Vault.", returnScreen: "home", title: "Wallet connected" });
   const [runningAuth, setRunningAuth] = useState(false);
   const [authProgress, setAuthProgress] = useState(0);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [walletPreference, setWalletPreference] = useState<WalletPreference>("seeker");
-  const [authorizedWalletAddress, setAuthorizedWalletAddress] = useState<string | null>(null);
   const [settlementPreview, setSettlementPreview] = useState<MobileSettlementRequestPreview | null>(null);
   const [settlementPreviewError, setSettlementPreviewError] = useState<string | null>(null);
   const [settlementPreviewLoading, setSettlementPreviewLoading] = useState(false);
@@ -3043,7 +3050,7 @@ export function FundWiseSeekerAppScreen() {
   const isOnline = useNetworkStatus();
   const incomingLink = useIncomingFundWiseLink();
   const lastRoutedIncomingUrlRef = useRef<string | null>(null);
-  const walletAddress = walletAddressToString(account?.address) || authorizedWalletAddress;
+  const walletAddress = walletAddressToString(account?.address);
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
   const activityItems = useMemo(() => getActivityItems(groups), [groups]);
   const incomingIntent = useMemo(() => {
@@ -3260,7 +3267,7 @@ export function FundWiseSeekerAppScreen() {
       body: "Place your finger on the side sensor when your wallet asks. FundWise never receives private keys.",
       kind: "connect",
       returnScreen: "home",
-      successBody: "Signature verified by Seed Vault. You're ready to fund and split.",
+      successBody: "Approved with Seed Vault. You're ready to fund and split.",
       successTitle: "Wallet connected",
       title: "Place your finger on the sensor",
     }),
@@ -3283,42 +3290,31 @@ export function FundWiseSeekerAppScreen() {
     try {
       progressTimer = setInterval(() => setAuthProgress((current) => Math.min(current + 16, 88)), 260);
 
-      const message = [
-        "FundWise Seeker",
-        `domain=${new URL(FUNDWISE_WEB_URL).host}`,
-        `cluster=${SOLANA_CHAIN}`,
-        `intent=${activeIntent.kind}`,
-        `ts=${new Date().toISOString()}`,
-      ].join("\n");
-
-      const authorization = await transact(async (wallet) => {
-        const result = await wallet.authorize({
-          chain: SOLANA_CHAIN,
-          identity: FUNDWISE_IDENTITY,
-        });
-        const authorizedAddress = result.accounts[0]?.address;
-
-        if (!authorizedAddress) {
+      if (activeIntent.kind === "connect") {
+        // Connect through the @wallet-ui provider so the SDK owns the MWA auth
+        // token and persists the authorization: the address survives app
+        // restart and reconnects reuse the token instead of re-prompting.
+        const connected = await withWalletTimeout(connect());
+        if (!walletAddressToString(connected.address)) {
           throw new Error("Wallet did not return an account.");
         }
+        console.log("[FundWise] wallet connected");
+      } else {
+        // Non-connect actions (settle / deposit / vote) require an explicit,
+        // per-action wallet approval. signMessages() authorizes (persisting +
+        // reusing the token) and prompts the user to sign the intent before we
+        // apply it — preserving the deliberate approval gesture.
+        const message = [
+          "FundWise Seeker",
+          `domain=${new URL(FUNDWISE_WEB_URL).host}`,
+          `cluster=${SOLANA_CHAIN}`,
+          `intent=${activeIntent.kind}`,
+          `ts=${new Date().toISOString()}`,
+        ].join("\n");
+        await withWalletTimeout(signMessages(bytesFromString(message)));
+        console.log("[FundWise] intent signed", { kind: activeIntent.kind });
+      }
 
-        const signed = await wallet.signMessages({
-          addresses: [authorizedAddress],
-          payloads: [bytesFromString(message)],
-        });
-
-        return {
-          address: authorizedAddress,
-          signedMessage: signed[0],
-        };
-      });
-
-      const authorizedAddress = new PublicKey(base64ToBytes(authorization.address)).toBase58();
-      setAuthorizedWalletAddress(authorizedAddress);
-      console.log("[FundWise] MWA approval completed", {
-        address: authorizedAddress,
-        signedMessageBytes: authorization.signedMessage.length,
-      });
       if (progressTimer) clearInterval(progressTimer);
       activeIntent.apply?.();
       setAuthProgress(100);
@@ -3342,13 +3338,28 @@ export function FundWiseSeekerAppScreen() {
       setAuthError(readableWalletError(error));
       triggerHaptic("warning");
     }
-  }, [activeIntent, runningAuth]);
+  }, [activeIntent, connect, runningAuth, signMessages]);
 
   const afterSuccess = useCallback(() => {
     void AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, "true");
     setScreen(success.returnScreen);
     setIntent(null);
   }, [success.returnScreen]);
+
+  const onDisconnect = useCallback(async () => {
+    triggerHaptic("tap");
+    try {
+      // disconnect() drops this app's locally cached MWA authorization (auth
+      // token + selected account), so `account` becomes undefined and the next
+      // connect re-authorizes. It does not revoke on the wallet side, so a
+      // wallet still holding a prior authorization may re-approve without a
+      // full prompt.
+      await disconnect();
+    } catch (error) {
+      console.warn("[FundWise] disconnect failed", walletErrorDebug(error));
+    }
+    notify({ body: "Wallet disconnected. Connect again whenever you're ready.", title: "Disconnected", tone: "info" });
+  }, [disconnect, notify]);
 
   const onSettleSelected = useCallback(() => {
     if (!selectedGroup || selectedGroup.mode !== "split") {
@@ -3475,17 +3486,10 @@ export function FundWiseSeekerAppScreen() {
           canRetry={Boolean(authError) && !runningAuth}
           error={authError}
           intent={activeIntent}
-          onSelectWallet={(preference) => {
-            setWalletPreference(preference);
-            if (authError && !runningAuth) {
-              setAuthError(null);
-            }
-          }}
           onStart={() => void runSignature()}
           onRetry={() => void runSignature()}
           progress={authProgress}
           running={runningAuth}
-          walletPreference={walletPreference}
           walletAddress={walletAddress}
         />
       );
@@ -3494,7 +3498,7 @@ export function FundWiseSeekerAppScreen() {
     if (screen === "groups") return <GroupsScreen groups={groups} onCreate={() => setSheet({ kind: "create-group" })} onFab={() => setSheet({ kind: "create-group" })} onOpenGroup={openGroup} onTab={goTab} />;
     if (screen === "activity") return <ActivityScreen activityItems={activityItems} onFab={() => setSheet({ kind: "create-group" })} onTab={goTab} />;
     if (screen === "wallet") {
-      return <WalletScreen activityItems={activityItems} isOnline={isOnline} onFab={() => setSheet({ kind: "create-group" })} onProfile={() => setSheet({ kind: "profile" })} onTab={goTab} onTelegram={() => setSheet({ kind: "telegram" })} walletAddress={walletAddress} />;
+      return <WalletScreen activityItems={activityItems} isOnline={isOnline} onDisconnect={() => void onDisconnect()} onFab={() => setSheet({ kind: "create-group" })} onProfile={() => setSheet({ kind: "profile" })} onTab={goTab} onTelegram={() => setSheet({ kind: "telegram" })} walletAddress={walletAddress} />;
     }
     if (screen === "split" && selectedGroup?.mode === "split") {
       return (
@@ -3861,10 +3865,6 @@ const styles = StyleSheet.create({
     width: "100%",
     ...hardShadowSmall,
   },
-  walletOptionActive: {
-    backgroundColor: colors.primaryPale,
-    borderColor: colors.border,
-  },
   walletOptionBody: {
     color: colors.textSoft,
     fontFamily: fonts.sansBold,
@@ -3908,9 +3908,6 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 0.8,
     textTransform: "uppercase",
-  },
-  walletOptionTagActive: {
-    color: colors.text,
   },
   walletOptionTitle: {
     color: colors.text,
@@ -4234,6 +4231,26 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.5,
+  },
+  disconnectButton: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 14,
+    borderWidth: 2,
+    justifyContent: "center",
+    marginHorizontal: 20,
+    marginTop: 14,
+    minHeight: 48,
+    ...hardShadowSmall,
+  },
+  disconnectButtonText: {
+    color: colors.danger,
+    fontFamily: fonts.sansBold,
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
   },
   emptyBody: {
     color: colors.textSoft,
