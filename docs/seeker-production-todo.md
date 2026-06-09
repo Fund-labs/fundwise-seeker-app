@@ -1,8 +1,8 @@
 # Seeker Production Todo
 
-Last updated: 2026-05-29T17:36:58+02:00
+Last updated: 2026-06-09
 
-Current decision: FundWise Seeker is not production-ready until the physical-device regression pass is rerun and the external production blockers are cleared. The app now has local patches for group persistence, group opening, bottom-nav/sheet layering, Add expense state updates, and white-screen recovery. Those fixes passed local build/type checks and a signed APK was produced, but ADB currently has no connected device, so the patched build still needs on-device proof.
+Current decision: FundWise Seeker is not production-ready until the physical-device regression pass is rerun and the external production blockers are cleared. The app now has local patches for group persistence, group opening, bottom-nav/sheet layering, Add expense state updates, white-screen recovery, and the hardened FundWise API contracts for wallet session auth, tokenized invite previews, and mobile Settlement Request previews. Those fixes pass local static/config checks, but ADB currently has no connected device, so the patched build still needs on-device proof.
 
 ## Current Evidence
 
@@ -18,6 +18,7 @@ Verification commands:
 - `npm run typecheck`: passed
 - `npm run verify:devnet`: passed
 - `npm run verify:production`: passed with warnings
+- `npm run verify:fundwise-sync:force`: passed; warning remains because sibling `../FundWise` has local changes unrelated to this Seeker patch
 - `npm run verify:production:strict`: failed because production defaults to public Solana RPC
 - `./gradlew assembleRelease`: passed
 - `apksigner verify --verbose android/app/build/outputs/apk/release/app-release-debugsigned.apk`: passed
@@ -168,8 +169,9 @@ Live integration checks:
     - Acceptance: no white screen, no stuck auth state, and no lost return context.
 
 20. FundWise API.
-    - Verify `/api/health`, invite lookup, and mobile settlement preview against beta and production.
-    - Add timeout and retry behavior for preview calls.
+    - Status: code contract patched on 2026-06-09; beta/production runtime verification still required.
+    - Done in code: `/api/health` still uses FundWise API base URL; tokenized invites use `/api/group-invites/preview`; MWA connect now establishes a FundWise wallet session through `/api/auth/wallet/challenge` and `/api/auth/wallet/verify`; mobile settlement preview now uses protected session auth instead of a `wallet=` query parameter; all shared FundWise HTTP calls have a 12s timeout.
+    - Remaining verification: run against beta and production with real cookies/session behavior on Android, including expired settlement, wrong wallet, not member, not settleable, bad network, wallet rejection, and retry.
     - Acceptance: bad network, expired settlement, wrong wallet, not member, and not settleable all have clear recoverable UI.
 
 21. Telegram/Fundy integration.
@@ -213,9 +215,10 @@ Live integration checks:
 1. Reconnect Seeker and run `npm run qa:device android/app/build/outputs/apk/release/app-release-debugsigned.apk`.
 2. Manually verify create group, open group, Add expense, force-stop/relaunch persistence, and sheet CTA visibility on the patched APK.
 3. Re-run `gfxinfo` and compare jank/input-latency against the baseline above.
-4. Wire real FundWise-backed group reads/writes after local placeholder state is stable.
-5. Fix App Links server env/DNS and production RPC strict check.
-6. Re-run full mobile wallet, settlement, receipts, Telegram, and packaging gates.
+4. Verify the newly wired FundWise wallet session, tokenized invite preview, and protected settlement preview on a physical Seeker/Android device.
+5. Wire real FundWise-backed group reads/writes after local placeholder state is stable.
+6. Fix App Links server env/DNS and production RPC strict check.
+7. Re-run full mobile wallet, settlement, receipts, Telegram, and packaging gates.
 
 ## Release Gate
 

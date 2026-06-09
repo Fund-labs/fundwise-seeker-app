@@ -4,7 +4,7 @@ This is the Seeker-side execution gate for the latest FundWise mobile-native Spl
 
 Current release decision: `v0.1.1` is a devnet APK on the normal `https://fundwise.fun` host. Build it with the `devnet` EAS profile and verify it with `npm run verify:devnet`. The mainnet production sections below remain the later release gate, not the blocker for this devnet release. The EAS project is `@sarthiii/fundwise-seeker` (`e8b27a7f-9a8c-4a87-ab2e-94cf258c86c9`), and devnet build `947e7fc2-55b4-4dc2-b09c-3d8bd6655d99` has been submitted. A local debug APK also builds successfully; final device QA needs a reconnected Seeker.
 
-Current app-readiness blocker list is tracked in `docs/seeker-production-todo.md`. As of 2026-05-29, group persistence, created-group opening, bottom-nav/sheet layering, Add expense local state updates, and JS white-screen recovery are patched locally and a signed APK builds. The app is still not production-ready until the patched APK passes physical-device regression QA, production strict config stops using public Solana RPC, App Links are configured server-side, and the dApp Store release cert is finalized.
+Current app-readiness blocker list is tracked in `docs/seeker-production-todo.md`. As of 2026-06-09, group persistence, created-group opening, bottom-nav/sheet layering, Add expense local state updates, JS white-screen recovery, FundWise wallet-session auth, tokenized invite previews, and protected mobile Settlement Request previews are patched locally. The app is still not production-ready until the patched APK passes physical-device regression QA, production strict config stops using public Solana RPC, App Links are configured server-side, and the dApp Store release cert is finalized.
 
 Source of truth in the sibling FundWise repo:
 
@@ -108,12 +108,14 @@ Run against both `https://beta.fundwise.fun` and `https://fundwise.fun` when eac
   - `/settle/r/{requestId}`
   - `/receipts/{id}`
 - Wallet connect.
-- Invite join.
+- Invite join with a tokenized `/groups/{id}?invite=true&inviteToken=...` link.
 - Share Settlement Request.
 - Receipt open.
 - Wallet rejection and retry.
 - Background/resume during wallet handoff.
 - Poor-network behavior around preview, sign, submit, and receipt.
+- Native wallet session establishment through `/api/auth/wallet/challenge` and `/api/auth/wallet/verify`.
+- Protected mobile Settlement Request preview through `/api/mobile/settlement-requests/{requestId}/preview`.
 
 Local Seeker config check:
 

@@ -44,10 +44,11 @@ Docs direction:
 
 Current app:
 
-- `FundWiseSeekerAppScreen` uses direct `transact` for wallet authorization plus a message-signing proof
-- the approval path avoids SIWS-first and cached auth-token reuse while testing Seeker wallet compatibility
-- the last MWA-authorized wallet address is retained in memory so native preview APIs can query with the verified viewer wallet
-- protected reads and money movement still hand off to FundWise web
+- `FundWiseSeekerAppScreen` uses `useMobileWallet().connect()` so `@wallet-ui` owns the MWA auth token and persisted account state
+- per-action approvals and FundWise wallet-session verification use `signMessages()` from the same Wallet UI provider
+- the app signs the FundWise `/api/auth/wallet/challenge` message and posts it to `/api/auth/wallet/verify`, so protected FundWise APIs use the same session model as web
+- protected mobile Settlement Request previews no longer pass a wallet query parameter; they rely on the FundWise wallet session
+- money movement still hands off to FundWise web
 - future secure Seeker verification should use SIWS plus backend SGT checks
 
 ## Android App Links
@@ -57,7 +58,8 @@ Current app:
 - `app.json` declares verified links for `https://fundwise.fun` and `https://beta.fundwise.fun` on `/groups`, `/join`, `/settle/r`, and `/receipts`
 - `useIncomingFundWiseLink` persists the latest incoming link with AsyncStorage
 - `FundWiseSeekerAppScreen` surfaces the recovered link in the mounted home screen
-- incoming `/settle/r/{requestId}` links call the FundWise mobile preview API after wallet authorization and render redacted role/amount/status copy before opening the web fallback
+- incoming `/settle/r/{requestId}` links call the FundWise mobile preview API after wallet-session verification and render redacted role/amount/status copy before opening the web fallback
+- production invite links preserve `inviteToken` from `/groups/{id}?invite=true&inviteToken=...` and use FundWise's public tokenized invite preview route
 - FundWise now has a `/.well-known/assetlinks.json` route; production and beta verification still require the real release signing cert SHA-256 fingerprint in `FUNDWISE_SEEKER_ANDROID_CERT_SHA256_FINGERPRINTS`
 
 ## FundWise Mobile Roadmap Boundary
