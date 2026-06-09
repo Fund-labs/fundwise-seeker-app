@@ -12,6 +12,7 @@ export type FundWiseLinkIntent = {
   url: string;
   groupId?: string;
   inviteCode?: string;
+  inviteToken?: string;
   receiptId?: string;
   requestId?: string;
   settlementId?: string;
@@ -42,6 +43,14 @@ export function parseFundWiseLink(
     return null;
   }
 
+  if (/^FWI-[a-f0-9]{64}$/i.test(trimmed)) {
+    return {
+      kind: "invite",
+      inviteToken: trimmed,
+      url: `${baseUrl.replace(/\/$/, "")}/groups?invite=true&inviteToken=${encodeURIComponent(trimmed)}`,
+    };
+  }
+
   try {
     const url = new URL(trimmed, baseUrl);
     const base = new URL(baseUrl);
@@ -60,6 +69,10 @@ export function parseFundWiseLink(
 
     const parts = getPathParts(url);
     const inviteCode = url.searchParams.get("code")?.trim() || undefined;
+    const inviteToken =
+      url.searchParams.get("inviteToken")?.trim() ||
+      url.searchParams.get("token")?.trim() ||
+      undefined;
     const settleFrom = url.searchParams.get("settleFrom")?.trim() || undefined;
     const settleTo = url.searchParams.get("settleTo")?.trim() || undefined;
 
@@ -104,6 +117,7 @@ export function parseFundWiseLink(
         url: url.toString(),
         groupId: parts[1],
         inviteCode: inviteCode?.toUpperCase(),
+        inviteToken,
       };
     }
 
@@ -116,6 +130,15 @@ export function parseFundWiseLink(
 
     const groupId = parts[1];
     const settlementId = parts[2] === "settlements" ? parts[3] : undefined;
+
+    if (inviteToken) {
+      return {
+        kind: "invite",
+        url: url.toString(),
+        groupId,
+        inviteToken,
+      };
+    }
 
     if (settlementId) {
       return {
@@ -182,6 +205,10 @@ export function getFundWiseLinkLabel(intent: FundWiseLinkIntent) {
 }
 
 export function getFundWiseLinkDetail(intent: FundWiseLinkIntent) {
+  if (intent.kind === "invite" && intent.inviteToken) {
+    return "Tokenized invite";
+  }
+
   if (intent.kind === "invite" && intent.inviteCode) {
     return `Invite ${intent.inviteCode}`;
   }

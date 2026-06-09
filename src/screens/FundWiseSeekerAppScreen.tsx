@@ -41,6 +41,7 @@ import {
 import { useIncomingFundWiseLink } from "../hooks/useIncomingFundWiseLink";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import {
+  ensureFundWiseWalletSession,
   getMobileSettlementRequestPreview,
   type MobileSettlementRequestPreview,
 } from "../lib/fundwise-api";
@@ -1487,13 +1488,18 @@ function LinkRecoveryCard({
 
   if (isSettlementLink) {
     const canOpenFallback = Boolean(walletAddress || settlementPreview || settlementPreviewError);
+    const needsWalletVerification =
+      typeof settlementPreviewError === "string" &&
+      settlementPreviewError.toLowerCase().includes("wallet verification");
     const primaryAction =
       !walletAddress
         ? "Connect wallet"
         : settlementPreviewLoading
           ? "Checking"
           : settlementPreviewError
-            ? "Retry preview"
+            ? needsWalletVerification
+              ? "Verify wallet"
+              : "Retry preview"
             : settlementPreview?.status === "wrong_wallet"
               ? "Switch wallet"
               : "Continue on FundWise";
@@ -1501,7 +1507,9 @@ function LinkRecoveryCard({
       !walletAddress || settlementPreview?.status === "wrong_wallet"
         ? onConnectWallet
         : settlementPreviewError
-          ? onRetryPreview
+          ? needsWalletVerification
+            ? onConnectWallet
+            : onRetryPreview
           : onOpen;
 
     return (
@@ -3163,7 +3171,7 @@ export function FundWiseSeekerAppScreen() {
       setSettlementPreviewError(null);
       setSettlementPreviewLoading(true);
 
-      const result = await getMobileSettlementRequestPreview(requestId, viewerWallet);
+      const result = await getMobileSettlementRequestPreview(requestId);
 
       if (cancelled) {
         return;
@@ -3295,8 +3303,16 @@ export function FundWiseSeekerAppScreen() {
         // token and persists the authorization: the address survives app
         // restart and reconnects reuse the token instead of re-prompting.
         const connected = await withWalletTimeout(connect());
-        if (!walletAddressToString(connected.address)) {
+        const connectedAddress = walletAddressToString(connected.address);
+        if (!connectedAddress) {
           throw new Error("Wallet did not return an account.");
+        }
+        const session = await ensureFundWiseWalletSession({
+          wallet: connectedAddress,
+          signMessage: (message) => signMessages(message),
+        });
+        if (!session.ok) {
+          throw new Error(session.error);
         }
         console.log("[FundWise] wallet connected");
       } else {
