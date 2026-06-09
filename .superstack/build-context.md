@@ -7,7 +7,9 @@
     "wallet_method": "mwa",
     "scaffold_repo": "existing FundWiseSeeker Expo custom dev build",
     "physical_device_tested": true,
-    "latest_device_connection": "adb devices returned no connected devices at 2026-05-29T17:36:58+02:00; last physical pass used SM02E406039970",
+    "latest_device_connection": "SM02E406039970 connected and QA-passed on 2026-06-09; installed dist/fundwiseseeker-v0.1.1-beta-devnet.apk",
+    "latest_tested_apk_sha256": "f1133742d5e7ca56c08f73e6146166d35d21f9eeb502c488916d2efa837f5eab",
+    "latest_app_link_tests": "Cold-started https://fundwise.fun/groups/seeker-smoke and https://fundwise.fun/settle/r/seeker-smoke-request into fun.fundwise.seeker on SM02E406039970; both recovered in-app without error-log output.",
     "launch_path": "FundWise mobile web -> PWA -> TWA/APK, with RN as native Seeker companion"
   },
   "build_status": {
