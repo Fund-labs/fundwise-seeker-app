@@ -5,6 +5,7 @@ ios/
 node_modules/
 .DS_Store
 fundwise-*.png
+design/screenshots/current-device.png
 .env
 .env.*
 !.env.example
