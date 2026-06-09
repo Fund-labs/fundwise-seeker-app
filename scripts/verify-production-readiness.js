@@ -6,6 +6,9 @@ const strict = process.argv.includes("--strict");
 const targetArg = process.argv.find((arg) => arg.startsWith("--target="));
 const target = targetArg?.split("=")[1] || "production";
 const appJson = JSON.parse(fs.readFileSync(path.join(root, "app.json"), "utf8"));
+const fundwiseApiSource = fs.readFileSync(path.join(root, "src/lib/fundwise-api.ts"), "utf8");
+const fundwiseLinkSource = fs.readFileSync(path.join(root, "src/lib/fundwise-link.ts"), "utf8");
+const mountedScreenSource = fs.readFileSync(path.join(root, "src/screens/FundWiseSeekerAppScreen.tsx"), "utf8");
 
 const requiredHosts = ["fundwise.fun", "beta.fundwise.fun"];
 const requiredPrefixes = ["/groups", "/join", "/settle/r", "/receipts"];
@@ -63,6 +66,26 @@ if (!isDevnet && !/^https:\/\/mainnet\.helius-rpc\.com\//.test(rpcEndpoint)) {
 
 if (isDevnet && !/devnet/.test(rpcEndpoint)) {
   warnings.push("RPC endpoint does not look like a devnet URL. Verify the endpoint targets Solana devnet before building the beta APK.");
+}
+
+if (!fundwiseApiSource.includes("/api/group-invites/preview")) {
+  failures.push("Seeker must use FundWise tokenized invite preview API; legacy /api/groups?code is production-disabled.");
+}
+
+if (!fundwiseApiSource.includes("/api/auth/wallet/challenge") || !fundwiseApiSource.includes("/api/auth/wallet/verify")) {
+  failures.push("Seeker must establish a FundWise wallet session before calling protected FundWise APIs.");
+}
+
+if (fundwiseApiSource.includes("preview?wallet=")) {
+  failures.push("Mobile settlement preview must use FundWise wallet-session auth, not a wallet query parameter.");
+}
+
+if (!fundwiseLinkSource.includes("inviteToken")) {
+  failures.push("Seeker link parser must preserve FundWise inviteToken values from production invite links.");
+}
+
+if (!mountedScreenSource.includes("ensureFundWiseWalletSession")) {
+  failures.push("Mounted Seeker app screen must wire MWA signatures into the FundWise wallet session.");
 }
 
 for (const warning of warnings) {

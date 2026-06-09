@@ -84,6 +84,10 @@ const requiredFundWiseFiles = [
   "docs/adr/0047-integration-sequence-and-provider-rail-boundaries.md",
   "plans/SADR/SADR-009-fundy-group-autopilot.md",
   "plans/SADR/SADR-010-actionable-settlement-nudges.md",
+  "app/api/auth/wallet/challenge/route.ts",
+  "app/api/auth/wallet/session/route.ts",
+  "app/api/auth/wallet/verify/route.ts",
+  "app/api/group-invites/preview/route.ts",
   "app/.well-known/assetlinks.json/route.ts",
   "app/api/mobile/settlement-requests/route.ts",
   "app/api/mobile/settlement-requests/[requestId]/preview/route.ts",
@@ -94,8 +98,10 @@ const requiredFundWiseFiles = [
   "app/receipts/[id]/page.tsx",
   "components/agent-section.tsx",
   "components/footer.tsx",
+  "components/invite-group-dialog.tsx",
   "lib/server/fundy-telegram-auth.ts",
   "lib/server/mobile-settlement-requests.ts",
+  "lib/server/wallet-session.ts",
   "supabase/migrations/20260525120000_add_provider_rail_intents.sql",
   "supabase/migrations/20260525143000_add_rate_limit_buckets.sql",
   "tests/assetlinks.test.ts",
@@ -120,6 +126,47 @@ if (missing.length > 0) {
   console.error("FundWise sync check failed. Missing or mismatched FundWise source contract:");
   for (const item of missing) {
     console.error(`- ${item}`);
+  }
+  process.exit(1);
+}
+
+const contentChecks = [
+  {
+    file: "app/api/groups/route.ts",
+    includes: "Legacy Group code lookup is no longer available",
+    label: "legacy invite-code lookup is production-disabled",
+  },
+  {
+    file: "app/api/group-invites/preview/route.ts",
+    includes: "getGroupInvitePreview",
+    label: "tokenized invite preview route",
+  },
+  {
+    file: "components/invite-group-dialog.tsx",
+    includes: "inviteToken",
+    label: "invite dialog emits inviteToken URLs",
+  },
+  {
+    file: "app/api/mobile/settlement-requests/[requestId]/preview/route.ts",
+    includes: "withAuthenticatedHandler",
+    label: "mobile settlement preview uses wallet-session auth",
+  },
+  {
+    file: "app/api/auth/wallet/verify/route.ts",
+    includes: "writeWalletSessionCookie",
+    label: "wallet verify writes FundWise session cookie",
+  },
+];
+
+const mismatched = contentChecks.filter(({ file, includes }) => {
+  const source = fs.readFileSync(path.join(fundwiseRoot, file), "utf8");
+  return !source.includes(includes);
+});
+
+if (mismatched.length > 0) {
+  console.error("FundWise sync check failed. Mismatched FundWise source contract:");
+  for (const item of mismatched) {
+    console.error(`- ${item.file}: expected ${item.label}`);
   }
   process.exit(1);
 }
