@@ -136,6 +136,11 @@ const STATUS_BAR_SPACE = StatusBar.currentHeight ?? 0;
 const BOTTOM_SAFE_SPACE = 34;
 const BOTTOM_NAV_SPACE = 76 + BOTTOM_SAFE_SPACE;
 const SHEET_BOTTOM_SPACE = 76;
+const HERO_DOTS: { id: number; left: `${number}%`; top: `${number}%` }[] = Array.from({ length: 54 }, (_, index) => ({
+  id: index,
+  left: `${6 + (index % 9) * 11}%` as `${number}%`,
+  top: `${8 + Math.floor(index / 9) * 15}%` as `${number}%`,
+}));
 
 const MARK_ICONS: Record<string, IoniconName> = {
   copy: "copy-outline",
@@ -248,6 +253,36 @@ function iconForActivity(activity: ActivityItem): IoniconName {
 
   if (key.includes("deposit") || key.includes("vault")) {
     return "arrow-down-circle-outline";
+  }
+
+  return "receipt-outline";
+}
+
+function iconForExpense(expense: Expense): IoniconName {
+  const key = `${expense.icon} ${expense.name}`.toLowerCase();
+
+  if (key.includes("wine") || key.includes("dinner") || key.includes("lunch") || key.includes("restaurant")) {
+    return "restaurant-outline";
+  }
+
+  if (key.includes("taxi") || key.includes("airport") || key.includes("ride")) {
+    return "car-outline";
+  }
+
+  if (key.includes("hotel") || key.includes("rent") || key.includes("flat")) {
+    return "home-outline";
+  }
+
+  if (key.includes("grocery") || key.includes("groceries")) {
+    return "cart-outline";
+  }
+
+  if (key.includes("internet") || key.includes("utility")) {
+    return "wifi-outline";
+  }
+
+  if (key.includes("clean")) {
+    return "sparkles-outline";
   }
 
   return "receipt-outline";
@@ -1419,7 +1454,7 @@ function TopHeader({
     <View style={styles.dashboardTop}>
       <View>
         <Text style={styles.greeting}>Good morning</Text>
-        <Text style={styles.userName}>{ME.name}</Text>
+        <Text style={styles.userName}>{ME.name} 👋</Text>
       </View>
       <View style={styles.headerActions}>
         <Pressable accessibilityRole="button" onPress={onNotifications} style={styles.iconButton}>
@@ -1503,6 +1538,14 @@ function GroupGlyph({ group }: { group: FundWiseGroup }) {
   );
 }
 
+function GroupHeroGlyph({ group }: { group: FundWiseGroup }) {
+  return (
+    <View style={styles.groupHeroIcon}>
+      <Ionicons color={colors.white} name={iconForGroup(group)} size={24} />
+    </View>
+  );
+}
+
 function ActivityGlyph({ activity }: { activity: ActivityItem }) {
   const toneStyle =
     activity.kind === "pos"
@@ -1522,6 +1565,11 @@ function ActivityGlyph({ activity }: { activity: ActivityItem }) {
 function HeroChrome({ fund = false }: { fund?: boolean }) {
   return (
     <>
+      <View pointerEvents="none" style={styles.heroDotLayer}>
+        {HERO_DOTS.map((dot) => (
+          <View key={dot.id} style={[styles.heroDot, { left: dot.left, top: dot.top }]} />
+        ))}
+      </View>
       <View pointerEvents="none" style={[styles.heroGlow, fund ? styles.heroGlowFund : null]} />
       <View pointerEvents="none" style={styles.heroSheen} />
     </>
@@ -1811,7 +1859,8 @@ function HomeScreen({
         walletAddress={walletAddress}
       />
       <View style={styles.quickGrid}>
-        <QuickAction label="Split" mark="Split" onPress={() => onAction({ kind: "add-expense" })} />
+        <QuickAction label="Add expense" mark="Rec" onPress={() => onAction({ kind: "add-expense" })} />
+        <QuickAction label="Settle up" mark="Pay" onPress={() => onAction({ kind: "settle-picker" })} />
         <QuickAction
           label="Deposit"
           mark="In"
@@ -1828,8 +1877,6 @@ function HomeScreen({
             });
           }}
         />
-        <QuickAction label="Settle" mark="Pay" onPress={() => onAction({ kind: "settle-picker" })} />
-        <QuickAction label="New group" mark="New" onPress={() => onAction({ kind: "create-group" })} />
       </View>
       <SectionHeader title="Action items" />
       <View style={styles.alertStack}>
@@ -1930,7 +1977,9 @@ function QuickAction({ label, mark, onPress }: { label: string; mark: string; on
       }}
       style={({ pressed }) => [styles.quickAction, pressed ? styles.pressed : null]}
     >
-      <IconTile mark={mark} size={20} style={styles.quickIcon} tone={mark.toLowerCase() === "tg" ? "telegram" : "green"} />
+      <View style={styles.quickIcon}>
+        <Ionicons color={mark.toLowerCase() === "tg" ? "#229ED9" : colors.text} name={iconForMark(mark)} size={24} />
+      </View>
       <Text style={styles.quickLabel}>{label}</Text>
     </Pressable>
   );
@@ -2079,7 +2128,7 @@ function SplitGroupScreen({
         <View style={styles.splitHero}>
           <HeroChrome />
           <View style={styles.heroRow}>
-            <Text style={styles.bigEmoji}>{group.emoji}</Text>
+            <GroupHeroGlyph group={group} />
             <View style={styles.alignRight}>
               <Text style={styles.heroLabel}>Your balance</Text>
               <Text style={styles.detailAmount}>{formatUsd(group.myBalance)}</Text>
@@ -2088,7 +2137,7 @@ function SplitGroupScreen({
           </View>
           <View style={styles.membersLine}>
             <AvatarStack ids={group.members} />
-            <Text style={styles.membersText}>{group.members.length} members</Text>
+            <Text style={styles.membersTextLight}>{group.members.length} members</Text>
           </View>
         </View>
         <ScrollView contentContainerStyle={styles.balanceChipRow} horizontal showsHorizontalScrollIndicator={false}>
@@ -2103,10 +2152,12 @@ function SplitGroupScreen({
         {Object.entries(byDay).map(([day, items]) => (
           <View key={day}>
             <Text style={styles.dayHeader}>{day}</Text>
-            <View style={styles.stack}>
+            <View style={styles.expenseList}>
               {items.map((expense) => (
                 <View key={expense.id} style={styles.expenseRow}>
-                  <View style={styles.expenseIcon}><Text style={styles.expenseIconText}>{expense.icon}</Text></View>
+                  <View style={styles.expenseIcon}>
+                    <Ionicons color={colors.text} name={iconForExpense(expense)} size={18} />
+                  </View>
                   <View style={styles.expenseCopy}>
                     <Text style={styles.expenseTitle}>{expense.name}</Text>
                     <Text style={styles.expenseMeta}>{personOf(expense.payer).name} paid · {group.members.length} ways</Text>
@@ -2153,7 +2204,7 @@ function FundGroupScreen({
         <View style={[styles.splitHero, styles.fundHero]}>
           <HeroChrome fund />
           <View style={styles.heroRow}>
-            <Text style={styles.bigEmoji}>{group.emoji}</Text>
+            <GroupHeroGlyph group={group} />
             <View style={styles.alignRight}>
               <Text style={styles.heroLabel}>Pool liquidity</Text>
               <Text style={styles.detailAmount}>${group.total}</Text>
@@ -2422,7 +2473,7 @@ function ActivityList({ compact = false, items }: { compact?: boolean; items: Ac
   const shownItems = compact ? items.slice(0, 4) : items;
 
   return (
-    <View style={styles.stack}>
+    <View style={styles.activityList}>
       {shownItems.map((activity) => (
         <View key={activity.id} style={styles.activityRow}>
           <ActivityGlyph activity={activity} />
@@ -2615,7 +2666,7 @@ function ActiveSheet({
         <MetaRow label="Group" value={`${settlement.group.emoji} ${settlement.group.name}`} />
         <MetaRow label="Token" value={`USDC · ${SOLANA_CHAIN.replace("solana:", "")}`} />
         <MetaRow label="Fee" value="~$0.00025 · <1s" />
-        <MetaRow label="Confirmation" value="Solana mainnet" />
+        <MetaRow label="Mode" value="Demo — no on-chain transaction" />
         <Text style={styles.sheetHelp}>
           {paying ? "Review the transfer, then sign with your Seeker side sensor." : "Send a request so the payer can settle from their wallet."}
         </Text>
@@ -2632,7 +2683,7 @@ function ActiveSheet({
               groupId: settlement.group.id,
               kind: "settle",
               returnScreen: "split",
-              successBody: "Transaction confirmed on Solana mainnet.",
+              successBody: "Recorded in this demo build — no on-chain transaction was sent.",
               successTitle: "Settlement sent",
               title: "Authorize payment",
             });
@@ -2657,7 +2708,7 @@ function ActiveSheet({
             groupId: sheet.group.id,
             kind: "deposit",
             returnScreen: "fund",
-            successBody: "Funds were added to the group vault.",
+            successBody: "Recorded in this demo build — no funds moved.",
             successTitle: "Deposit signed",
             title: "Sign deposit",
           })
@@ -2879,14 +2930,14 @@ function ActiveSheet({
 
           onComplete(
             {
-              body: "Split calculated. Everyone is notified.",
+              body: "Split calculated. Saved locally in this demo build.",
               pill: group.name,
               returnScreen: "split",
               title: "Expense added",
             },
             {
-              body: `${group.name} members were notified about ${draft.memo}.`,
-              title: "Expense notification sent",
+              body: `${draft.memo} was saved to ${group.name} locally in this demo build.`,
+              title: "Expense saved",
               tone: "success",
             },
           );
@@ -2909,8 +2960,8 @@ function ActiveSheet({
               title: "Proposal opened",
             },
             {
-              body: `${sheet.group.name} members were notified about ${proposalTitle}.`,
-              title: "Vote notification sent",
+              body: `${proposalTitle} was saved to ${sheet.group.name} locally in this demo build.`,
+              title: "Proposal saved",
               tone: "success",
             },
           )
@@ -3877,25 +3928,13 @@ export function FundWiseSeekerAppScreen() {
 const serif = fonts.display;
 const mono = fonts.mono;
 const hardShadow = {
-  elevation: 5,
-  shadowColor: colors.text,
-  shadowOffset: { height: 5, width: 5 },
-  shadowOpacity: 1,
-  shadowRadius: 0,
+  boxShadow: `5px 5px 0 ${colors.text}`,
 };
 const hardShadowSmall = {
-  elevation: 3,
-  shadowColor: colors.text,
-  shadowOffset: { height: 3, width: 3 },
-  shadowOpacity: 1,
-  shadowRadius: 0,
+  boxShadow: `3px 3px 0 ${colors.text}`,
 };
 const hardShadowLarge = {
-  elevation: 8,
-  shadowColor: colors.text,
-  shadowOffset: { height: 8, width: 8 },
-  shadowOpacity: 1,
-  shadowRadius: 0,
+  boxShadow: `8px 8px 0 ${colors.text}`,
 };
 
 const styles = StyleSheet.create({
@@ -3903,15 +3942,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 2,
     flexDirection: "row",
-    gap: 12,
-    marginHorizontal: 20,
-    minHeight: 64,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    gap: 14,
+    marginHorizontal: 24,
+    minHeight: 76,
+    padding: 18,
     ...hardShadowSmall,
+  },
+  activityList: {
+    paddingHorizontal: 24,
+    paddingTop: 0,
   },
   actionBar: {
     backgroundColor: colors.surface,
@@ -3922,20 +3964,20 @@ const styles = StyleSheet.create({
     gap: 10,
     left: 0,
     paddingBottom: BOTTOM_SAFE_SPACE,
-    paddingHorizontal: 18,
-    paddingTop: 12,
+    paddingHorizontal: 24,
+    paddingTop: 18,
     position: "absolute",
     right: 0,
   },
   activityIcon: {
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceInset,
     borderColor: colors.border,
-    borderRadius: 10,
+    borderRadius: 11,
     borderWidth: 2,
-    height: 36,
+    height: 38,
     justifyContent: "center",
-    width: 36,
+    width: 38,
   },
   activityIconNegative: {
     backgroundColor: colors.amberPale,
@@ -3954,33 +3996,33 @@ const styles = StyleSheet.create({
   },
   activityRow: {
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 14,
-    borderWidth: 2,
+    backgroundColor: "transparent",
+    borderBottomColor: "rgba(22,23,15,0.13)",
+    borderBottomWidth: 1,
+    borderStyle: "dashed",
     flexDirection: "row",
-    gap: 12,
-    padding: 12,
-    ...hardShadowSmall,
+    gap: 14,
+    paddingHorizontal: 0,
+    paddingVertical: 17,
   },
   activitySub: {
     color: colors.textSubtle,
-    fontFamily: fonts.sansSemibold,
-    fontSize: 11,
+    fontFamily: mono,
+    fontSize: 10,
     fontWeight: "600",
     marginTop: 2,
   },
   activityTitle: {
     color: colors.text,
-    fontFamily: fonts.sansBold,
+    fontFamily: fonts.sansSemibold,
     fontSize: 13,
-    fontWeight: "800",
+    fontWeight: "600",
   },
   activityValue: {
     color: colors.textSoft,
     fontFamily: mono,
-    fontSize: 12,
-    fontWeight: "800",
+    fontSize: 14,
+    fontWeight: "600",
   },
   addButton: {
     alignItems: "center",
@@ -4043,8 +4085,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   alertStack: {
-    gap: 10,
-    paddingTop: 10,
+    gap: 12,
+    paddingTop: 24,
   },
   alertSub: {
     color: colors.textSoft,
@@ -4258,11 +4300,12 @@ const styles = StyleSheet.create({
   balanceChip: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 2,
     marginRight: 8,
-    minWidth: 106,
-    padding: 12,
+    minWidth: 118,
+    paddingHorizontal: 18,
+    paddingVertical: 15,
     ...hardShadowSmall,
   },
   balanceChipName: {
@@ -4272,8 +4315,8 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   balanceChipRow: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingHorizontal: 24,
+    paddingTop: 22,
   },
   balanceChipValue: {
     fontFamily: mono,
@@ -4284,12 +4327,13 @@ const styles = StyleSheet.create({
   balanceHero: {
     backgroundColor: colors.primaryDeep,
     borderColor: colors.border,
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 2,
-    marginHorizontal: 20,
-    marginTop: 10,
+    marginHorizontal: 24,
+    marginTop: 14,
     overflow: "hidden",
-    padding: 18,
+    paddingHorizontal: 26,
+    paddingVertical: 30,
     position: "relative",
     ...hardShadow,
   },
@@ -4375,11 +4419,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderTopWidth: 2,
     flexDirection: "row",
-    justifyContent: "space-around",
-    minHeight: 76 + BOTTOM_SAFE_SPACE,
+    gap: 6,
+    justifyContent: "space-between",
+    minHeight: 73 + BOTTOM_SAFE_SPACE,
     paddingBottom: BOTTOM_SAFE_SPACE,
-    paddingHorizontal: 12,
-    paddingTop: 10,
+    paddingHorizontal: 18,
+    paddingTop: 13,
   },
   button: {
     alignItems: "center",
@@ -4519,8 +4564,9 @@ const styles = StyleSheet.create({
   detailAmount: {
     color: colors.white,
     fontFamily: serif,
-    fontSize: 30,
+    fontSize: 27,
     fontWeight: "700",
+    lineHeight: 31,
   },
   detailScroll: {
     paddingBottom: 96 + BOTTOM_SAFE_SPACE,
@@ -4529,8 +4575,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingBottom: 14,
+    paddingHorizontal: 24,
+    paddingTop: 16,
   },
   disabled: {
     opacity: 0.5,
@@ -4616,7 +4663,7 @@ const styles = StyleSheet.create({
   },
   expenseIcon: {
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceInset,
     borderColor: colors.border,
     borderRadius: 11,
     borderWidth: 2,
@@ -4631,21 +4678,25 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   expenseMeta: {
-    color: colors.textSubtle,
+    color: colors.textSoft,
     fontFamily: fonts.sansSemibold,
     fontSize: 11,
-    fontWeight: "600",
-    marginTop: 2,
+    fontWeight: "500",
+    marginTop: 1,
+  },
+  expenseList: {
+    paddingHorizontal: 24,
   },
   expenseRow: {
     alignItems: "center",
     backgroundColor: "transparent",
-    borderBottomColor: "rgba(22,23,15,0.16)",
-    borderRadius: 14,
+    borderBottomColor: "rgba(22,23,15,0.13)",
     borderBottomWidth: 1,
+    borderStyle: "dashed",
     flexDirection: "row",
-    gap: 12,
-    padding: 12,
+    gap: 14,
+    paddingHorizontal: 0,
+    paddingVertical: 16,
   },
   expenseShare: {
     fontFamily: mono,
@@ -4669,13 +4720,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.primary,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 15,
     borderWidth: 2,
-    height: 54,
+    height: 50,
     justifyContent: "center",
-    marginTop: -24,
-    width: 54,
-    ...hardShadowLarge,
+    marginHorizontal: 4,
+    width: 50,
+    ...hardShadowSmall,
   },
   field: {
     gap: 7,
@@ -4804,12 +4855,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 2,
     flexDirection: "row",
-    gap: 12,
-    minHeight: 76,
-    padding: 12,
+    gap: 14,
+    minHeight: 82,
+    padding: 18,
     ...hardShadowSmall,
   },
   groupCopy: {
@@ -4836,6 +4887,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 19,
     lineHeight: 23,
+  },
+  groupHeroIcon: {
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderColor: "rgba(255,255,255,0.5)",
+    borderRadius: 13,
+    borderWidth: 2,
+    height: 46,
+    justifyContent: "center",
+    width: 46,
   },
   groupMeta: {
     color: colors.textSubtle,
@@ -4894,21 +4955,34 @@ const styles = StyleSheet.create({
     fontFamily: serif,
     fontSize: 44,
     fontWeight: "700",
-    marginTop: 4,
+    lineHeight: 48,
+    marginTop: 6,
+  },
+  heroDot: {
+    backgroundColor: "rgba(242,236,221,0.08)",
+    borderRadius: 2,
+    height: 3,
+    position: "absolute",
+    width: 3,
+  },
+  heroDotLayer: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.65,
   },
   heroGlow: {
     backgroundColor: colors.mint,
-    borderRadius: 110,
-    height: 170,
-    opacity: 0.34,
+    borderRadius: 130,
+    filter: "blur(18px)",
+    height: 190,
+    opacity: 0.2,
     position: "absolute",
-    right: -54,
-    top: -56,
-    width: 220,
+    right: -64,
+    top: -64,
+    width: 230,
   },
   heroGlowFund: {
     backgroundColor: colors.fundBlueBorder,
-    opacity: 0.26,
+    opacity: 0.18,
   },
   heroLabel: {
     color: "rgba(255,255,255,0.75)",
@@ -4940,8 +5014,9 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   heroSheen: {
-    backgroundColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "rgba(255,255,255,0.08)",
     borderRadius: 80,
+    filter: "blur(8px)",
     height: 74,
     position: "absolute",
     right: -78,
@@ -4954,8 +5029,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     flexDirection: "row",
     gap: 10,
-    marginTop: 12,
-    paddingTop: 10,
+    marginTop: 24,
+    paddingTop: 22,
   },
   heroSub: {
     color: "rgba(255,255,255,0.76)",
@@ -5497,15 +5572,16 @@ const styles = StyleSheet.create({
   navItem: {
     alignItems: "center",
     flex: 1,
-    gap: 2,
+    gap: 4,
     justifyContent: "center",
-    minHeight: 52,
+    minHeight: 54,
+    paddingVertical: 2,
   },
   navLabel: {
     color: colors.textSubtle,
     fontFamily: fonts.sansBold,
     fontSize: 9,
-    fontWeight: "800",
+    fontWeight: "700",
   },
   navMark: {
     color: colors.textSubtle,
@@ -5649,8 +5725,7 @@ const styles = StyleSheet.create({
     color: colors.primaryMid,
   },
   pressed: {
-    elevation: 1,
-    shadowOffset: { height: 1, width: 1 },
+    boxShadow: `1px 1px 0 ${colors.text}`,
     transform: [{ translateX: 2 }, { translateY: 2 }],
   },
   previewAmount: {
@@ -5827,32 +5902,28 @@ const styles = StyleSheet.create({
   },
   quickGrid: {
     flexDirection: "row",
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    gap: 12,
+    paddingHorizontal: 24,
+    paddingTop: 24,
   },
   quickAction: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 2,
     flex: 1,
-    gap: 7,
-    minHeight: 82,
+    gap: 9,
+    minHeight: 88,
     paddingHorizontal: 8,
-    paddingVertical: 12,
+    paddingVertical: 18,
     ...hardShadowSmall,
   },
   quickIcon: {
     alignItems: "center",
-    backgroundColor: colors.primaryPale,
-    borderColor: colors.border,
-    borderRadius: 12,
-    borderWidth: 2,
-    height: 38,
+    height: 30,
     justifyContent: "center",
-    width: 38,
+    width: 30,
   },
   quickIconText: {
     color: colors.primaryMid,
@@ -5861,10 +5932,10 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   quickLabel: {
-    color: colors.text,
-    fontFamily: fonts.sansBold,
+    color: colors.textSoft,
+    fontFamily: fonts.sansSemibold,
     fontSize: 11,
-    fontWeight: "700",
+    fontWeight: "600",
     textAlign: "center",
   },
   receipt: {
@@ -5956,14 +6027,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 18,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 14,
   },
   sectionTitle: {
     color: colors.text,
     fontFamily: fonts.sansBold,
     fontSize: 13,
-    fontWeight: "900",
+    fontWeight: "700",
   },
   segment: {
     alignItems: "center",
@@ -6279,18 +6351,19 @@ const styles = StyleSheet.create({
   splitHero: {
     backgroundColor: colors.primaryMid,
     borderColor: colors.border,
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 2,
-    marginHorizontal: 20,
+    marginHorizontal: 24,
     overflow: "hidden",
-    padding: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 26,
     position: "relative",
     ...hardShadow,
   },
   stack: {
-    gap: 10,
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    gap: 14,
+    paddingHorizontal: 24,
+    paddingTop: 0,
   },
   statusApproved: {
     backgroundColor: colors.primaryPale,
@@ -6527,6 +6600,7 @@ const styles = StyleSheet.create({
     fontFamily: serif,
     fontSize: 25,
     fontWeight: "700",
+    lineHeight: 28,
   },
   voteButtons: {
     flexDirection: "row",
