@@ -54,7 +54,6 @@ export const FUNDWISE_ALLOWED_HOSTS = Array.from(
   new Set(
     [
       "fundwise.fun",
-      "beta.fundwise.fun",
       hostOf(FUNDWISE_WEB_URL),
       hostOf(FUNDWISE_API_URL),
       hostOf(RECEIPTS_URL),

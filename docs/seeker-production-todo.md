@@ -1,8 +1,21 @@
 # Seeker Production Todo
 
-Last updated: 2026-06-09
+Last updated: 2026-06-10
 
 Current decision: FundWise Seeker is not production-ready until the physical-device regression pass is rerun and the external production blockers are cleared. The app now has local patches for group persistence, group opening, bottom-nav/sheet layering, Add expense state updates, white-screen recovery, and the hardened FundWise API contracts for wallet session auth, tokenized invite previews, and mobile Settlement Request previews. Those fixes pass local static/config checks, but ADB currently has no connected device, so the patched build still needs on-device proof.
+
+## 2026-06-10 ecosystem audit follow-ups
+
+Full report: [audit.md](../audit.md) (cross-verified against FundWise staging `d2ad35d`). Zero security vulnerabilities confirmed; the items below are integration blockers found by the audit:
+
+- [x] **P0 — MWA signature format:** `ensureFundWiseWalletSession` posts the raw `signMessages()` payload, but FundWise verifies a 64-byte detached Ed25519 signature (`FundWise/lib/server/wallet-session.ts:216-231`) — auth likely 401s on a spec-compliant wallet. Sliced the last 64 bytes before base64-encoding in `src/lib/fundwise-api.ts` (2026-06-10).
+- [ ] **P0 — On-device auth pass:** prove the sliced signature on device together with the `__Host-` cookie round-trip — still pending; no device connected. The existing "auth-pass" screenshot predates the auth wiring commit by 17 days and is not evidence.
+- [x] **P0 — Mock settlement copy:** settle/deposit/vote are local-only mutations whose success copy claimed "Transaction confirmed on Solana mainnet" (`FundWiseSeekerAppScreen.tsx:2664-2717,3639-3651`). Replaced with demo-honest copy (2026-06-10).
+- [ ] **P0 (ops) — assetlinks:** set `FUNDWISE_SEEKER_ANDROID_CERT_SHA256_FINGERPRINTS` on production FundWise with the **release** cert fingerprint; the dead `beta.fundwise.fun` host was dropped from `app.json` 2026-06-10, env fingerprint still pending.
+- [ ] P1 — Invite/QR sheets share `${WEB}/join/{localGroupId}` — no `/join` route exists on FundWise and the id is local-only. Use real tokenized invites or remove.
+- [x] P1 — `/receipts/{id}` link parser treats the segment as a tx signature; FundWise uses the `settlements.id` UUID (`src/lib/fundwise-link.ts:87-94`). Fixed 2026-06-10.
+- [x] P2 — Remove legacy `GET /api/groups?code=` fallback (410 in production); `allowBackup=false`; move `expo-dev-client` out of prod deps (done 2026-06-10).
+- [ ] P2 — Remove unmounted screens (`SeekerHomeScreen` deliberately kept for now); commit the UI-refresh working tree before the next QA build.
 
 ## Current Evidence
 

@@ -23,7 +23,6 @@
     "@wallet-ui/react-native-web3js": "^4.1.0",
     "expo": "~55.0.24",
     "expo-build-properties": "~55.0.14",
-    "expo-dev-client": "~55.0.35",
     "expo-font": "~55.0.8",
     "expo-haptics": "~55.0.14",
     "js-base64": "^3.7.8",
@@ -34,6 +33,7 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
+    "expo-dev-client": "~55.0.35",
     "typescript": "^6.0.3"
   }
 }

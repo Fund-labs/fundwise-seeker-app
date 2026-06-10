@@ -12,6 +12,7 @@
     "android": {
       "package": "fun.fundwise.seeker",
       "versionCode": 2,
+      "allowBackup": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#FBFCF9"
@@ -39,26 +40,6 @@
             {
               "scheme": "https",
               "host": "fundwise.fun",
-              "pathPrefix": "/receipts"
-            },
-            {
-              "scheme": "https",
-              "host": "beta.fundwise.fun",
-              "pathPrefix": "/groups"
-            },
-            {
-              "scheme": "https",
-              "host": "beta.fundwise.fun",
-              "pathPrefix": "/join"
-            },
-            {
-              "scheme": "https",
-              "host": "beta.fundwise.fun",
-              "pathPrefix": "/settle/r"
-            },
-            {
-              "scheme": "https",
-              "host": "beta.fundwise.fun",
               "pathPrefix": "/receipts"
             }
           ],

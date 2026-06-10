@@ -10,7 +10,8 @@ const fundwiseApiSource = fs.readFileSync(path.join(root, "src/lib/fundwise-api.
 const fundwiseLinkSource = fs.readFileSync(path.join(root, "src/lib/fundwise-link.ts"), "utf8");
 const mountedScreenSource = fs.readFileSync(path.join(root, "src/screens/FundWiseSeekerAppScreen.tsx"), "utf8");
 
-const requiredHosts = ["fundwise.fun", "beta.fundwise.fun"];
+// beta.fundwise.fun was collapsed onto the prod host (ADR-0049) and no longer resolves.
+const requiredHosts = ["fundwise.fun"];
 const requiredPrefixes = ["/groups", "/join", "/settle/r", "/receipts"];
 const isDevnet = target === "devnet" || target === "devnet-beta";
 const defaultRpc = isDevnet ? "https://api.devnet.solana.com" : "https://api.mainnet-beta.solana.com";

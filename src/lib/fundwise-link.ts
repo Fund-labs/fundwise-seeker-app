@@ -85,10 +85,10 @@ export function parseFundWiseLink(
     }
 
     if (parts[0] === "receipts" && parts[1]) {
+      // FundWise's /receipts/{id} segment is the settlements.id UUID, not a tx signature.
       return {
         kind: "settlement-receipt",
         receiptId: parts[1],
-        txSignature: parts[1],
         url: url.toString(),
       };
     }

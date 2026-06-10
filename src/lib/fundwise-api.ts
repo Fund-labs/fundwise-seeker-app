@@ -188,7 +188,17 @@ export async function ensureFundWiseWalletSession(params: {
     return challenge;
   }
 
-  const signature = await params.signMessage(bytesFromString(challenge.data.message));
+  const signedPayload = await params.signMessage(bytesFromString(challenge.data.message));
+
+  // MWA's signed_payloads convention returns message||signature, so the detached
+  // 64-byte Ed25519 signature FundWise verifies is the last 64 bytes.
+  if (signedPayload.length < 64) {
+    throw new Error(
+      `Wallet returned a ${signedPayload.length}-byte signed payload; expected at least a 64-byte Ed25519 signature.`,
+    );
+  }
+
+  const signature = signedPayload.length > 64 ? signedPayload.slice(-64) : signedPayload;
   const verified = await writeJson<{ wallet: string }>("/api/auth/wallet/verify", {
     wallet,
     signature: bytesToBase64(signature),
@@ -236,27 +246,12 @@ export async function lookupInvite(code: string): Promise<ApiResult<InviteLookup
     };
   }
 
-  const result = await readJson<FundWiseGroupPreview | null>(
-    `/api/groups?code=${encodeURIComponent(trimmed)}`,
-  );
-
-  if (!result.ok) {
-    return result;
-  }
-
-  if (!result.data) {
-    return {
-      ok: false,
-      status: 404,
-      error: "Invite code not found.",
-    };
-  }
-
+  // Legacy GET /api/groups?code= lookups return 410 in production; only
+  // tokenized FWI- invite links are supported now.
   return {
-    ok: true,
-    data: {
-      group: result.data,
-    },
+    ok: false,
+    status: 404,
+    error: "Plain invite codes are no longer supported. Use a tokenized FWI- invite link instead.",
   };
 }
 
