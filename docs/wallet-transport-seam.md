@@ -32,7 +32,7 @@ Interface notes (part of the contract, not just types): `connect` may background
 ## The adapters
 
 - **`MwaTransport` (Android):** wraps the existing `useMobileWallet` SDK hook. Behavior-preserving — this adapter is a refactor, not a change.
-- **`DeeplinkTransport` (iOS):** Phantom (and Solflare) universal-link connect + signMessage flows: build request → open wallet app → receive callback via the existing `Linking` listener path (`src/hooks/useIncomingFundWiseLink.ts` stays untouched; the transport registers its own callback routes). Session keypair + shared-secret handling per Phantom's deeplink spec lives entirely inside the adapter.
+- **`DeeplinkTransport` (iOS):** connect first presents an in-adapter two-button chooser (Phantom primary, Solflare secondary — ADR-0063 amendment 3); the choice persists with the session and disconnect supersedes an open chooser. Then: Phantom (and Solflare) universal-link connect + signMessage flows: build request → open wallet app → receive callback via the existing `Linking` listener path (`src/hooks/useIncomingFundWiseLink.ts` stays untouched; the transport registers its own callback routes). Session keypair + shared-secret handling per Phantom's deeplink spec lives entirely inside the adapter.
 - **Later (not now):** Crossmint / embedded wallet = a third adapter behind the same seam. Screens don't change.
 
 Two real adapters ⇒ this is a real seam (not speculative). The interface is also the test surface: an in-memory `FakeTransport` adapter drives screen tests without MWA or a device.

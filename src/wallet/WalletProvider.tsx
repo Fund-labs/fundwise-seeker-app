@@ -4,6 +4,7 @@ import { Platform } from "react-native";
 import { FUNDWISE_IDENTITY, SOLANA_CHAIN, SOLANA_RPC_ENDPOINT } from "../config";
 import { useDeeplinkTransport } from "./DeeplinkTransport";
 import { useMwaTransport } from "./MwaTransport";
+import { WalletChooser } from "./WalletChooser";
 import type { WalletTransport } from "./transport";
 
 export const WalletTransportContext = createContext<WalletTransport | null>(null);
@@ -36,7 +37,15 @@ function MwaTransportBridge({ children }: { children: ReactNode }) {
 }
 
 function DeeplinkTransportBridge({ children }: { children: ReactNode }) {
-  const transport = useDeeplinkTransport();
+  const { chooser, transport } = useDeeplinkTransport();
 
-  return <WalletTransportContext.Provider value={transport}>{children}</WalletTransportContext.Provider>;
+  // WalletChooser stays mounted alongside the app (its Modal toggles
+  // visibility) so the iOS subtree keeps one stable shape — connect() flips
+  // `chooser.visible` when no session exists (ADR-0063 amendment 3).
+  return (
+    <WalletTransportContext.Provider value={transport}>
+      {children}
+      <WalletChooser onCancel={chooser.cancel} onChoose={chooser.choose} visible={chooser.visible} />
+    </WalletTransportContext.Provider>
+  );
 }

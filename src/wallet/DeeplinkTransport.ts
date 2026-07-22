@@ -38,13 +38,23 @@ export const SOLFLARE_DEEPLINK_WALLET: DeeplinkWalletConfig = {
   encryptionPubkeyResponseParam: "solflare_encryption_public_key",
 };
 
-// No wallet-picker UI in this slice — flip this constant to target Solflare.
-const ACTIVE_DEEPLINK_WALLET: DeeplinkWalletConfig = PHANTOM_DEEPLINK_WALLET;
-
 const DEEPLINK_WALLETS: Record<DeeplinkWalletConfig["id"], DeeplinkWalletConfig> = {
   phantom: PHANTOM_DEEPLINK_WALLET,
   solflare: SOLFLARE_DEEPLINK_WALLET,
 };
+
+// Fallback for sessions persisted before the wallet field could ever be
+// unknown — Phantom is the primary wallet (ADR-0063 amendment 3).
+const DEFAULT_DEEPLINK_WALLET: DeeplinkWalletConfig = PHANTOM_DEEPLINK_WALLET;
+
+// The two-button chooser surface (ADR-0063 amendment 3). The transport owns
+// the state machine; WalletProvider's iOS bridge renders the always-mounted
+// `WalletChooser` from it. Screens never see this — the seam stays 4 members.
+export type DeeplinkWalletChooser = Readonly<{
+  visible: boolean;
+  choose: (walletId: DeeplinkWalletConfig["id"]) => void;
+  cancel: () => void;
+}>;
 
 // Matches "scheme" in app.json. Built by hand (equivalent to
 // Linking.createURL) so the transport needs no expo-linking dependency —
@@ -213,11 +223,16 @@ function accountForSession(session: PersistedSession): WalletAccount {
   };
 }
 
-export function useDeeplinkTransport(): WalletTransport {
+export function useDeeplinkTransport(): { transport: WalletTransport; chooser: DeeplinkWalletChooser } {
   const [account, setAccount] = useState<WalletAccount | null>(null);
+  const [chooserVisible, setChooserVisible] = useState(false);
   const sessionRef = useRef<PersistedSession | null>(null);
   const pendingRef = useRef<PendingRequest | null>(null);
   const resolverRef = useRef<PendingResolver | null>(null);
+  const chooserResolverRef = useRef<{
+    resolve: (config: DeeplinkWalletConfig) => void;
+    reject: (error: Error) => void;
+  } | null>(null);
 
   const readSession = useCallback(async (): Promise<PersistedSession | null> => {
     if (sessionRef.current) {
@@ -291,7 +306,7 @@ export function useDeeplinkTransport(): WalletTransport {
           return; // Unreachable (methods matched above); narrows `pending` for TS.
         }
 
-        const config = DEEPLINK_WALLETS[pending.walletId] ?? ACTIVE_DEEPLINK_WALLET;
+        const config = DEEPLINK_WALLETS[pending.walletId] ?? DEFAULT_DEEPLINK_WALLET;
         const walletEncryptionPublicKey = callback.params.get(config.encryptionPubkeyResponseParam);
         const nonce = callback.params.get("nonce");
         const data = callback.params.get("data");
@@ -439,49 +454,72 @@ export function useDeeplinkTransport(): WalletTransport {
     [takeResolver],
   );
 
-  const startConnect = useCallback(async (): Promise<WalletAccount> => {
-    // Deeplink sessions do not expire — reuse the persisted one instead of
-    // bouncing through the wallet again.
-    const existing = await readSession();
+  // Await a wallet pick from the always-mounted chooser. A new connect while
+  // a chooser is already open supersedes the older wait (mirrors the wallet
+  // round-trip supersede policy).
+  const requestWalletChoice = useCallback((): Promise<DeeplinkWalletConfig> => {
+    chooserResolverRef.current?.reject(new Error("Wallet choice superseded by a new connect request."));
 
-    if (existing) {
-      const existingAccount = accountForSession(existing);
-      setAccount(existingAccount);
-
-      return existingAccount;
-    }
-
-    supersedeResolver("Wallet request superseded by a new connect request.");
-
-    const keyPair = nacl.box.keyPair();
-    await setPending({
-      method: "connect",
-      walletId: ACTIVE_DEEPLINK_WALLET.id,
-      dappPublicKey: bs58.encode(keyPair.publicKey),
-      dappSecretKey: bs58.encode(keyPair.secretKey),
+    return new Promise<DeeplinkWalletConfig>((resolve, reject) => {
+      chooserResolverRef.current = { resolve, reject };
+      setChooserVisible(true);
     });
+  }, []);
 
-    const url = buildWalletUrl(ACTIVE_DEEPLINK_WALLET, "connect", {
-      app_url: FUNDWISE_WEB_URL,
-      dapp_encryption_public_key: bs58.encode(keyPair.publicKey),
-      redirect_link: CALLBACK_ROUTES.connect,
-      cluster: WALLET_CLUSTER,
-    });
+  const chooseWallet = useCallback((walletId: DeeplinkWalletConfig["id"]) => {
+    const resolver = chooserResolverRef.current;
+    chooserResolverRef.current = null;
+    setChooserVisible(false);
+    resolver?.resolve(DEEPLINK_WALLETS[walletId] ?? DEFAULT_DEEPLINK_WALLET);
+  }, []);
 
-    const result = new Promise<WalletAccount>((resolve, reject) => {
-      resolverRef.current = { method: "connect", resolve, reject };
-    });
+  const cancelWalletChoice = useCallback(() => {
+    const resolver = chooserResolverRef.current;
+    chooserResolverRef.current = null;
+    setChooserVisible(false);
+    // Screens already surface connect rejections — this is the cancel path.
+    resolver?.reject(new Error("Wallet selection was cancelled."));
+  }, []);
 
-    try {
-      await Linking.openURL(url);
-    } catch (error) {
-      supersedeResolver("Wallet could not be opened.");
-      await clearPending();
-      throw error instanceof Error ? error : new Error(`Could not open ${ACTIVE_DEEPLINK_WALLET.label}.`);
-    }
+  const startConnect = useCallback(
+    async (config: DeeplinkWalletConfig): Promise<WalletAccount> => {
+      supersedeResolver("Wallet request superseded by a new connect request.");
 
-    return result;
-  }, [clearPending, readSession, setPending, supersedeResolver]);
+      const keyPair = nacl.box.keyPair();
+      // The chosen wallet id rides in the pending request, then into the
+      // persisted session — signMessages/disconnect (and the cold-start
+      // resume) look the config back up from there, so the chosen wallet's
+      // baseUrl/encryptionPubkeyResponseParam stick for the session's life.
+      await setPending({
+        method: "connect",
+        walletId: config.id,
+        dappPublicKey: bs58.encode(keyPair.publicKey),
+        dappSecretKey: bs58.encode(keyPair.secretKey),
+      });
+
+      const url = buildWalletUrl(config, "connect", {
+        app_url: FUNDWISE_WEB_URL,
+        dapp_encryption_public_key: bs58.encode(keyPair.publicKey),
+        redirect_link: CALLBACK_ROUTES.connect,
+        cluster: WALLET_CLUSTER,
+      });
+
+      const result = new Promise<WalletAccount>((resolve, reject) => {
+        resolverRef.current = { method: "connect", resolve, reject };
+      });
+
+      try {
+        await Linking.openURL(url);
+      } catch (error) {
+        supersedeResolver("Wallet could not be opened.");
+        await clearPending();
+        throw error instanceof Error ? error : new Error(`Could not open ${config.label}.`);
+      }
+
+      return result;
+    },
+    [clearPending, setPending, supersedeResolver],
+  );
 
   const signMessages = useCallback(
     async (message: Uint8Array): Promise<Uint8Array> => {
@@ -493,7 +531,7 @@ export function useDeeplinkTransport(): WalletTransport {
 
       supersedeResolver("Wallet request superseded by a new signature request.");
 
-      const config = DEEPLINK_WALLETS[session.walletId] ?? ACTIVE_DEEPLINK_WALLET;
+      const config = DEEPLINK_WALLETS[session.walletId] ?? DEFAULT_DEEPLINK_WALLET;
       const { nonceB58, payloadB58 } = encryptPayload(
         {
           // signMessage wants base58-encoded bytes, not raw utf8.
@@ -533,6 +571,14 @@ export function useDeeplinkTransport(): WalletTransport {
   );
 
   const disconnect = useCallback(async (): Promise<void> => {
+    // Disconnect supersedes the pre-connect chooser layer too — without this,
+    // an open chooser survives the disconnect and its awaiting connect() can
+    // establish a session AFTER the user disconnected.
+    const chooserResolver = chooserResolverRef.current;
+    chooserResolverRef.current = null;
+    setChooserVisible(false);
+    chooserResolver?.reject(new Error("Wallet disconnected."));
+
     const session = await readSession();
 
     // Wipe local state regardless of what the wallet says (reference gotcha:
@@ -547,7 +593,7 @@ export function useDeeplinkTransport(): WalletTransport {
     }
 
     try {
-      const config = DEEPLINK_WALLETS[session.walletId] ?? ACTIVE_DEEPLINK_WALLET;
+      const config = DEEPLINK_WALLETS[session.walletId] ?? DEFAULT_DEEPLINK_WALLET;
       const { nonceB58, payloadB58 } = encryptPayload({ session: session.session }, bs58.decode(session.sharedSecret));
 
       await setPending({ method: "disconnect" });
@@ -565,15 +611,33 @@ export function useDeeplinkTransport(): WalletTransport {
     }
   }, [clearPending, readSession, setPending, supersedeResolver]);
 
-  const connect = useCallback(
-    // connect is bounded per the seam contract — a dead wallet surfaces a
-    // retry. A late approval still lands: the callback path persists the
-    // session and updates `account` even after the race has rejected.
-    () => withWalletTimeout(startConnect()),
-    [startConnect],
-  );
+  const connect = useCallback(async (): Promise<WalletAccount> => {
+    // Deeplink sessions do not expire — reuse the persisted one instead of
+    // bouncing through the wallet again. The session carries its walletId, so
+    // reconnects keep targeting the wallet that created it.
+    const existing = await readSession();
 
-  return useMemo(
+    if (existing) {
+      const existingAccount = accountForSession(existing);
+      setAccount(existingAccount);
+
+      return existingAccount;
+    }
+
+    // No session → minimal two-button chooser (ADR-0063 amendment 3). The
+    // wait is deliberately outside the timeout below: a user reading an
+    // in-app sheet is not a dead wallet, and dismissal has its own explicit
+    // rejection path.
+    const config = await requestWalletChoice();
+
+    // The wallet round-trip is bounded per the seam contract — a dead wallet
+    // surfaces a retry. A late approval still lands: the callback path
+    // persists the session and updates `account` even after the race has
+    // rejected.
+    return withWalletTimeout(startConnect(config));
+  }, [readSession, requestWalletChoice, startConnect]);
+
+  const transport = useMemo(
     () => ({
       account,
       connect,
@@ -582,4 +646,15 @@ export function useDeeplinkTransport(): WalletTransport {
     }),
     [account, connect, disconnect, signMessages],
   );
+
+  const chooser = useMemo<DeeplinkWalletChooser>(
+    () => ({
+      visible: chooserVisible,
+      choose: chooseWallet,
+      cancel: cancelWalletChoice,
+    }),
+    [cancelWalletChoice, chooseWallet, chooserVisible],
+  );
+
+  return useMemo(() => ({ transport, chooser }), [chooser, transport]);
 }
