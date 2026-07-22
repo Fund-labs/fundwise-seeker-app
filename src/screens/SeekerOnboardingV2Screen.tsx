@@ -1,4 +1,3 @@
-import { useMobileWallet } from "@wallet-ui/react-native-web3js";
 import * as Haptics from "expo-haptics";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -16,6 +15,7 @@ import {
 import { FUNDWISE_WEB_URL, SOLANA_CHAIN } from "../config";
 import { shortAddress } from "../lib/short-address";
 import { colors } from "../theme/colors";
+import { useWallet } from "../wallet/useWallet";
 
 type StepId = "boot" | "welcome" | "auth" | "success" | "tour" | "dashboard";
 type HapticKind = "tap" | "selection" | "success" | "warning";
@@ -825,7 +825,7 @@ function HapticLayer({ ripples }: { ripples: HapticRipple[] }) {
 }
 
 export function SeekerOnboardingV2Screen() {
-  const { account, connect } = useMobileWallet();
+  const { account, connect } = useWallet();
   const [step, setStep] = useState<StepId>("boot");
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);

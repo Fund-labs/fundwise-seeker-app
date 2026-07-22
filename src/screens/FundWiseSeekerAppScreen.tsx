@@ -1,6 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useMobileWallet } from "@wallet-ui/react-native-web3js";
 import * as Haptics from "expo-haptics";
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import { toQR } from "toqr";
@@ -57,6 +56,8 @@ import { getSeekerDeviceInfo } from "../lib/seeker-device";
 import { shortAddress } from "../lib/short-address";
 import { colors } from "../theme/colors";
 import { fonts, sansForWeight } from "../theme/fonts";
+import { withWalletTimeout } from "../wallet/transport";
+import { useWallet } from "../wallet/useWallet";
 
 type ScreenId = "boot" | "welcome" | "tour" | "auth" | "success" | "home" | "groups" | "activity" | "wallet" | "split" | "fund";
 type HapticKind = "tap" | "selection" | "success" | "warning";
@@ -570,26 +571,6 @@ function triggerHaptic(kind: HapticKind = "tap") {
   }
 
   void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => Vibration.vibrate([10]));
-}
-
-const WALLET_CONNECT_TIMEOUT_MS = 60000;
-
-// Race a wallet round-trip against a timeout so a non-responding wallet surfaces
-// a retry instead of hanging forever (MWA transact has no built-in timeout).
-function withWalletTimeout<T>(promise: Promise<T>, ms = WALLET_CONNECT_TIMEOUT_MS): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("Wallet request timed out.")), ms);
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      (error) => {
-        clearTimeout(timer);
-        reject(error);
-      },
-    );
-  });
 }
 
 function readableWalletError(error: unknown) {
@@ -3354,7 +3335,7 @@ function LabeledInput({
 }
 
 export function FundWiseSeekerAppScreen() {
-  const { account, connect, disconnect, signMessages } = useMobileWallet();
+  const { account, connect, disconnect, signMessages } = useWallet();
   const [screen, setScreen] = useState<ScreenId>("boot");
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [localStateChecked, setLocalStateChecked] = useState(false);
@@ -3618,7 +3599,8 @@ export function FundWiseSeekerAppScreen() {
         // Connect through the @wallet-ui provider so the SDK owns the MWA auth
         // token and persists the authorization: the address survives app
         // restart and reconnects reuse the token instead of re-prompting.
-        const connected = await withWalletTimeout(connect());
+        // Timeout policy lives inside the wallet transport (src/wallet).
+        const connected = await connect();
         const connectedAddress = walletAddressToString(connected.address);
         if (!connectedAddress) {
           throw new Error("Wallet did not return an account.");

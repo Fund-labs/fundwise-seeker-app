@@ -1,4 +1,3 @@
-import { useMobileWallet } from "@wallet-ui/react-native-web3js";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -22,6 +21,7 @@ import { getFundWiseLinkDetail, getFundWiseLinkLabel, parseFundWiseLink, type Fu
 import { getSeekerDeviceInfo } from "../lib/seeker-device";
 import { shortAddress } from "../lib/short-address";
 import { colors } from "../theme/colors";
+import { useWallet } from "../wallet/useWallet";
 
 type HealthState = "checking" | "online" | "offline";
 type WalletState = "idle" | "connecting" | "connected" | "error";
@@ -111,7 +111,7 @@ function SectionHeader({ label, value }: { label: string; value?: string }) {
 }
 
 export function SeekerHomeScreen() {
-  const { account, connect, disconnect } = useMobileWallet();
+  const { account, connect, disconnect } = useWallet();
   const isOnline = useNetworkStatus();
   const incomingLink = useIncomingFundWiseLink();
   const seekerDeviceInfo = useMemo(() => getSeekerDeviceInfo(), []);

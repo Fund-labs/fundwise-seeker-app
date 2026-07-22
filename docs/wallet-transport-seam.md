@@ -27,7 +27,7 @@ export function useWallet(): WalletTransport
 // src/wallet/WalletProvider.tsx — selects the adapter by Platform.OS, mounts ONE stable tree shape
 ```
 
-Interface notes (part of the contract, not just types): `connect` may background the app (both adapters); callers must tolerate resume. `signMessages` timeout policy lives INSIDE the transport (the existing `withWalletTimeout` wrapper moves in from `FundWiseSeekerAppScreen.tsx:578` — MWA `transact` has no built-in timeout). No `signAndSendTransaction` — settlement handoff stays on FundWise web; do not widen the seam for iOS.
+Interface notes (part of the contract, not just types): `connect` may background the app (both adapters); callers must tolerate resume. **Timeout policy (refined 2026-07-22 after adversarial review):** `connect` is bounded inside the adapter (60s — MWA `transact` has no built-in timeout), but `signMessages` is deliberately **unbounded** — the shipped auth-challenge flow must tolerate a wallet backgrounded past 60s, and a timed-out race discards a signature the wallet believes it delivered. Call sites that want a bound (e.g. the intent-sign) wrap the call in the exported `withWalletTimeout` themselves — timeout on signing is per-call policy, not transport policy. No `signAndSendTransaction` — settlement handoff stays on FundWise web; do not widen the seam for iOS.
 
 ## The adapters
 

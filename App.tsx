@@ -1,27 +1,22 @@
-import { MobileWalletProvider } from "@wallet-ui/react-native-web3js";
 import { useFonts } from "expo-font";
 import { Component, type ReactNode } from "react";
 import { Pressable, SafeAreaView, StatusBar, StyleSheet, Text, View } from "react-native";
-import { FUNDWISE_IDENTITY, SOLANA_CHAIN, SOLANA_RPC_ENDPOINT } from "./src/config";
 import { FundWiseSeekerAppScreen } from "./src/screens/FundWiseSeekerAppScreen";
 import { colors } from "./src/theme/colors";
 import { fontAssets, fonts } from "./src/theme/fonts";
+import { WalletProvider } from "./src/wallet/WalletProvider";
 
 export default function App() {
   const [fontsLoaded] = useFonts(fontAssets);
 
   return (
     <AppErrorBoundary>
-      <MobileWalletProvider
-        chain={SOLANA_CHAIN}
-        endpoint={SOLANA_RPC_ENDPOINT}
-        identity={FUNDWISE_IDENTITY}
-      >
+      <WalletProvider>
         <SafeAreaView style={styles.safeArea}>
           <StatusBar barStyle="dark-content" backgroundColor={colors.bg} translucent={false} />
           {fontsLoaded ? <FundWiseSeekerAppScreen /> : null}
         </SafeAreaView>
-      </MobileWalletProvider>
+      </WalletProvider>
     </AppErrorBoundary>
   );
 }
