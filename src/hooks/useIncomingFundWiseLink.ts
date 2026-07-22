@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useState } from "react";
 import { Linking } from "react-native";
+import { isWalletCallbackUrl } from "../wallet/DeeplinkTransport";
 
 const LATEST_LINK_KEY = "fundwise-seeker:latest-link";
 
@@ -75,7 +76,12 @@ export function useIncomingFundWiseLink() {
         return;
       }
 
-      if (initialUrl) {
+      // Wallet-callback redirects (fundwiseseeker://wallet-callback/...) are
+      // transport plumbing, not FundWise content links — remembering one would
+      // clobber the live link and the persisted latest-link entry (e.g. a
+      // settlement preview lost after a wallet hop). DeeplinkTransport handles
+      // them; skip and fall through to storage hydration.
+      if (initialUrl && !isWalletCallbackUrl(initialUrl)) {
         await rememberLink(initialUrl, "initial");
         return;
       }
@@ -113,6 +119,12 @@ export function useIncomingFundWiseLink() {
     void hydrateLink();
 
     const subscription = Linking.addEventListener("url", (event) => {
+      // Same guard as the cold-start path: wallet round-trips must not
+      // replace the incoming FundWise link.
+      if (isWalletCallbackUrl(event.url)) {
+        return;
+      }
+
       void rememberLink(event.url, "event");
     });
 

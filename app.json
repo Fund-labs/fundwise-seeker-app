@@ -9,6 +9,10 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "ios": {
+      "bundleIdentifier": "fun.fundwise.seeker",
+      "supportsTablet": false
+    },
     "android": {
       "package": "fun.fundwise.seeker",
       "versionCode": 2,

@@ -21,6 +21,7 @@
     "@solana-mobile/mobile-wallet-adapter-protocol": "^2.2.8",
     "@solana/web3.js": "^1.98.4",
     "@wallet-ui/react-native-web3js": "^4.1.0",
+    "bs58": "^6.0.0",
     "expo": "~55.0.24",
     "expo-build-properties": "~55.0.14",
     "expo-font": "~55.0.8",
@@ -28,8 +29,11 @@
     "js-base64": "^3.7.8",
     "react": "19.2.0",
     "react-native": "0.83.6",
+    "react-native-get-random-values": "^2.0.0",
     "react-native-quick-crypto": "^1.1.5",
-    "toqr": "^0.1.1"
+    "react-native-url-polyfill": "^4.0.0",
+    "toqr": "^0.1.1",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
